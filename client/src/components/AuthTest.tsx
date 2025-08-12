@@ -101,7 +101,7 @@ export const AuthTest: React.FC = () => {
 		setLoading(true);
 		setError(null);
 		try {
-			const data = await makeAuthenticatedRequest("/auth-test/profile");
+			const data = await makeAuthenticatedRequest("/api/auth-test/profile");
 			setUserProfile(data);
 		} catch (err) {
 			setError(
@@ -116,7 +116,7 @@ export const AuthTest: React.FC = () => {
 		setLoading(true);
 		setError(null);
 		try {
-			const data = await makeAuthenticatedRequest("/auth-test/admin-only");
+			const data = await makeAuthenticatedRequest("/api/auth-test/admin-only");
 			setAdminData(data);
 		} catch (err) {
 			setError(
@@ -131,7 +131,7 @@ export const AuthTest: React.FC = () => {
 		setLoading(true);
 		setError(null);
 		try {
-			const data = await makeAuthenticatedRequest("/auth-test/super-admin");
+			const data = await makeAuthenticatedRequest("/api/auth-test/super-admin");
 			setSuperAdminData(data);
 		} catch (err) {
 			setError(
@@ -148,13 +148,16 @@ export const AuthTest: React.FC = () => {
 		setLoading(true);
 		setError(null);
 		try {
-			const data = await makeAuthenticatedRequest("/auth-test/test-message", {
-				method: "POST",
-				body: JSON.stringify({
-					message: testMessage,
-					timestamp: new Date().toISOString(),
-				}),
-			});
+			const data = await makeAuthenticatedRequest(
+				"/api/auth-test/test-message",
+				{
+					method: "POST",
+					body: JSON.stringify({
+						message: testMessage,
+						timestamp: new Date().toISOString(),
+					}),
+				}
+			);
 			setMessageResponse(data);
 			setTestMessage("");
 		} catch (err) {
