@@ -2,31 +2,38 @@ import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
-import { BookingsModule } from "./bookings/bookings.module";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { SystemAdminModule } from "./system-admin/system-admin.module";
 import { AuthModule } from "./auth/auth.module";
+import { AppConfigModule } from "./config/config.module";
 import { ConfigService } from "./config/config.service";
+import { DepartmentsModule } from "./departments/departments.module";
+import { GovernmentServicesModule } from "./government-services/government-services.module";
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    TypeOrmModule.forRoot({
-      type: "postgres",
-      url: "postgresql://postgres:iamironman0516@db.qntlhmmsysgawoelgkwa.supabase.co:5432/postgres",
-      synchronize: true, // ⚠️ Use only in dev
-      autoLoadEntities: true,
-      ssl: {
-        rejectUnauthorized: false,
-      },
+    AppConfigModule,
+    TypeOrmModule.forRootAsync({
+      imports: [AppConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        type: "postgres",
+        url: configService.databaseUrl,
+        synchronize: configService.isDevelopment, // ⚠️ Use only in dev
+        autoLoadEntities: true,
+        ssl: {
+          rejectUnauthorized: false,
+        },
+      }),
+      inject: [ConfigService],
     }),
-    BookingsModule,
-    SystemAdminModule,
     AuthModule,
+    DepartmentsModule,
+    GovernmentServicesModule,
+
   ],
   controllers: [AppController],
-  providers: [AppService, ConfigService],
+  providers: [AppService],
 })
 export class AppModule { }
