@@ -1,7 +1,7 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { SystemAdminController } from './system-admin.controller';
+import { Test, TestingModule } from "@nestjs/testing";
+import { SystemAdminController } from "./system-admin.controller";
 
-describe('SystemAdminController', () => {
+describe("SystemAdminController", () => {
   let controller: SystemAdminController;
 
   beforeEach(async () => {
@@ -12,7 +12,7 @@ describe('SystemAdminController', () => {
     controller = module.get<SystemAdminController>(SystemAdminController);
   });
 
-  it('should be defined', () => {
+  it("should be defined", () => {
     expect(controller).toBeDefined();
   });
 });

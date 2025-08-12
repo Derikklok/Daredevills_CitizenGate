@@ -1,10 +1,9 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get } from "@nestjs/common";
 
-@Controller('bookings')
+@Controller("bookings")
 export class BookingsController {
-
-    @Get()
-    getAllBookings():string{
-        return 'This action returns all bookings';
-    }
+  @Get()
+  getAllBookings(): string {
+    return "This action returns all bookings";
+  }
 }
