@@ -13,18 +13,17 @@ import { ConfigService } from "./config/config.service";
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    // Temporarily disabled for auth testing
-    // TypeOrmModule.forRoot({
-    //   type: "postgres",
-    //   url: "postgresql://postgres:iamironman0516@db.qntlhmmsysgawoelgkwa.supabase.co:5432/postgres",
-    //   synchronize: true, // ⚠️ Use only in dev
-    //   autoLoadEntities: true,
-    //   ssl: {
-    //     rejectUnauthorized: false,
-    //   },
-    // }),
-    // BookingsModule,
-    // SystemAdminModule,
+    TypeOrmModule.forRoot({
+      type: "postgres",
+      url: "postgresql://postgres:iamironman0516@db.qntlhmmsysgawoelgkwa.supabase.co:5432/postgres",
+      synchronize: true, // ⚠️ Use only in dev
+      autoLoadEntities: true,
+      ssl: {
+        rejectUnauthorized: false,
+      },
+    }),
+    BookingsModule,
+    SystemAdminModule,
     AuthModule,
   ],
   controllers: [AppController],

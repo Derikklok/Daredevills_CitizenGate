@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from "react";
+import React, {useState} from "react";
 import {useAuth, useUser} from "@clerk/clerk-react";
 import {Button} from "./ui/button";
 
@@ -51,7 +51,8 @@ interface SuperAdminData {
 	};
 }
 
-const API_BASE_URL = "http://localhost:3000";
+const API_BASE_URL =
+	import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
 
 export const AuthTest: React.FC = () => {
 	const {getToken} = useAuth();
@@ -215,11 +216,11 @@ export const AuthTest: React.FC = () => {
 						<div>
 							<p>
 								<strong>Created:</strong>{" "}
-								{new Date(user.createdAt).toLocaleDateString()}
+								{new Date(user.createdAt || "").toLocaleDateString()}
 							</p>
 							<p>
 								<strong>Last Sign In:</strong>{" "}
-								{new Date(user.lastSignInAt).toLocaleDateString()}
+								{new Date(user.lastSignInAt || "").toLocaleDateString()}
 							</p>
 						</div>
 					</div>
