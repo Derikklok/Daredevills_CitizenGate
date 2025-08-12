@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { BookingsModule } from './bookings/bookings.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { SystemAdminModule } from './system-admin/system-admin.module';
+import { DepartmentsModule } from './departments/departments.module';
 
 @Module({
   imports: [
@@ -15,7 +15,7 @@ import { SystemAdminModule } from './system-admin/system-admin.module';
       ssl: {
         rejectUnauthorized: false,
       },
-    }) ,BookingsModule, SystemAdminModule],
+    }) , SystemAdminModule, DepartmentsModule],
   controllers: [AppController],
   providers: [AppService],
 })
