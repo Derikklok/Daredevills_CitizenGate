@@ -9,6 +9,7 @@ import {
 	SignInButton,
 	UserButton,
 } from "@clerk/clerk-react";
+import {AuthTest} from "./components/AuthTest";
 
 function App() {
 	const [count, setCount] = useState(0);
@@ -44,6 +45,11 @@ function App() {
 				Click on the Vite and React logos to learn more
 			</p>
 			<Button>Click me</Button>
+
+			{/* Auth Test Component */}
+			<SignedIn>
+				<AuthTest />
+			</SignedIn>
 		</>
 	);
 }

@@ -8,6 +8,7 @@ export const CLERK_CLIENT = "ClerkClient";
 
 export const ClerkClientProvider: Provider = {
   provide: CLERK_CLIENT,
+  inject: [ConfigService],
   useFactory: (configService: ConfigService): ClerkClient => {
     return {
       users: {
@@ -27,9 +28,17 @@ export const ClerkClientProvider: Provider = {
         },
       },
       verifyToken: async (token: string) => {
-        return await verifyToken(token, {
-          secretKey: configService.clerkSecretKey,
-        });
+        try {
+          return await verifyToken(token, {
+            secretKey: configService.clerkSecretKey,
+          });
+        } catch (verifyError) {
+          return await verifyToken(token, {
+            secretKey: configService.clerkSecretKey,
+            audience: "http://localhost:5173",
+          });
+        }
+
       },
     };
   },

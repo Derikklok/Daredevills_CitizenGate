@@ -1,4 +1,5 @@
 import { Module } from "@nestjs/common";
+import { ConfigModule } from "@nestjs/config";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { BookingsModule } from "./bookings/bookings.module";
@@ -9,6 +10,9 @@ import { ConfigService } from "./config/config.service";
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     // Temporarily disabled for auth testing
     // TypeOrmModule.forRoot({
     //   type: "postgres",

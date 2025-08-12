@@ -12,7 +12,7 @@ export class ClerkAuthGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
     private readonly clerkService: ClerkService
-  ) {}
+  ) { }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
@@ -23,10 +23,13 @@ export class ClerkAuthGuard implements CanActivate {
     }
 
     try {
+      console.log("🔍 Verifying token:", token.substring(0, 50) + "...");
       const user = await this.clerkService.verifyToken(token);
+      console.log("✅ Token verified successfully:", user.accountId);
       request.user = user;
       return true;
-    } catch {
+    } catch (error) {
+      console.error("❌ Token verification failed:", error.message);
       throw new UnauthorizedException("Invalid token");
     }
   }

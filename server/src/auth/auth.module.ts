@@ -6,6 +6,7 @@ import { AuthService } from "./auth.service";
 import { ClerkService } from "./services/clerk.service";
 import { AuthTestController } from "./controllers/auth-test.controller";
 import { ClerkClientProvider } from "./providers/clerk.provider";
+import { ConfigService } from "../config/config.service";
 
 @Module({
   controllers: [AuthTestController],
@@ -13,14 +14,7 @@ import { ClerkClientProvider } from "./providers/clerk.provider";
     AuthService,
     ClerkService,
     ClerkClientProvider,
-    {
-      provide: APP_GUARD,
-      useClass: ClerkAuthGuard,
-    },
-    {
-      provide: APP_GUARD,
-      useClass: RolesGuard,
-    },
+    ConfigService,
   ],
   exports: [AuthService, ClerkService],
 })

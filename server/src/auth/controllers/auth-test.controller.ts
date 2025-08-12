@@ -35,11 +35,11 @@ export class UserProfileResponse {
 }
 
 @Controller("auth-test")
-@UseGuards(ClerkAuthGuard, RolesGuard)
 export class AuthTestController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   @Get("profile")
+  @UseGuards(ClerkAuthGuard, RolesGuard)
   @Roles(RolesEnum.USER)
   async getUserProfile(
     @CurrentUser() user: AuthenticatedUser
@@ -71,6 +71,7 @@ export class AuthTestController {
   }
 
   @Get("admin-only")
+  @UseGuards(ClerkAuthGuard, RolesGuard)
   @Roles(RolesEnum.ADMIN)
   async getAdminData(@CurrentUser() user: AuthenticatedUser) {
     return {
@@ -86,6 +87,7 @@ export class AuthTestController {
   }
 
   @Get("super-admin")
+  @UseGuards(ClerkAuthGuard, RolesGuard)
   @Roles(RolesEnum.SUPER_ADMIN)
   async getSuperAdminData(@CurrentUser() user: AuthenticatedUser) {
     return {
@@ -106,6 +108,7 @@ export class AuthTestController {
   }
 
   @Post("test-message")
+  @UseGuards(ClerkAuthGuard, RolesGuard)
   @Roles(RolesEnum.USER)
   @HttpCode(HttpStatus.OK)
   async testMessage(
@@ -130,6 +133,33 @@ export class AuthTestController {
       message: "This endpoint is public (no auth required)",
       timestamp: new Date().toISOString(),
       serverVersion: "1.0.0",
+    };
+  }
+
+  @Get("debug-config")
+  async getDebugConfig() {
+    return {
+      message: "Debug configuration info",
+      hasSecretKey: !!process.env.CLERK_SECRET_KEY,
+      hasPublishableKey: !!process.env.CLERK_PUBLISHABLE_KEY,
+      secretKeyPrefix: process.env.CLERK_SECRET_KEY?.substring(0, 10) + "...",
+      nodeEnv: process.env.NODE_ENV,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  @Get("test-token")
+  @UseGuards(ClerkAuthGuard, RolesGuard)
+  @Roles(RolesEnum.USER)
+  async testToken(@CurrentUser() user: AuthenticatedUser) {
+    return {
+      message: "Token is valid!",
+      user: {
+        accountId: user.accountId,
+        email: user.email,
+        roles: user.roles,
+      },
+      timestamp: new Date().toISOString(),
     };
   }
 }

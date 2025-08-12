@@ -22,9 +22,15 @@ export class ClerkService {
 
   async verifyToken(token: string): Promise<AuthenticatedUser> {
     try {
+      console.log("🔍 ClerkService: Starting token verification...");
       const payload = await this.clerkClient.verifyToken(token);
+      console.log("🔍 ClerkService: Token payload received:", {
+        sub: payload.sub,
+        email: payload.email,
+        hasRoles: !!payload.roles,
+      });
 
-      return {
+      const user = {
         accountId: payload.sub,
         organizationId: payload.org_id || payload.organizationId,
         email: payload.email,
@@ -34,8 +40,12 @@ export class ClerkService {
         permissions: payload.permissions || [],
         metadata: payload.metadata || {},
       };
-    } catch {
-      throw new Error("Invalid token");
+
+      console.log("✅ ClerkService: User object created:", user.accountId);
+      return user;
+    } catch (error) {
+      console.error("❌ ClerkService: Token verification error:", error.message);
+      throw new Error(`Invalid token: ${error.message}`);
     }
   }
 
