@@ -1,4 +1,5 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { GovernmentService } from "src/government-services/government-service.entity";
+import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @Entity('departments')
 export class Department{
@@ -23,4 +24,7 @@ export class Department{
 
     @UpdateDateColumn()
     updated_at:Date;
+
+    @OneToMany(() => GovernmentService, (service) => service.department, { cascade: true })
+    services: GovernmentService[];
 }

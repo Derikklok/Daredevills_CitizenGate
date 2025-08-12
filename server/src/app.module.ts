@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { SystemAdminModule } from './system-admin/system-admin.module';
 import { DepartmentsModule } from './departments/departments.module';
+import { GovernmentServicesModule } from './government-services/government-services.module';
 
 @Module({
   imports: [
@@ -15,7 +16,7 @@ import { DepartmentsModule } from './departments/departments.module';
       ssl: {
         rejectUnauthorized: false,
       },
-    }) , SystemAdminModule, DepartmentsModule],
+    }) , SystemAdminModule, DepartmentsModule, GovernmentServicesModule],
   controllers: [AppController],
   providers: [AppService],
 })
