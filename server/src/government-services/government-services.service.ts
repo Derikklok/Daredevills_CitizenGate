@@ -10,17 +10,23 @@ export class GovernmentServicesService {
     private readonly serviceRepo: Repository<GovernmentService>,
   ) {}
 
-  create(data: Partial<GovernmentService>) {
+  async create(data: Partial<GovernmentService>) {
+    // Create the service with all provided data
     const service = this.serviceRepo.create(data);
     return this.serviceRepo.save(service);
   }
 
   findAll() {
-    return this.serviceRepo.find({ relations: ['department'] });
+    return this.serviceRepo.find({ 
+      relations: ['department']
+    });
   }
 
   async findOne(id: string) {
-    const service = await this.serviceRepo.findOne({ where: { service_id: id }, relations: ['department'] });
+    const service = await this.serviceRepo.findOne({ 
+      where: { service_id: id }, 
+      relations: ['department']
+    });
     if (!service) throw new NotFoundException('Service not found');
     return service;
   }
