@@ -53,18 +53,24 @@ export class ServiceAvailabilityService {
   }
 
   findAll() {
-    return this.availabilityRepo.find({ relations: ['service'] });
+    return this.availabilityRepo.find({ 
+      relations: ['service', 'service.department']
+    });
   }
 
   findByService(serviceId: string) {
     return this.availabilityRepo.find({
       where: { service_id: serviceId },
       order: { day_of_week: 'ASC', start_time: 'ASC' },
+      relations: ['service', 'service.department']
     });
   }
 
   async findOne(id: string) {
-    const availability = await this.availabilityRepo.findOne({ where: { availability_id: id } });
+    const availability = await this.availabilityRepo.findOne({ 
+      where: { availability_id: id },
+      relations: ['service', 'service.department']
+    });
     if (!availability) throw new NotFoundException('Availability not found');
     return availability;
   }
