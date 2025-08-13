@@ -56,7 +56,7 @@ export class OrganizationManagementController {
     }
 
     @Get("settings")
-    @Roles(RolesEnum.ORGANIZATION_ADMIN, RolesEnum.ADMIN)
+    @Roles(RolesEnum.ADMIN)
     public async getOrganizationSettings(
         @CurrentUserWithOrg() user: AuthenticatedUserWithOrganization
     ): Promise<OrganizationSettingsResponse> {
@@ -75,7 +75,7 @@ export class OrganizationManagementController {
     }
 
     @Post("settings")
-    @Roles(RolesEnum.ORGANIZATION_ADMIN, RolesEnum.ADMIN)
+    @Roles(RolesEnum.ADMIN)
     public async createOrganizationSettings(
         @CurrentUserWithOrg() user: AuthenticatedUserWithOrganization,
         @Body() data: CreateOrganizationSettingsDto
@@ -90,7 +90,7 @@ export class OrganizationManagementController {
     }
 
     @Put("settings")
-    @Roles(RolesEnum.ORGANIZATION_ADMIN, RolesEnum.ADMIN)
+    @Roles(RolesEnum.ADMIN)
     public async updateOrganizationSettings(
         @CurrentUserWithOrg() user: AuthenticatedUserWithOrganization,
         @Body() data: UpdateOrganizationSettingsDto
@@ -105,7 +105,7 @@ export class OrganizationManagementController {
     }
 
     @Get("members")
-    @Roles(RolesEnum.ORGANIZATION_ADMIN, RolesEnum.ADMIN)
+    @Roles(RolesEnum.ADMIN)
     public async getOrganizationMembers(
         @CurrentUserWithOrg() user: AuthenticatedUserWithOrganization
     ): Promise<any[]> {
@@ -130,7 +130,7 @@ export class OrganizationManagementController {
     }
 
     @Delete("settings/:settingId")
-    @Roles(RolesEnum.ORGANIZATION_ADMIN, RolesEnum.ADMIN)
+    @Roles(RolesEnum.ADMIN)
     public async deleteOrganizationSetting(
         @CurrentUserWithOrg() user: AuthenticatedUserWithOrganization,
         @Param("settingId") settingId: string

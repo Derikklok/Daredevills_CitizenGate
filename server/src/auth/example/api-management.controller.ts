@@ -42,7 +42,7 @@ export class ThirdPartyAPIKey {
 @Roles(RolesEnum.ADMIN)
 @UseGuards(ClerkAuthGuard, RolesGuard)
 export class APIManagementController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   @Post("third-party-api-keys")
   public async createThirdPartyAPIKey(
@@ -108,7 +108,7 @@ export class APIManagementController {
 
   // Example of endpoint with different role requirements
   @Get("admin-only")
-  @Roles(RolesEnum.SUPER_ADMIN)
+  @Roles(RolesEnum.ADMIN)
   public async adminOnlyEndpoint(
     @CurrentUser() curUser: AuthenticatedUser
   ): Promise<{ message: string }> {

@@ -2,31 +2,34 @@ import { GovernmentService } from "src/government-services/government-service.en
 import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @Entity('departments')
-export class Department{
+export class Department {
 
     @PrimaryGeneratedColumn()
-    department_id : number;
+    department_id: number;
 
-    @Column()
-    name : string;
-
-    @Column({ type: 'text', nullable: true })
-    address : string;
+    @Column({ unique: true })
+    name: string;
 
     @Column({ type: 'text', nullable: true })
-    contact_email:string;
+    description: string;
 
     @Column({ type: 'text', nullable: true })
-    contact_phone:string;
+    address: string;
+
+    @Column({ type: 'text', nullable: true })
+    contact_email: string;
+
+    @Column({ type: 'text', nullable: true })
+    contact_phone: string;
 
     @Column({ type: 'text', nullable: true })
     clerk_org_id: string;
 
     @CreateDateColumn()
-    created_at:Date;
+    created_at: Date;
 
     @UpdateDateColumn()
-    updated_at:Date;
+    updated_at: Date;
 
     @OneToMany(() => GovernmentService, (service) => service.department, { cascade: true })
     services: GovernmentService[];
