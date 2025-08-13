@@ -22,6 +22,13 @@ export class GovernmentServicesService {
     });
   }
 
+  async findByDepartment(departmentId: number) {
+    return this.serviceRepo.find({
+      where: { department_id: departmentId },
+      relations: ['department']
+    });
+  }
+
   async findOne(id: string) {
     const service = await this.serviceRepo.findOne({ 
       where: { service_id: id }, 

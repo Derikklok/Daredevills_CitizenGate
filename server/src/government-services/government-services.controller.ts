@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Body, Param } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, Query } from '@nestjs/common';
 import { GovernmentServicesService } from './government-services.service';
 import { GovernmentService } from './government-service.entity';
 
@@ -12,7 +12,10 @@ export class GovernmentServicesController {
   }
 
   @Get()
-  findAll() {
+  findAll(@Query('department_id') departmentId?: string) {
+    if (departmentId) {
+      return this.governmentServicesService.findByDepartment(parseInt(departmentId, 10));
+    }
     return this.governmentServicesService.findAll();
   }
 
