@@ -1,4 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Department } from '../departments/department.entity';
 
 @Entity('government_services')
 export class GovernmentService {
@@ -11,8 +12,9 @@ export class GovernmentService {
   @Column({ type: 'text', nullable: true })
   description: string;
 
-  @Column({ type: 'text', nullable: false })
-  department_id: string;
+  @ManyToOne(() => Department, (department) => department.services, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'department_id' })
+  department: Department;
 
   @Column({ type: 'text', nullable: true })
   category: string;

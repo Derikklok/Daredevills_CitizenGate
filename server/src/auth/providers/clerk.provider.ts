@@ -26,9 +26,6 @@ export const ClerkClientProvider: Provider = {
             organizationId,
           });
         },
-        getOrganizationList: async () => {
-          return await clerkClient.organizations.getOrganizationList();
-        },
       },
       verifyToken: async (token: string) => {
         try {

@@ -8,7 +8,6 @@ export interface ClerkClient {
   };
   organizations: {
     getOrganization: (params: { organizationId: string }) => Promise<any>;
-    getOrganizationList: () => Promise<any>;
   };
   verifyToken: (token: string) => Promise<any>;
 }
@@ -49,9 +48,5 @@ export class ClerkService {
 
   async getOrganization(organizationId: string) {
     return this.clerkClient.organizations.getOrganization({ organizationId });
-  }
-
-  async getOrganizationList() {
-    return this.clerkClient.organizations.getOrganizationList();
   }
 }
