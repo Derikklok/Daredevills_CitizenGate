@@ -9,6 +9,7 @@ import { DepartmentsModule } from "./departments/departments.module";
 import { GovernmentServicesModule } from "./government-services/government-services.module";
 import { ServiceAvailabilityModule } from './service-availability/service-availability.module';
 import { RequiredDocumentsModule } from './required-documents/required-documents.module';
+import { AppointmentsModule } from './appointments/appointments.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { RequiredDocumentsModule } from './required-documents/required-documents
     GovernmentServicesModule,
     ServiceAvailabilityModule,
     RequiredDocumentsModule,
+    AppointmentsModule,
 
   ],
   controllers: [AppController],
