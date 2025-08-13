@@ -19,6 +19,9 @@ export class Department{
     @Column({ type: 'text', nullable: true })
     contact_phone:string;
 
+    @Column({ type: 'text', nullable: true })
+    clerk_org_id: string;
+
     @CreateDateColumn()
     created_at:Date;
 
