@@ -19,7 +19,7 @@ import { GovernmentServicesModule } from "./government-services/government-servi
       useFactory: (configService: ConfigService) => ({
         type: "postgres",
         url: configService.databaseUrl,
-        synchronize: false, // Temporarily disabled to handle schema manually
+        synchronize: configService.isDevelopment, // ⚠️ Use only in dev
         autoLoadEntities: true,
         ssl: {
           rejectUnauthorized: false,
