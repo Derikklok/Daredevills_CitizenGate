@@ -16,6 +16,9 @@ export class GovernmentService {
   @JoinColumn({ name: 'department_id' })
   department: Department;
 
+  @Column({ name: 'department_id', type: 'int4', nullable: true })
+  department_id: number;
+
   @Column({ type: 'text', nullable: true })
   category: string;
 
