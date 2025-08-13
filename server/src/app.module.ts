@@ -8,6 +8,7 @@ import { ConfigService } from "./config/config.service";
 import { DepartmentsModule } from "./departments/departments.module";
 import { GovernmentServicesModule } from "./government-services/government-services.module";
 import { ServiceAvailabilityModule } from './service-availability/service-availability.module';
+import { RequiredDocumentsModule } from './required-documents/required-documents.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { ServiceAvailabilityModule } from './service-availability/service-availa
     DepartmentsModule,
     GovernmentServicesModule,
     ServiceAvailabilityModule,
+    RequiredDocumentsModule,
 
   ],
   controllers: [AppController],
