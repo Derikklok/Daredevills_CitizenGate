@@ -16,11 +16,16 @@ export class DepartmentsService {
     }
 
     findAll() {
-    return this.deptRepo.find();
+    return this.deptRepo.find({
+      relations: ['services']  // Include the services relation
+    });
   }
 
   async findOne(id: number) {
-    const dept = await this.deptRepo.findOne({ where: { department_id: id } });
+    const dept = await this.deptRepo.findOne({ 
+      where: { department_id: id },
+      relations: ['services']  // Include the services relation
+    });
     if (!dept) throw new NotFoundException('Department not found');
     return dept;
   }
