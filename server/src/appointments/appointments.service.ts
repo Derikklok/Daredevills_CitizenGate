@@ -39,6 +39,18 @@ export class AppointmentsService {
     if (!data.appointment_status) {
       data.appointment_status = 'pending';
     }
+    
+    // Process documents if submitted with the initial appointment
+    if (data.documents_submitted && Array.isArray(data.documents_submitted)) {
+      // Add verification_status 'pending' and timestamp to each document
+      data.documents_submitted = data.documents_submitted.map(doc => ({
+        document_id: doc.document_id,
+        name: doc.name,
+        file_url: doc.file_url,
+        verification_status: 'pending',
+        uploaded_at: new Date()
+      }));
+    }
 
     const appointment = this.appointmentRepo.create(data);
     return this.appointmentRepo.save(appointment);
@@ -127,5 +139,173 @@ export class AppointmentsService {
     }
     
     return this.update(id, { appointment_status: status });
+  }
+  
+  async addDocuments(id: string, documents: Array<{
+    document_id: string;
+    name: string;
+    file_url: string;
+    uploaded_at?: Date;
+    verification_status?: string;
+  }>) {
+    const appointment = await this.findOne(id);
+    
+    // Initialize documents array if it doesn't exist
+    if (!appointment.documents_submitted) {
+      appointment.documents_submitted = [];
+    }
+    
+    // Add verification status and upload timestamp to each document
+    const processedDocuments = documents.map(doc => ({
+      ...doc,
+      verification_status: doc.verification_status || 'pending',
+      uploaded_at: doc.uploaded_at || new Date()
+    }));
+    
+    // Add new documents to the existing array
+    appointment.documents_submitted = [
+      ...appointment.documents_submitted,
+      ...processedDocuments
+    ];
+    
+    // Save and return updated appointment
+    return this.appointmentRepo.save(appointment);
+  }
+
+  /**
+   * Add a document to an appointment
+   * @param id Appointment ID
+   * @param documentData Document data containing document_id, name, and file_url
+   */
+  async addDocument(id: string, documentData: { 
+    document_id: string;
+    name: string;
+    file_url: string;
+  }) {
+    const appointment = await this.findOne(id);
+    
+    // Initialize documents_submitted array if it doesn't exist
+    if (!appointment.documents_submitted) {
+      appointment.documents_submitted = [];
+    }
+
+    // Check if a document with the same document_id already exists
+    const existingDocIndex = appointment.documents_submitted.findIndex(
+      doc => doc.document_id === documentData.document_id
+    );
+
+    if (existingDocIndex >= 0) {
+      // Update existing document
+      appointment.documents_submitted[existingDocIndex] = {
+        ...documentData,
+        uploaded_at: new Date(),
+        verification_status: 'pending'
+      };
+    } else {
+      // Add new document
+      appointment.documents_submitted.push({
+        ...documentData,
+        uploaded_at: new Date(),
+        verification_status: 'pending'
+      });
+    }
+
+    return this.appointmentRepo.save(appointment);
+  }
+
+  /**
+   * Add multiple documents to an appointment
+   * @param id Appointment ID
+   * @param documentsData Array of document data
+   */
+  async addMultipleDocuments(id: string, documentsData: Array<{
+    document_id: string;
+    name: string;
+    file_url: string;
+  }>) {
+    const appointment = await this.findOne(id);
+    
+    // Initialize documents_submitted array if it doesn't exist
+    if (!appointment.documents_submitted) {
+      appointment.documents_submitted = [];
+    }
+
+    // Process each document
+    for (const docData of documentsData) {
+      const existingDocIndex = appointment.documents_submitted.findIndex(
+        doc => doc.document_id === docData.document_id
+      );
+
+      if (existingDocIndex >= 0) {
+        // Update existing document
+        appointment.documents_submitted[existingDocIndex] = {
+          ...docData,
+          uploaded_at: new Date(),
+          verification_status: 'pending'
+        };
+      } else {
+        // Add new document
+        appointment.documents_submitted.push({
+          ...docData,
+          uploaded_at: new Date(),
+          verification_status: 'pending'
+        });
+      }
+    }
+
+    return this.appointmentRepo.save(appointment);
+  }
+
+  /**
+   * Remove a document from an appointment
+   * @param id Appointment ID
+   * @param documentId Document ID to remove
+   */
+  async removeDocument(id: string, documentId: string) {
+    const appointment = await this.findOne(id);
+    
+    if (!appointment.documents_submitted) {
+      throw new NotFoundException(`No documents found for appointment with ID ${id}`);
+    }
+
+    // Filter out the document to remove
+    appointment.documents_submitted = appointment.documents_submitted.filter(
+      doc => doc.document_id !== documentId
+    );
+
+    return this.appointmentRepo.save(appointment);
+  }
+
+  /**
+   * Update document verification status
+   * @param id Appointment ID
+   * @param documentId Document ID
+   * @param status New verification status
+   */
+  async updateDocumentStatus(id: string, documentId: string, status: string) {
+    const validStatuses = ['pending', 'verified', 'rejected'];
+    if (!validStatuses.includes(status)) {
+      throw new BadRequestException(`Invalid document status. Must be one of: ${validStatuses.join(', ')}`);
+    }
+
+    const appointment = await this.findOne(id);
+    
+    if (!appointment.documents_submitted) {
+      throw new NotFoundException(`No documents found for appointment with ID ${id}`);
+    }
+
+    // Find the document to update
+    const docIndex = appointment.documents_submitted.findIndex(
+      doc => doc.document_id === documentId
+    );
+
+    if (docIndex === -1) {
+      throw new NotFoundException(`Document with ID ${documentId} not found in appointment ${id}`);
+    }
+
+    // Update document status
+    appointment.documents_submitted[docIndex].verification_status = status;
+
+    return this.appointmentRepo.save(appointment);
   }
 }
