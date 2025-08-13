@@ -1,33 +1,25 @@
-import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import { BadRequestException, Controller, Get, NotFoundException, Param } from '@nestjs/common';
 import { DepartmentsService } from './departments.service';
-import { Department } from './department.entity';
+import { DepartmentReadDto } from './dto/department.read.dto';
 
 @Controller('departments')
 export class DepartmentsController {
-  constructor(private readonly departmentService: DepartmentsService) {}
-
-  @Post()
-  create(@Body() body: Partial<Department>){
-    return this.departmentService.create(body);
-  }
+  constructor(private readonly departmentService: DepartmentsService) { }
 
   @Get()
-  findAll(){
-    return this.departmentService.findAll();
+  async findAll(): Promise<DepartmentReadDto[]> {
+    return await this.departmentService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: number) {
-    return this.departmentService.findOne(id);
-  }
-
-  @Put(':id')
-  update(@Param('id') id: number, @Body() body: Partial<Department>) {
-    return this.departmentService.update(id, body);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: number) {
-    return this.departmentService.remove(id);
+  async findOne(@Param('id') id: string): Promise<DepartmentReadDto> {
+    if (!id) {
+      throw new BadRequestException('Department ID is required');
+    }
+    try {
+      return await this.departmentService.findOne(id);
+    } catch (error) {
+      throw new NotFoundException('Department not found');
+    }
   }
 }

@@ -2,37 +2,32 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Department } from './department.entity';
 import { Repository } from 'typeorm';
+import { ClerkService } from 'src/auth/services/clerk.service';
+import { DepartmentReadDto } from './dto/department.read.dto';
 
 @Injectable()
 export class DepartmentsService {
-    constructor(
-        @InjectRepository(Department)
-        private readonly deptRepo: Repository<Department>,
-    ){}
+  constructor(
+    private readonly clerkService: ClerkService,
+  ) { }
 
-    create(data : Partial<Department>){
-        const dept = this.deptRepo.create(data);
-        return this.deptRepo.save(dept);
+  async findAll(): Promise<DepartmentReadDto[]> {
+    try {
+      const organizationList = await this.clerkService.getOrganizationList();
+      return organizationList;
+    } catch (error) {
+      console.error('Error finding all departments:', error);
+      throw new Error('Failed to find all departments');
     }
-
-    findAll() {
-    return this.deptRepo.find();
   }
 
-  async findOne(id: number) {
-    const dept = await this.deptRepo.findOne({ where: { department_id: id } });
-    if (!dept) throw new NotFoundException('Department not found');
-    return dept;
-  }
-
-  async update(id: number, data: Partial<Department>) {
-    const dept = await this.findOne(id);
-    Object.assign(dept, data);
-    return this.deptRepo.save(dept);
-  }
-
-   async remove(id: number) {
-    const dept = await this.findOne(id);
-    return this.deptRepo.remove(dept);
+  async findOne(id: string): Promise<DepartmentReadDto> {
+    try {
+      const organization = await this.clerkService.getOrganization(id);
+      return organization;
+    } catch (error) {
+      console.error('Error finding department:', error);
+      throw new NotFoundException('Department not found');
+    }
   }
 }
