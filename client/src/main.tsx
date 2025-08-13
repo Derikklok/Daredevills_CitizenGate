@@ -25,6 +25,8 @@ root.render(
 					variables: {colorPrimary: "#8D153A"},
 				},
 			}}
+			signInUrl="/sign-in"
+			signUpUrl="/sign-up"
 			publishableKey={PUBLISHABLE_KEY}>
 			<BrowserRouter>
 				<App />
