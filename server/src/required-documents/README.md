@@ -2,6 +2,8 @@
 
 This module handles required documents for government services. Each government service can have multiple required documents that citizens need to prepare before availing the service.
 
+> **Important**: Each service can only have one document with a specific name. Attempting to create a document with a name that already exists for the same service will result in a 409 Conflict error.
+
 ## Entity Structure
 
 ```typescript
@@ -11,6 +13,7 @@ This module handles required documents for government services. Each government 
   name: string;             // Name of the required document
   description: string;      // Optional description
   is_mandatory: boolean;    // Whether this document is mandatory or optional
+  document_format: string;  // Allowed file formats (e.g., "pdf,jpg,png")
   created_at: Date;         // Creation timestamp
   updated_at: Date;         // Last update timestamp
 }
@@ -28,10 +31,13 @@ This module handles required documents for government services. Each government 
     "service_id": "uuid-of-government-service",
     "name": "Passport",
     "description": "Valid passport with at least 6 months validity",
-    "is_mandatory": true
+    "is_mandatory": true,
+    "document_format": "pdf,jpg,png"
   }
   ```
 - **Response**: The created document object
+- **Error Responses**:
+  - `409 Conflict` - If a document with the same name already exists for this service
 
 ### Create Multiple Required Documents
 
@@ -44,17 +50,22 @@ This module handles required documents for government services. Each government 
       "service_id": "uuid-of-government-service",
       "name": "Passport",
       "description": "Valid passport with at least 6 months validity",
-      "is_mandatory": true
+      "is_mandatory": true,
+      "document_format": "pdf,jpg,png"
     },
     {
       "service_id": "uuid-of-government-service",
-      "name": "ID Card",
+      "name": "ID Card", 
       "description": "National ID card",
-      "is_mandatory": true
+      "is_mandatory": true,
+      "document_format": "pdf,jpg"
     }
   ]
   ```
 - **Response**: Array of created document objects
+- **Error Responses**:
+  - `409 Conflict` - If any document in the batch has a name that already exists for its service
+  - `409 Conflict` - If there are duplicate document names for the same service within the batch itself
 
 ### Get All Required Documents
 
@@ -89,10 +100,14 @@ This module handles required documents for government services. Each government 
   {
     "name": "Updated Document Name",
     "description": "Updated description",
-    "is_mandatory": false
+    "is_mandatory": false,
+    "document_format": "pdf,doc,docx"
   }
   ```
 - **Response**: The updated document object
+- **Error Responses**:
+  - `404 Not Found` - If the document with the specified ID doesn't exist
+  - `409 Conflict` - If changing the name to one that already exists for this service
 
 ### Delete a Document
 
@@ -111,19 +126,22 @@ const requiredDocs = [
     service_id: "passport-service-uuid",
     name: "Birth Certificate",
     description: "Original birth certificate",
-    is_mandatory: true
+    is_mandatory: true,
+    document_format: "pdf,jpg"
   },
   {
     service_id: "passport-service-uuid",
     name: "Proof of Address",
     description: "Utility bill or bank statement from last 3 months",
-    is_mandatory: true
+    is_mandatory: true,
+    document_format: "pdf,jpg,png"
   },
   {
     service_id: "passport-service-uuid",
     name: "Previous Passport",
     description: "If this is a renewal application",
-    is_mandatory: false
+    is_mandatory: false,
+    document_format: "pdf"
   }
 ];
 
