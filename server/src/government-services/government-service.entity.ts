@@ -1,5 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { Department } from '../departments/department.entity';
+import { ServiceAvailability } from 'src/service-availability/service-availability.entity';
 
 @Entity('government_services')
 export class GovernmentService {
@@ -30,4 +31,8 @@ export class GovernmentService {
 
   @UpdateDateColumn({ type: 'timestamptz' })
   updated_at: Date;
+
+  @OneToMany(() => ServiceAvailability, (availability) => availability.service, { cascade: true })
+availabilities: ServiceAvailability[];
+
 }
