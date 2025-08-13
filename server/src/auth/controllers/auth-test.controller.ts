@@ -1,164 +1,148 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  UseGuards,
-  HttpCode,
-  HttpStatus,
-} from "@nestjs/common";
-import { CurrentUser } from "../decorators/current-user.decorator";
-import { Roles } from "../decorators/roles.decorator";
-import { ClerkAuthGuard } from "../guards/clerk-auth.guard";
-import { RolesGuard } from "../guards/roles.guard";
-import { RolesEnum } from "../enums/roles.enum";
-import { AuthenticatedUser } from "../interfaces/authenticated-user.interface";
-import { AuthService } from "../auth.service";
+import { Controller, Get, Post, Body, UseGuards, Request } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { ClerkAuthGuard } from '../guards/clerk-auth.guard';
+import { RolesGuard } from '../guards/roles.guard';
+import { Roles } from '../decorators/roles.decorator';
+import { RolesEnum } from '../enums/roles.enum';
+import { AuthenticatedUser } from '../interfaces/authenticated-user.interface';
+import { CurrentUser } from '../decorators/current-user.decorator';
 
-export class TestUserDataDto {
-  message: string;
-  timestamp: string;
-}
-
-export class UserProfileResponse {
-  user: AuthenticatedUser;
-  serverInfo: {
-    timestamp: string;
-    environment: string;
-    authStatus: string;
-  };
-  permissions: {
-    canRead: boolean;
-    canWrite: boolean;
-    canDelete: boolean;
-  };
-}
-
-@Controller("auth-test")
+@ApiTags('Auth Test')
+@Controller('auth-test')
 export class AuthTestController {
-  constructor(private readonly authService: AuthService) { }
-
-  @Get("profile")
-  @UseGuards(ClerkAuthGuard, RolesGuard)
-  @Roles(RolesEnum.USER)
-  async getUserProfile(
-    @CurrentUser() user: AuthenticatedUser
-  ): Promise<UserProfileResponse> {
-    // Get additional user data from Clerk
-    const clerkUser = await this.authService.getUser(user.accountId);
-    // const organization = await this.authService.getOrganization(
-    //   user.organizationId
-    // );
-
+  @Get('public')
+  @ApiOperation({ summary: 'Public endpoint - no auth required' })
+  @ApiResponse({ status: 200, description: 'Public endpoint accessible to everyone' })
+  getPublic() {
     return {
-      user: {
-        ...user,
-        firstName: clerkUser.firstName || user.firstName,
-        lastName: clerkUser.lastName || user.lastName,
-        email: clerkUser.emailAddresses?.[0]?.emailAddress || user.email,
-      },
-      serverInfo: {
-        timestamp: new Date().toISOString(),
-        environment: process.env.NODE_ENV || "development",
-        authStatus: "authenticated",
-      },
-      permissions: {
-        canRead: user.roles.includes(RolesEnum.USER),
-        canWrite: user.roles.includes(RolesEnum.ADMIN),
-        canDelete: user.roles.includes(RolesEnum.SUPER_ADMIN),
-      },
+      message: 'This is a public endpoint',
+      timestamp: new Date().toISOString(),
     };
   }
 
-  @Get("admin-only")
+  @Get('protected')
+  @UseGuards(ClerkAuthGuard)
+  @ApiOperation({ summary: 'Protected endpoint - requires authentication' })
+  @ApiResponse({ status: 200, description: 'Protected endpoint accessible to authenticated users' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiBearerAuth()
+  getProtected(@CurrentUser() user: AuthenticatedUser) {
+    return {
+      message: 'This is a protected endpoint',
+      user: {
+        accountId: user.accountId,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        organizationId: user.organizationId,
+        roles: user.roles,
+      },
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  @Get('admin-only')
   @UseGuards(ClerkAuthGuard, RolesGuard)
   @Roles(RolesEnum.ADMIN)
-  async getAdminData(@CurrentUser() user: AuthenticatedUser) {
+  @ApiOperation({ summary: 'Admin only endpoint' })
+  @ApiResponse({ status: 200, description: 'Admin endpoint accessible to admin users' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden - insufficient permissions' })
+  @ApiBearerAuth()
+  getAdminOnly(@CurrentUser() user: AuthenticatedUser) {
     return {
-      message: "Admin access granted!",
+      message: 'This is an admin-only endpoint',
       user: {
         accountId: user.accountId,
         email: user.email,
         roles: user.roles,
       },
       timestamp: new Date().toISOString(),
-      secretData: "This is only visible to admins",
     };
   }
 
-  @Get("super-admin")
+  @Get('super-admin-only')
   @UseGuards(ClerkAuthGuard, RolesGuard)
-  @Roles(RolesEnum.SUPER_ADMIN)
-  async getSuperAdminData(@CurrentUser() user: AuthenticatedUser) {
+  @Roles(RolesEnum.ADMIN)
+  @ApiOperation({ summary: 'Super admin only endpoint' })
+  @ApiResponse({ status: 200, description: 'Super admin endpoint accessible to super admin users' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden - insufficient permissions' })
+  @ApiBearerAuth()
+  getSuperAdminOnly(@CurrentUser() user: AuthenticatedUser) {
     return {
-      message: "Super Admin access granted!",
+      message: 'This is a super admin-only endpoint',
       user: {
         accountId: user.accountId,
         email: user.email,
         roles: user.roles,
       },
       timestamp: new Date().toISOString(),
-      superSecretData: "This is only visible to super admins",
-      systemStats: {
-        totalUsers: 1000,
-        activeSessions: 150,
-        systemHealth: "excellent",
-      },
     };
   }
 
-  @Post("test-message")
+  @Get('user-info')
+  @UseGuards(ClerkAuthGuard)
+  @ApiOperation({ summary: 'Get current user information and roles' })
+  @ApiResponse({ status: 200, description: 'User information retrieved successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiBearerAuth()
+  getUserInfo(@CurrentUser() user: AuthenticatedUser) {
+    return {
+      message: 'User information retrieved successfully',
+      user: {
+        accountId: user.accountId,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        organizationId: user.organizationId,
+        roles: user.roles,
+        permissions: user.permissions,
+        metadata: user.metadata,
+      },
+      availableRoles: Object.values(RolesEnum),
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  @Get('debug-token')
+  @UseGuards(ClerkAuthGuard)
+  @ApiOperation({ summary: 'Debug token payload and role mapping' })
+  @ApiResponse({ status: 200, description: 'Token debug information' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiBearerAuth()
+  debugToken(@CurrentUser() user: AuthenticatedUser, @Request() req: any) {
+    return {
+      message: 'Token debug information',
+      user: {
+        accountId: user.accountId,
+        email: user.email,
+        roles: user.roles,
+        organizationId: user.organizationId,
+      },
+      rawPayload: req.user?.rawPayload || 'No raw payload available',
+      availableRoles: Object.values(RolesEnum),
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  @Post('test-role')
   @UseGuards(ClerkAuthGuard, RolesGuard)
-  @Roles(RolesEnum.USER)
-  @HttpCode(HttpStatus.OK)
-  async testMessage(
-    @CurrentUser() user: AuthenticatedUser,
-    @Body() data: TestUserDataDto
-  ) {
+  @Roles(RolesEnum.ADMIN)
+  @ApiOperation({ summary: 'Test endpoint for admin and super admin roles' })
+  @ApiResponse({ status: 200, description: 'Role test successful' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden - insufficient permissions' })
+  @ApiBearerAuth()
+  testRole(@CurrentUser() user: AuthenticatedUser, @Body() body: any) {
     return {
-      message: `Message received from ${user.email}`,
-      originalMessage: data.message,
-      timestamp: new Date().toISOString(),
+      message: 'Role test successful',
       user: {
         accountId: user.accountId,
         email: user.email,
         roles: user.roles,
       },
-    };
-  }
-
-  @Get("public-info")
-  async getPublicInfo() {
-    return {
-      message: "This endpoint is public (no auth required)",
-      timestamp: new Date().toISOString(),
-      serverVersion: "1.0.0",
-    };
-  }
-
-  @Get("debug-config")
-  async getDebugConfig() {
-    return {
-      message: "Debug configuration info",
-      hasSecretKey: !!process.env.CLERK_SECRET_KEY,
-      hasPublishableKey: !!process.env.CLERK_PUBLISHABLE_KEY,
-      secretKeyPrefix: process.env.CLERK_SECRET_KEY?.substring(0, 10) + "...",
-      nodeEnv: process.env.NODE_ENV,
-      timestamp: new Date().toISOString(),
-    };
-  }
-
-  @Get("test-token")
-  @UseGuards(ClerkAuthGuard, RolesGuard)
-  @Roles(RolesEnum.USER)
-  async testToken(@CurrentUser() user: AuthenticatedUser) {
-    return {
-      message: "Token is valid!",
-      user: {
-        accountId: user.accountId,
-        email: user.email,
-        roles: user.roles,
-      },
+      body,
       timestamp: new Date().toISOString(),
     };
   }

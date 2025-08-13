@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Department } from './department.entity';
 import { Repository } from 'typeorm';
@@ -22,22 +22,35 @@ export class DepartmentsService {
    */
   async create(data: DepartmentCreateDto, user: AuthenticatedUser) {
     try {
+      // Check if department with this name already exists
+      const existingDept = await this.deptRepo.findOne({
+        where: { name: data.name }
+      });
+
+      if (existingDept) {
+        throw new BadRequestException(`A department with the name "${data.name}" already exists.`);
+      }
+
       let clerkOrganizationId = data.clerk_org_id;
 
       if (!clerkOrganizationId) {
-        // Create organization in Clerk
-        const clerkOrganization = await this.clerkService.createOrganization({
-          name: data.name,
-          slug: data.name.toLowerCase().replace(/\s+/g, '-'),
-          metadata: {
-            address: data.address,
-            contact_email: data.contact_email,
-            contact_phone: data.contact_phone,
-            created_by: user.accountId,
-          },
-          image_url: data.image_url || '',
-        });
-        clerkOrganizationId = clerkOrganization.id;
+        try {
+          // Create organization in Clerk
+          const clerkOrganization = await this.clerkService.createOrganization({
+            name: data.name,
+            slug: data.name.toLowerCase().replace(/\s+/g, '-'),
+            metadata: {
+              address: data.address,
+              contact_email: data.contact_email,
+              contact_phone: data.contact_phone,
+              created_by: user.accountId,
+            },
+          });
+          clerkOrganizationId = clerkOrganization.id;
+        } catch (clerkError) {
+          console.error('Clerk organization creation error:', clerkError);
+          throw new BadRequestException(`Failed to create Clerk organization: ${clerkError.message}`);
+        }
       }
 
       // Create department with Clerk organization ID
@@ -48,6 +61,16 @@ export class DepartmentsService {
 
       return this.deptRepo.save(dept);
     } catch (error) {
+      console.error('Department creation error:', error);
+
+      if (error.message?.includes('Unprocessable Entity')) {
+        throw new BadRequestException('Invalid department data provided. Please check all required fields.');
+      }
+
+      if (error.message?.includes('duplicate key')) {
+        throw new BadRequestException('A department with this name already exists.');
+      }
+
       throw new Error(`Failed to create department: ${error.message}`);
     }
   }
@@ -78,8 +101,46 @@ export class DepartmentsService {
     return this.deptRepo.save(dept);
   }
 
-  async remove(id: number) {
+  async remove(id: number, user: AuthenticatedUser) {
     const dept = await this.findOne(id);
+    if (dept.clerk_org_id !== user.organizationId) {
+      throw new ForbiddenException('You are not authorized to delete this department');
+    }
+
+    // Delete organization in Clerk
+    if (dept.clerk_org_id) {
+      try {
+
+        await this.clerkService.deleteOrganization(dept.clerk_org_id);
+      } catch (error) {
+        // Log the error but don't fail the deletion
+        console.warn(`Failed to delete Clerk organization: ${error.message}`);
+      }
+    }
+
     return this.deptRepo.remove(dept);
+  }
+
+  async deleteOrganization(orgId: string) {
+    const organization = await this.clerkService.getOrganization(orgId);
+    if (!organization) {
+      throw new NotFoundException('Organization not found');
+    }
+
+    await this.clerkService.deleteOrganization(orgId);
+
+    const departmentWithOrgId = await this.deptRepo.find({
+      where: { clerk_org_id: orgId }
+    });
+
+    if (departmentWithOrgId.length > 0) {
+      await this.deptRepo.remove(departmentWithOrgId);
+    }
+
+    return {
+      message: 'Organization deleted successfully',
+      organization: organization,
+      department: departmentWithOrgId,
+    };
   }
 }

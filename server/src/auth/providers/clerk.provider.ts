@@ -29,7 +29,7 @@ export const ClerkClientProvider: Provider = {
         createOrganization: async (params: {
           name: string;
           slug: string;
-          image_url: string;
+          image_url?: string;
           metadata: any;
         }) => {
           return await clerkClient.organizations.createOrganization({
@@ -37,6 +37,13 @@ export const ClerkClientProvider: Provider = {
             slug: params.slug,
             createdBy: params.metadata?.created_by || 'system',
           });
+        },
+        deleteOrganization: async ({
+          organizationId,
+        }: {
+          organizationId: string;
+        }) => {
+          return await clerkClient.organizations.deleteOrganization(organizationId);
         },
       },
       verifyToken: async (token: string) => {
