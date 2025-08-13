@@ -1,7 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, Unique } from 'typeorm';
 import { GovernmentService } from '../government-services/government-service.entity';
 
 @Entity('required_documents')
+@Unique(['service_id', 'name']) // Add a unique constraint for service_id and name combination
 export class RequiredDocument {
   @PrimaryGeneratedColumn('uuid')
   document_id: string;
@@ -21,6 +22,9 @@ export class RequiredDocument {
 
   @Column({ type: 'boolean', default: true })
   is_mandatory: boolean;
+  
+  @Column({ type: 'text', nullable: true, default: 'pdf,jpg,png' })
+  document_format: string;
 
   @CreateDateColumn({ type: 'timestamptz' })
   created_at: Date;
