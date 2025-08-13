@@ -1,8 +1,7 @@
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@100..900&family=Noto+Sans+Tamil:wght@100..900&family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap");
 @import "tw-animate-css";
 @import "tailwindcss";
 @import "@clerk/themes/shadcn.css";
-
-@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@100..900&family=Noto+Sans+Tamil:wght@100..900&family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap");
 
 @custom-variant dark (&:is(.dark *));
 
@@ -213,4 +212,21 @@
 	body {
 		@apply bg-background text-foreground;
 	}
+}
+
+/* Clerk */
+.cl-formButtonPrimary {
+	background-color: var(--color-primary-500);
+}
+
+.cl-footer {
+	color: var(--color-primary-500);
+}
+
+.cl-internal-qkjri9 {
+	color: var(--color-primary-300);
+}
+
+.cl-internal-1dauvpw {
+	color: var(--color-primary-300);
 }
