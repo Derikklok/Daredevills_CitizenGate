@@ -1,22 +1,25 @@
-import { Link, Route, Routes} from "react-router-dom";
+import {Link, Route, Routes, Navigate} from "react-router-dom";
 import "./App.css";
 import {
 	SignedIn,
 	SignedOut,
-	SignInButton,
 	UserButton,
 	OrganizationSwitcher,
+	useAuth,
 } from "@clerk/clerk-react";
-import {AuthTest} from "./components/AuthTest";
 import BookingAppointments from "./pages/BookingAppointments";
 import MyAppointments from "./pages/MyAppointments";
+import {Button} from "./components/ui/button";
+import SignInPage from "./pages/SignIn";
+import SignUpPage from "./pages/SignUp";
 
 function Home() {
 	return (
 		<>
 			<header>
 				<SignedOut>
-					<SignInButton />
+					<Link to="/sign-in">Sign In</Link> |{" "}
+					<Link to="/sign-up">Sign Up</Link>
 				</SignedOut>
 				<SignedIn>
 					<UserButton />
@@ -24,28 +27,39 @@ function Home() {
 				</SignedIn>
 			</header>
 
-			    {/* Auth Test Component */}
-				<SignedIn>
-					<AuthTest />
-				</SignedIn>
+			<Button className="bg-primary-500">Click me</Button>
 
-				{/* Navigation Links */}
-				<nav>
-					<Link to="/booking-appointments">Booking Appointments</Link> |{" "}
-					<Link to="/my-appointments">My Appointments</Link>
-				</nav>
+			{/* Navigation Links */}
+			<nav>
+				<Link to="/booking-appointments">Booking Appointments</Link> |{" "}
+				<Link to="/my-appointments">My Appointments</Link>
+			</nav>
 		</>
-	)
+	);
 }
 
-
 function App() {
+	const {isSignedIn, isLoaded} = useAuth();
+
+	// Show loading state while Clerk is initializing
+	if (!isLoaded) {
+		return <div>Loading...</div>;
+	}
+
 	return (
-			<Routes>
-				<Route path="/" element={<Home />} />
-				<Route path="/booking-appointments" element={<BookingAppointments />} />
-				<Route path="/my-appointments" element={<MyAppointments />} />
-			</Routes>
+		<Routes>
+			<Route path="/" element={<Home />} />
+			<Route path="/booking-appointments" element={<BookingAppointments />} />
+			<Route path="/my-appointments" element={<MyAppointments />} />
+			<Route
+				path="/sign-in"
+				element={isSignedIn ? <Navigate to="/" replace /> : <SignInPage />}
+			/>
+			<Route
+				path="/sign-up"
+				element={isSignedIn ? <Navigate to="/" replace /> : <SignUpPage />}
+			/>
+		</Routes>
 	);
 }
 
