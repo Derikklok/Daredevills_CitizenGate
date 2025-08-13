@@ -1,6 +1,7 @@
 import { Injectable, Inject } from "@nestjs/common";
 import { AuthenticatedUser } from "../interfaces/authenticated-user.interface";
 import { RolesEnum } from "../enums/roles.enum";
+import { Organization } from "@clerk/clerk-sdk-node";
 
 export interface ClerkClient {
   users: {
@@ -8,6 +9,7 @@ export interface ClerkClient {
   };
   organizations: {
     getOrganization: (params: { organizationId: string }) => Promise<any>;
+    createOrganization: (params: { name: string, slug: string, metadata?: any, image_url?: string }) => Promise<any>;
   };
   verifyToken: (token: string) => Promise<any>;
 }
@@ -48,5 +50,9 @@ export class ClerkService {
 
   async getOrganization(organizationId: string) {
     return this.clerkClient.organizations.getOrganization({ organizationId });
+  }
+
+  async createOrganization(params: { name: string, slug: string, metadata?: any, image_url?: string }) {
+    return this.clerkClient.organizations.createOrganization(params);
   }
 }
