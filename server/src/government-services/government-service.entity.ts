@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { Department } from '../departments/department.entity';
 import { ServiceAvailability } from 'src/service-availability/service-availability.entity';
+import { RequiredDocument } from 'src/required-documents/required-document.entity';
 
 @Entity('government_services')
 export class GovernmentService {
@@ -33,6 +34,8 @@ export class GovernmentService {
   updated_at: Date;
 
   @OneToMany(() => ServiceAvailability, (availability) => availability.service, { cascade: true })
-availabilities: ServiceAvailability[];
+  availabilities: ServiceAvailability[];
 
+  @OneToMany(() => RequiredDocument, (document) => document.service, { cascade: true })
+  requiredDocuments: RequiredDocument[];
 }
