@@ -8,6 +8,7 @@ import {
 	SignedOut,
 	SignInButton,
 	UserButton,
+	OrganizationSwitcher,
 } from "@clerk/clerk-react";
 import {AuthTest} from "./components/AuthTest";
 
@@ -22,6 +23,7 @@ function App() {
 				</SignedOut>
 				<SignedIn>
 					<UserButton />
+					<OrganizationSwitcher />
 				</SignedIn>
 			</header>
 			<div>
