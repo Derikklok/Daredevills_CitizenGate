@@ -7,7 +7,7 @@ export class Department {
     @PrimaryGeneratedColumn()
     department_id: number;
 
-    @Column()
+    @Column({ unique: true })
     name: string;
 
     @Column({ type: 'text', nullable: true })
