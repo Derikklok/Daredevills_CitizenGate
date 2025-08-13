@@ -2,6 +2,8 @@
 @import "tailwindcss";
 @import "@clerk/themes/shadcn.css";
 
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@100..900&family=Noto+Sans+Tamil:wght@100..900&family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap");
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -177,6 +179,7 @@
 }
 
 @theme {
+	/* Primary color palette */
 	--color-primary: var(--primary-500);
 	--color-primary-50: var(--primary-50);
 	--color-primary-100: var(--primary-100);
@@ -188,6 +191,19 @@
 	--color-primary-700: var(--primary-700);
 	--color-primary-800: var(--primary-800);
 	--color-primary-900: var(--primary-900);
+
+	/* Font family */
+	--font-sans: "Noto Sans", sans-serif;
+	--font-sans-sinhala: "Noto Sans Sinhala", sans-serif;
+	--font-sans-tamil: "Noto Sans Tamil", sans-serif;
+	--font-serif: "Noto Serif", serif;
+	--font-mono: "noto-mono", monospace;
+
+	/* Font size */
+	--font-size-xs: 0.75rem;
+	--font-size-sm: 0.875rem;
+	--font-size-base: 1rem;
+	--font-size-lg: 1.125rem;
 }
 
 @layer base {
