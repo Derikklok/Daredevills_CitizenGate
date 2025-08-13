@@ -26,6 +26,18 @@ export const ClerkClientProvider: Provider = {
             organizationId,
           });
         },
+        createOrganization: async (params: {
+          name: string;
+          slug: string;
+          image_url: string;
+          metadata: any;
+        }) => {
+          return await clerkClient.organizations.createOrganization({
+            name: params.name,
+            slug: params.slug,
+            createdBy: params.metadata?.created_by || 'system',
+          });
+        },
       },
       verifyToken: async (token: string) => {
         try {
