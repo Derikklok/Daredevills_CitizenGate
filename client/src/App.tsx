@@ -1,4 +1,4 @@
-import { Link, Route, Routes} from "react-router-dom";
+import {Link, Route, Routes} from "react-router-dom";
 import "./App.css";
 import {
 	SignedIn,
@@ -10,6 +10,7 @@ import {
 import {AuthTest} from "./components/AuthTest";
 import BookingAppointments from "./pages/BookingAppointments";
 import MyAppointments from "./pages/MyAppointments";
+import {Button} from "./components/ui/button";
 
 function Home() {
 	return (
@@ -24,28 +25,29 @@ function Home() {
 				</SignedIn>
 			</header>
 
-			    {/* Auth Test Component */}
-				<SignedIn>
-					<AuthTest />
-				</SignedIn>
+			{/* Auth Test Component */}
+			<SignedIn>
+				<AuthTest />
+			</SignedIn>
 
-				{/* Navigation Links */}
-				<nav>
-					<Link to="/booking-appointments">Booking Appointments</Link> |{" "}
-					<Link to="/my-appointments">My Appointments</Link>
-				</nav>
+			<Button className="bg-primary-500">Click me</Button>
+
+			{/* Navigation Links */}
+			<nav>
+				<Link to="/booking-appointments">Booking Appointments</Link> |{" "}
+				<Link to="/my-appointments">My Appointments</Link>
+			</nav>
 		</>
-	)
+	);
 }
-
 
 function App() {
 	return (
-			<Routes>
-				<Route path="/" element={<Home />} />
-				<Route path="/booking-appointments" element={<BookingAppointments />} />
-				<Route path="/my-appointments" element={<MyAppointments />} />
-			</Routes>
+		<Routes>
+			<Route path="/" element={<Home />} />
+			<Route path="/booking-appointments" element={<BookingAppointments />} />
+			<Route path="/my-appointments" element={<MyAppointments />} />
+		</Routes>
 	);
 }
 
