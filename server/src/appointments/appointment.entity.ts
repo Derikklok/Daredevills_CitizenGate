@@ -52,7 +52,13 @@ export class Appointment {
   notes: string;
 
   @Column({ type: 'jsonb', nullable: true })
-  documents_submitted: Record<string, any>; // For tracking which required documents were submitted
+  documents_submitted: {
+    document_id: string;
+    name: string;
+    file_url: string;
+    uploaded_at: Date;
+    verification_status?: string; // pending, verified, rejected
+  }[]; // Array of uploaded document links with metadata
 
   @CreateDateColumn({ type: 'timestamptz' })
   created_at: Date;
