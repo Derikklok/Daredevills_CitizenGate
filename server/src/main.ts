@@ -19,7 +19,15 @@ async function bootstrap() {
   // Enable Swagger
   const config = new DocumentBuilder()
     .setTitle("API Documentation - CitizenGate")
-    .setDescription("API documentation for the CitizenGate application. This contains all the RESTful endpoints for the application.")
+    .setDescription("API documentation for the CitizenGate application. This contains all the RESTful endpoints for the application. Most of the endpoints require authentication. You can get the JWT token from the Clerk frontend by calling the `getToken` function.")
+    .addBearerAuth({
+      type: "http",
+      scheme: "bearer",
+      bearerFormat: "JWT",
+      name: "JWT",
+      description: "JWT token for authentication. You can get the JWT token from the Clerk frontend by calling the `getToken` function.",
+      in: "header",
+    })
     .setVersion("1.0")
     .build();
 
