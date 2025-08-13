@@ -158,7 +158,7 @@ Retrieves all service availability entries.
 
 - **URL**: `/api/service-availability`
 - **Method**: `GET`
-- **Response**: An array of service availability objects
+- **Response**: An array of service availability objects with their associated services and departments
   ```json
   [
     {
@@ -178,7 +178,14 @@ Retrieves all service availability entries.
         "category": "Licensing",
         "estimated_total_completion_time": "30 minutes",
         "created_at": "2025-08-13T00:30:59.632Z",
-        "updated_at": "2025-08-13T00:30:59.632Z"
+        "updated_at": "2025-08-13T00:30:59.632Z",
+        "department": {
+          "department_id": 1,
+          "name": "Department of Motor Vehicles",
+          "address": "123 Government St",
+          "contact_email": "dmv@example.gov",
+          "contact_phone": "555-123-4567"
+        }
       }
     }
     // ... other availability entries
@@ -192,7 +199,7 @@ Retrieves a specific service availability entry by ID.
 - **URL**: `/api/service-availability/:id`
 - **Method**: `GET`
 - **URL Parameters**: `id` - The ID of the service availability
-- **Response**: The service availability object
+- **Response**: The service availability object with service and department details
   ```json
   {
     "availability_id": "045a7dcb-2221-4b97-bb3b-fbd9d06a4795",
@@ -202,7 +209,24 @@ Retrieves a specific service availability entry by ID.
     "end_time": "13:00",
     "duration_minutes": 30,
     "created_at": "2025-08-13T07:21:46.619Z",
-    "updated_at": "2025-08-13T07:21:46.619Z"
+    "updated_at": "2025-08-13T07:21:46.619Z",
+    "service": {
+      "service_id": "fbcbd177-d6e9-4caa-9cd6-e73394d09dd4",
+      "name": "Driver's License Renewal",
+      "description": "Renewal of driver's license",
+      "department_id": 1,
+      "category": "Licensing",
+      "estimated_total_completion_time": "30 minutes",
+      "created_at": "2025-08-13T00:30:59.632Z",
+      "updated_at": "2025-08-13T00:30:59.632Z",
+      "department": {
+        "department_id": 1,
+        "name": "Department of Motor Vehicles",
+        "address": "123 Government St",
+        "contact_email": "dmv@example.gov",
+        "contact_phone": "555-123-4567"
+      }
+    }
   }
   ```
 
@@ -213,7 +237,7 @@ Retrieves all availability entries for a specific government service.
 - **URL**: `/api/service-availability/service/:serviceId`
 - **Method**: `GET`
 - **URL Parameters**: `serviceId` - The ID of the government service
-- **Response**: An array of service availability objects for the specified service
+- **Response**: An array of service availability objects for the specified service, including service and department details
   ```json
   [
     {
@@ -224,7 +248,24 @@ Retrieves all availability entries for a specific government service.
       "end_time": "13:00",
       "duration_minutes": 30,
       "created_at": "2025-08-13T07:21:46.619Z",
-      "updated_at": "2025-08-13T07:21:46.619Z"
+      "updated_at": "2025-08-13T07:21:46.619Z",
+      "service": {
+        "service_id": "fbcbd177-d6e9-4caa-9cd6-e73394d09dd4",
+        "name": "Driver's License Renewal",
+        "description": "Renewal of driver's license",
+        "department_id": 1,
+        "category": "Licensing",
+        "estimated_total_completion_time": "30 minutes",
+        "created_at": "2025-08-13T00:30:59.632Z",
+        "updated_at": "2025-08-13T00:30:59.632Z",
+        "department": {
+          "department_id": 1,
+          "name": "Department of Motor Vehicles",
+          "address": "123 Government St",
+          "contact_email": "dmv@example.gov",
+          "contact_phone": "555-123-4567"
+        }
+      }
     },
     {
       "availability_id": "145b8dcb-3321-5b97-cb3b-gcd9d06a5895",
@@ -234,7 +275,24 @@ Retrieves all availability entries for a specific government service.
       "end_time": "13:00",
       "duration_minutes": 30,
       "created_at": "2025-08-13T07:21:46.619Z",
-      "updated_at": "2025-08-13T07:21:46.619Z"
+      "updated_at": "2025-08-13T07:21:46.619Z",
+      "service": {
+        "service_id": "fbcbd177-d6e9-4caa-9cd6-e73394d09dd4",
+        "name": "Driver's License Renewal",
+        "description": "Renewal of driver's license",
+        "department_id": 1,
+        "category": "Licensing",
+        "estimated_total_completion_time": "30 minutes",
+        "created_at": "2025-08-13T00:30:59.632Z",
+        "updated_at": "2025-08-13T00:30:59.632Z",
+        "department": {
+          "department_id": 1,
+          "name": "Department of Motor Vehicles",
+          "address": "123 Government St",
+          "contact_email": "dmv@example.gov",
+          "contact_phone": "555-123-4567"
+        }
+      }
     }
     // ... other availability entries for this service
   ]
