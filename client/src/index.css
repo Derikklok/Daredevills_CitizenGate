@@ -1,7 +1,11 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;700&display=swap');
+
 @import "tailwindcss";
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
+
+
 
 @theme inline {
 	--radius-sm: calc(var(--radius) - 4px);
@@ -116,5 +120,6 @@
 	}
 	body {
 		@apply bg-background text-foreground;
+		font-family: 'Noto Sans', sans-serif;
 	}
 }

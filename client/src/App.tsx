@@ -1,52 +1,23 @@
-import { Link, Route, Routes} from "react-router-dom";
-import "./App.css";
-import {
-	SignedIn,
-	SignedOut,
-	SignInButton,
-	UserButton,
-	OrganizationSwitcher,
-} from "@clerk/clerk-react";
-import {AuthTest} from "./components/AuthTest";
-import BookingAppointments from "./pages/BookingAppointments";
+import { Routes, Route } from "react-router-dom";
+import HomePage from "./pages/Home";
+// import ServicesPage from "./pages/AllServices";
+import CategoryServicesPage from "./pages/client-pages/CategoryServices";
+import BookingAppointments from "./pages/client-pages/BookingAppointments";
 import MyAppointments from "./pages/MyAppointments";
-
-function Home() {
-	return (
-		<>
-			<header>
-				<SignedOut>
-					<SignInButton />
-				</SignedOut>
-				<SignedIn>
-					<UserButton />
-					<OrganizationSwitcher />
-				</SignedIn>
-			</header>
-
-			    {/* Auth Test Component */}
-				<SignedIn>
-					<AuthTest />
-				</SignedIn>
-
-				{/* Navigation Links */}
-				<nav>
-					<Link to="/booking-appointments">Booking Appointments</Link> |{" "}
-					<Link to="/my-appointments">My Appointments</Link>
-				</nav>
-		</>
-	)
-}
-
+import HomeAdmin from "./pages/admin-pages/Home-admin";
 
 function App() {
-	return (
-			<Routes>
-				<Route path="/" element={<Home />} />
-				<Route path="/booking-appointments" element={<BookingAppointments />} />
-				<Route path="/my-appointments" element={<MyAppointments />} />
-			</Routes>
-	);
+  return (
+    <Routes>
+      <Route path="/" element={<HomePage />} />
+      <Route path="/category/:category" element={<CategoryServicesPage />} />
+      {/*<Route path="/all-services" element={<AllServicesPage />} /> */}
+	  <Route path="/booking/:serviceId" element={<BookingAppointments />} />
+	  <Route path="/my-appointments" element={<MyAppointments />} />
+    <Route path="/admin" element={<HomeAdmin />} />
+	  {/* Add more routes as needed */}
+    </Routes>
+  );
 }
 
 export default App;
