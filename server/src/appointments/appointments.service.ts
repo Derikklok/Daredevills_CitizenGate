@@ -12,13 +12,13 @@ export class AppointmentsService {
     private readonly appointmentRepo: Repository<Appointment>,
     private readonly governmentServicesService: GovernmentServicesService,
     private readonly serviceAvailabilityService: ServiceAvailabilityService,
-  ) {}
+  ) { }
 
   async create(data: Partial<Appointment>) {
     // Verify that the service and availability exist
     const service = await this.governmentServicesService.findOne(data.service_id);
     const availability = await this.serviceAvailabilityService.findOne(data.availability_id);
-    
+
     // Check if the service matches the availability
     if (availability.service_id !== data.service_id) {
       throw new BadRequestException('The selected availability does not belong to the selected service');
@@ -26,20 +26,20 @@ export class AppointmentsService {
 
     // Check if the appointment time is within the service availability time slots
     const appointmentTime = new Date(data.appointment_time);
-    
+
     // Format times to compare without timezone issues
     const availabilityStart = new Date(availability.start_time);
     const availabilityEnd = new Date(availability.end_time);
-    
+
     if (appointmentTime < availabilityStart || appointmentTime > availabilityEnd) {
       throw new BadRequestException('Appointment time is outside the available time slot');
     }
-    
+
     // Set initial status to pending
     if (!data.appointment_status) {
       data.appointment_status = 'pending';
     }
-    
+
     // Process documents if submitted with the initial appointment
     if (data.documents_submitted && Array.isArray(data.documents_submitted)) {
       // Add verification_status 'pending' and timestamp to each document
@@ -63,14 +63,14 @@ export class AppointmentsService {
       .leftJoinAndSelect('appointment.availability', 'availability');
 
     if (filters?.department_id) {
-      query.andWhere('department.department_id = :departmentId', { 
-        departmentId: filters.department_id 
+      query.andWhere('department.department_id = :departmentId', {
+        departmentId: filters.department_id
       });
     }
 
     if (filters?.service_id) {
-      query.andWhere('service.service_id = :serviceId', { 
-        serviceId: filters.service_id 
+      query.andWhere('service.service_id = :serviceId', {
+        serviceId: filters.service_id
       });
     }
 
@@ -79,22 +79,44 @@ export class AppointmentsService {
     }
 
     if (filters?.status) {
-      query.andWhere('appointment.appointment_status = :status', { 
-        status: filters.status 
+      query.andWhere('appointment.appointment_status = :status', {
+        status: filters.status
       });
     }
 
     if (filters?.date) {
       const startDate = new Date(filters.date);
       startDate.setHours(0, 0, 0, 0);
-      
+
       const endDate = new Date(filters.date);
       endDate.setHours(23, 59, 59, 999);
-      
+
       query.andWhere('appointment.appointment_time BETWEEN :startDate AND :endDate', {
         startDate,
         endDate
       });
+    }
+
+    if (filters?.appointment_time) {
+      if (filters.appointment_time.from && filters.appointment_time.to) {
+        const startDate = new Date(filters.appointment_time.from);
+        const endDate = new Date(filters.appointment_time.to);
+
+        query.andWhere('appointment.appointment_time BETWEEN :startDate AND :endDate', {
+          startDate,
+          endDate
+        });
+      } else if (filters.appointment_time.after) {
+        const afterDate = new Date(filters.appointment_time.after);
+        query.andWhere('appointment.appointment_time > :afterDate', { afterDate });
+      } else if (filters.appointment_time.before) {
+        const beforeDate = new Date(filters.appointment_time.before);
+        query.andWhere('appointment.appointment_time < :beforeDate', { beforeDate });
+      }
+    }
+
+    if (filters?.exclude_reminders_sent) {
+      query.andWhere('appointment.reminders_sent IS NULL OR jsonb_array_length(appointment.reminders_sent) = 0');
     }
 
     return query.getMany();
@@ -105,11 +127,11 @@ export class AppointmentsService {
       where: { appointment_id: id },
       relations: ['service', 'service.department', 'availability']
     });
-    
+
     if (!appointment) {
       throw new NotFoundException(`Appointment with ID ${id} not found`);
     }
-    
+
     return appointment;
   }
 
@@ -137,10 +159,10 @@ export class AppointmentsService {
     if (!validStatuses.includes(status)) {
       throw new BadRequestException(`Invalid status. Must be one of: ${validStatuses.join(', ')}`);
     }
-    
+
     return this.update(id, { appointment_status: status });
   }
-  
+
   async addDocuments(id: string, documents: Array<{
     document_id: string;
     name: string;
@@ -149,25 +171,25 @@ export class AppointmentsService {
     verification_status?: string;
   }>) {
     const appointment = await this.findOne(id);
-    
+
     // Initialize documents array if it doesn't exist
     if (!appointment.documents_submitted) {
       appointment.documents_submitted = [];
     }
-    
+
     // Add verification status and upload timestamp to each document
     const processedDocuments = documents.map(doc => ({
       ...doc,
       verification_status: doc.verification_status || 'pending',
       uploaded_at: doc.uploaded_at || new Date()
     }));
-    
+
     // Add new documents to the existing array
     appointment.documents_submitted = [
       ...appointment.documents_submitted,
       ...processedDocuments
     ];
-    
+
     // Save and return updated appointment
     return this.appointmentRepo.save(appointment);
   }
@@ -177,13 +199,13 @@ export class AppointmentsService {
    * @param id Appointment ID
    * @param documentData Document data containing document_id, name, and file_url
    */
-  async addDocument(id: string, documentData: { 
+  async addDocument(id: string, documentData: {
     document_id: string;
     name: string;
     file_url: string;
   }) {
     const appointment = await this.findOne(id);
-    
+
     // Initialize documents_submitted array if it doesn't exist
     if (!appointment.documents_submitted) {
       appointment.documents_submitted = [];
@@ -224,7 +246,7 @@ export class AppointmentsService {
     file_url: string;
   }>) {
     const appointment = await this.findOne(id);
-    
+
     // Initialize documents_submitted array if it doesn't exist
     if (!appointment.documents_submitted) {
       appointment.documents_submitted = [];
@@ -263,7 +285,7 @@ export class AppointmentsService {
    */
   async removeDocument(id: string, documentId: string) {
     const appointment = await this.findOne(id);
-    
+
     if (!appointment.documents_submitted) {
       throw new NotFoundException(`No documents found for appointment with ID ${id}`);
     }
@@ -289,7 +311,7 @@ export class AppointmentsService {
     }
 
     const appointment = await this.findOne(id);
-    
+
     if (!appointment.documents_submitted) {
       throw new NotFoundException(`No documents found for appointment with ID ${id}`);
     }
