@@ -1,5 +1,6 @@
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
+import { ValidationPipe } from "@nestjs/common";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 
 async function bootstrap() {
@@ -7,6 +8,13 @@ async function bootstrap() {
 
   // Set global prefix for all routes
   app.setGlobalPrefix('api');
+  
+  // Enable validation pipes for DTOs
+  app.useGlobalPipes(new ValidationPipe({
+    transform: true, // Auto-transform payloads to DTO instances
+    whitelist: true, // Strip non-whitelisted properties
+    forbidNonWhitelisted: true, // Throw errors for non-whitelisted properties
+  }));
 
   // Enable CORS for frontend integration
   app.enableCors({
