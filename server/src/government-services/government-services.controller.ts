@@ -4,6 +4,7 @@ import { GovernmentService } from './government-service.entity';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateGovernmentServiceDto } from './dto/create-government-service.dto';
 import { UpdateGovernmentServiceDto } from './dto/update-government-service.dto';
+import { FilterGovernmentServicesDto } from './dto/filter-government-services.dto';
 
 @ApiTags('Government Services')
 @ApiBearerAuth()
@@ -19,14 +20,15 @@ export class GovernmentServicesController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'List all government services or filter by department' })
-  @ApiQuery({ name: 'department_id', required: false, type: String })
+  @ApiOperation({ summary: 'List all government services or filter by department and/or name' })
   @ApiResponse({ status: 200, type: [GovernmentService] })
-  findAll(@Query('department_id') departmentId?: string) {
-    if (departmentId) {
-      return this.governmentServicesService.findByDepartment(parseInt(departmentId, 10));
+  findAll(@Query() filter: FilterGovernmentServicesDto) {
+    const { department_id, name } = filter;
+    
+    if (department_id) {
+      return this.governmentServicesService.findByDepartment(department_id, name);
     }
-    return this.governmentServicesService.findAll();
+    return this.governmentServicesService.findAll(name);
   }
 
   @Get(':id')
