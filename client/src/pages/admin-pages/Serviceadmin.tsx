@@ -1,6 +1,36 @@
 import { CalendarDaysIcon, ClipboardDocumentCheckIcon, ExclamationTriangleIcon, ChartBarIcon } from "@heroicons/react/24/outline";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 export default function ServiceAdmin() {
+  const appointments = [
+    {
+      name: "Medical Test",
+      description: "Routine health checkup",
+      category: "Health",
+      appointmentTime: "6th August 2025, 10:30 AM",
+      departmentName: "MOH Nugegoda",
+      contactNumber: "+94 112 345 678",
+      notes: "Bring previous medical reports",
+    },
+    {
+      name: "Driver's Written Test",
+      description: "Written exam for driver's license",
+      category: "Licensing",
+      appointmentTime: "6th August 2025, 10:30 AM",
+      departmentName: "MOH Nugegoda",
+      contactNumber: "+94 112 345 679",
+      notes: "Arrive 15 minutes early",
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-gray-100 flex justify-center p-4">
       <div className="bg-white shadow-lg rounded-3xl p-4 w-[360px] border border-gray-200">
@@ -43,9 +73,34 @@ export default function ServiceAdmin() {
         {/* Quick Actions */}
         <h2 className="text-sm font-semibold mb-2">Quick Actions</h2>
         <div className="flex flex-col gap-2 mb-4">
-          <button className="bg-orange-500 text-white py-2 rounded-lg font-medium">
-            View Appointments
-          </button>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button className="bg-orange-500 text-white py-2 rounded-lg font-medium w-full">
+                View Appointments
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="bg-white rounded-lg p-4 max-h-[80vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="text-[#600D29] text-lg font-bold">
+                  Appointments
+                </DialogTitle>
+                <DialogDescription className="text-gray-500">
+                  Details of upcoming appointments.
+                </DialogDescription>
+              </DialogHeader>
+              {appointments.map((appt, index) => (
+                <div key={index} className="border-b border-gray-200 py-2">
+                  <h3 className="font-semibold text-[#600D29]">{appt.name}</h3>
+                  <p><strong>Description:</strong> {appt.description}</p>
+                  <p><strong>Category:</strong> {appt.category}</p>
+                  <p><strong>Appointment Time:</strong> {appt.appointmentTime}</p>
+                  <p><strong>Department:</strong> {appt.departmentName}</p>
+                  <p><strong>Contact Number:</strong> {appt.contactNumber}</p>
+                  <p><strong>Notes:</strong> {appt.notes}</p>
+                </div>
+              ))}
+            </DialogContent>
+          </Dialog>
           <button className="bg-green-600 text-white py-2 rounded-lg font-medium">
             Manage Services
           </button>
