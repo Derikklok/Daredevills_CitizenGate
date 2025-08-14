@@ -2,7 +2,7 @@ import {Button} from "@/components/ui/button";
 
 const BookingAppointments = () => {
 	return (
-		<div>
+		<div className="bg-white min-h-screen p-4">
 			<Button className="bg-primary-500">Book Appointment</Button>
 		</div>
 	);
