@@ -75,6 +75,13 @@ export class Appointment {
     verification_status?: string; // pending, verified, rejected
   }[]; // Array of uploaded document links with metadata
 
+  @ApiPropertyOptional({ description: 'Reminders sent', isArray: true })
+  @Column({ type: 'jsonb', nullable: true })
+  reminders_sent: {
+    reminder_id: string;
+    reminder_time: Date;
+  }[]; // Array of reminders sent with metadata
+
   @ApiProperty({ description: 'Creation timestamp' })
   @CreateDateColumn({ type: 'timestamptz' })
   created_at: Date;
