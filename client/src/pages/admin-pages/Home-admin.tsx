@@ -44,24 +44,27 @@ export default function HomeAdmin() {
   // Create department
   const handleCreate = async () => {
     try {
-      const res = await fetch("http://localhost:3000/api/departments", {
+        const res = await fetch("http://localhost:3000/api/departments", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+            "Content-Type": "application/json",
+            "Authorization": "Bearer eyJhbGciOiJSUzI1NiIsImNhdCI6ImNsX0I3ZDRQRDIyMkFBQSIsImtpZCI6Imluc18zMUNhM1lqaUduYkd5OFUzVVFscGRFb3ZjeHAiLCJ0eXAiOiJKV1QifQ.eyJhenAiOiJodHRwOi8vbG9jYWxob3N0OjUxNzMiLCJleHAiOjE3NTYxODM3MzQsImlhdCI6MTc1NTE4MzczNCwiaXNzIjoiaHR0cHM6Ly9icmF2ZS1ndXBweS01OS5jbGVyay5hY2NvdW50cy5kZXYiLCJqdGkiOiJjYWViMDdjMjZjZTMxZTEyMWIwNCIsIm5iZiI6MTc1NTE4MzcyOSwib3JnX2lkIjoib3JnXzMxQ3R6bzdvWTZOVXU1SDZJeWxQS0Nmd1hWdCIsIm9yZ19wZXJtaXNzaW9ucyI6W10sIm9yZ19yb2xlIjoib3JnOmFkbWluIiwib3JnX3NsdWciOiJkZXBhcnRtZW50LW1vdG9yLXRyYWZmaWMiLCJzdWIiOiJ1c2VyXzMxSFJsOTRHZm44SjZibmVxTVMxWjF2NVo1YSJ9.FZQcUA3RKwF5YAqdjJ_1mftQI4sJXYoIDToVwB8XyT1EKNmW5vPn4q31JVK3iULmgv7lz7_VdpEhq81zXiRJIYRp2Dr2wCImY_KY-euTreG6fo-WZVz9Gqpj3jcXP8VCTWbty2eszqsN5ETNcVvySM9v3PvX6J8X9jC0t3wJNBFuY3J8e7i6Dfs_YYQSBnlMrkS2m55ghk6tOrnYHShhea7uWqqAZdZs8vX2p6AjA6YMRHChxavvRyE8x4R1pFSM4J6eJokaFt29pKDEumdTz5D8ecLnnLWKxJNK84y73VwnTZAp98zQ9ZxvI13haMRHTW4kvZRb9HgIjQCxuBchVg"
+        },
         body: JSON.stringify(formData),
-      });
-      const data = await res.json();
-      console.log("Created department:", data);
+        });
 
-      // Reset form & close modal
-      setFormData({ name: "", address: "", contact_email: "" });
-      setShowCreateModal(false);
+        if (!res.ok) throw new Error(`Error: ${res.status} ${res.statusText}`);
 
-      // Refresh department list
-      fetchDepartments();
+        const data = await res.json();
+        console.log("Created department:", data);
+
+        setFormData({ name: "", address: "", contact_email: "" });
+        setShowCreateModal(false);
+        fetchDepartments();
     } catch (err) {
-      console.error("Error creating department:", err);
+        console.error("Error creating department:", err);
     }
-  };
+    };
 
   // Update department
   const handleUpdate = async () => {
@@ -88,20 +91,28 @@ export default function HomeAdmin() {
     }
   };
 
-  // Delete department
-  const handleDeleteConfirmed = async () => {
-    if (!deleteDeptId) return;
-    try {
-      await fetch(`http://localhost:3000/api/departments/${deleteDeptId}`, {
-        method: "DELETE",
-      });
-      console.log("Deleted department id:", deleteDeptId);
-      setDeleteDeptId(null);
-      fetchDepartments();
-    } catch (err) {
-      console.error("Error deleting department:", err);
-    }
-  };
+        // Delete department
+        const handleDeleteConfirmed = async () => {
+        if (!deleteDeptId) return;
+
+        try {
+            const res = await fetch(`http://localhost:3000/api/departments/${deleteDeptId}`, {
+            method: "DELETE",
+            headers: {
+                "Authorization": "Bearer eyJhbGciOiJSUzI1NiIsImNhdCI6ImNsX0I3ZDRQRDIyMkFBQSIsImtpZCI6Imluc18zMUNhM1lqaUduYkd5OFUzVVFscGRFb3ZjeHAiLCJ0eXAiOiJKV1QifQ.eyJhenAiOiJodHRwOi8vbG9jYWxob3N0OjUxNzMiLCJleHAiOjE3NTYxODM3MzQsImlhdCI6MTc1NTE4MzczNCwiaXNzIjoiaHR0cHM6Ly9icmF2ZS1ndXBweS01OS5jbGVyay5hY2NvdW50cy5kZXYiLCJqdGkiOiJjYWViMDdjMjZjZTMxZTEyMWIwNCIsIm5iZiI6MTc1NTE4MzcyOSwib3JnX2lkIjoib3JnXzMxQ3R6bzdvWTZOVXU1SDZJeWxQS0Nmd1hWdCIsIm9yZ19wZXJtaXNzaW9ucyI6W10sIm9yZ19yb2xlIjoib3JnOmFkbWluIiwib3JnX3NsdWciOiJkZXBhcnRtZW50LW1vdG9yLXRyYWZmaWMiLCJzdWIiOiJ1c2VyXzMxSFJsOTRHZm44SjZibmVxTVMxWjF2NVo1YSJ9.FZQcUA3RKwF5YAqdjJ_1mftQI4sJXYoIDToVwB8XyT1EKNmW5vPn4q31JVK3iULmgv7lz7_VdpEhq81zXiRJIYRp2Dr2wCImY_KY-euTreG6fo-WZVz9Gqpj3jcXP8VCTWbty2eszqsN5ETNcVvySM9v3PvX6J8X9jC0t3wJNBFuY3J8e7i6Dfs_YYQSBnlMrkS2m55ghk6tOrnYHShhea7uWqqAZdZs8vX2p6AjA6YMRHChxavvRyE8x4R1pFSM4J6eJokaFt29pKDEumdTz5D8ecLnnLWKxJNK84y73VwnTZAp98zQ9ZxvI13haMRHTW4kvZRb9HgIjQCxuBchVg"
+            },
+            });
+
+            if (!res.ok) throw new Error(`Error: ${res.status} ${res.statusText}`);
+
+            console.log("Deleted department id:", deleteDeptId);
+            setDeleteDeptId(null);
+            fetchDepartments();
+        } catch (err) {
+            console.error("Error deleting department:", err);
+        }
+        };
+
 
   useEffect(() => {
     fetchDepartments();
@@ -154,11 +165,15 @@ export default function HomeAdmin() {
                 <DialogContent className="backdrop-blur-sm">
                   <DialogHeader>
                     <DialogTitle>Update Department</DialogTitle>
+                    <DialogDescription>
+            Update the department information below.
+            </DialogDescription>
                   </DialogHeader>
                   <input
                     type="text"
                     placeholder="Address"
                     value={updateData.address}
+                    autoFocus={false} 
                     onChange={(e) => setUpdateData({ ...updateData, address: e.target.value })}
                     className="border p-2 w-full mb-2"
                   />
