@@ -22,15 +22,15 @@ function App() {
 				<Route index element={<Home />} />
 				<Route path="/booking-appointments" element={<BookingAppointments />} />
 				<Route path="/my-appointments" element={<MyAppointments />} />
-				<Route
-					path="/sign-in"
-					element={isSignedIn ? <Navigate to="/" replace /> : <SignInPage />}
-				/>
-				<Route
-					path="/sign-up"
-					element={isSignedIn ? <Navigate to="/" replace /> : <SignUpPage />}
-				/>
 			</Route>
+			<Route
+				path="/sign-in"
+				element={isSignedIn ? <Navigate to="/" replace /> : <SignInPage />}
+			/>
+			<Route
+				path="/sign-up"
+				element={isSignedIn ? <Navigate to="/" replace /> : <SignUpPage />}
+			/>
 		</Routes>
 	);
 }
