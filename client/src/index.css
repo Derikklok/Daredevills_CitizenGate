@@ -2,6 +2,8 @@
 @import "tw-animate-css";
 @import "tailwindcss";
 @import "@clerk/themes/shadcn.css";
+@import "tailwindcss";
+@import "@clerk/themes/shadcn.css";
 
 /* Base styles for improved mobile responsiveness */
 html, body {
@@ -119,6 +121,16 @@ html, body {
 	--color-info-foreground: var(--info-foreground);
 	--color-brand: var(--brand);
 	--color-brand-foreground: var(--brand-foreground);
+
+	/* Custom color palettes */
+	--color-success: var(--success);
+	--color-success-foreground: var(--success-foreground);
+	--color-warning: var(--warning);
+	--color-warning-foreground: var(--warning-foreground);
+	--color-info: var(--info);
+	--color-info-foreground: var(--info-foreground);
+	--color-brand: var(--brand);
+	--color-brand-foreground: var(--brand-foreground);
 }
 
 :root {
@@ -153,6 +165,46 @@ html, body {
 	--sidebar-accent-foreground: oklch(0.205 0 0);
 	--sidebar-border: oklch(0.922 0 0);
 	--sidebar-ring: oklch(0.708 0 0);
+
+	/* Primary color palette */
+	--primary-50: #fef3f6;
+	--primary-100: #fff3f6;
+	--primary-200: #f6dee5;
+	--primary-300: #e084a0;
+	--primary-400: #be4d6f;
+	--primary-500: #8d153a;
+	--primary-600: #600d29;
+	--primary-700: #460219;
+	--primary-800: #310712;
+	--primary-900: #1e0709;
+
+	/* Success color palette */
+	--success: oklch(0.6 0.15 142);
+	--success-foreground: oklch(0.985 0 0);
+	--success-50: #f0fdf4;
+	--success-100: #dcfce7;
+	--success-200: #bbf7d0;
+	--success-300: #86efac;
+	--success-400: #4ade80;
+	--success-500: #22c55e;
+	--success-600: #16a34a;
+	--success-700: #15803d;
+	--success-800: #166534;
+	--success-900: #14532d;
+
+	/* Warning color palette */
+	--warning: oklch(0.8 0.15 45);
+	--warning-foreground: oklch(0.145 0 0);
+	--warning-50: #fffbeb;
+	--warning-100: #fef3c7;
+	--warning-200: #fde68a;
+	--warning-300: #fcd34d;
+	--warning-400: #fbbf24;
+	--warning-500: #f59e0b;
+	--warning-600: #d97706;
+	--warning-700: #b45309;
+	--warning-800: #92400e;
+	--warning-900: #78350f;
 
 	/* Primary color palette */
 	--primary-50: #fef3f6;
