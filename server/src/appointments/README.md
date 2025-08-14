@@ -54,6 +54,7 @@ Documents can be uploaded in two ways:
   birth_date: Date;             // Date of birth
   gender: string;               // Gender
   email: string;                // Email address (optional)
+  username: string;             // Username of the logged-in user who created the appointment (optional)
   appointment_time: Date;       // Specific time of the appointment
   appointment_status: string;   // Status: pending, confirmed, completed, cancelled
   notes: string;                // Additional notes (optional)
@@ -87,6 +88,7 @@ Documents can be uploaded in two ways:
     "birth_date": "1990-01-01",
     "gender": "Male",
     "email": "john@example.com",
+    "username": "john_doe",
     "appointment_time": "2025-08-20T10:30:00Z",
     "notes": "First-time application",
     "documents_submitted": [
@@ -117,6 +119,7 @@ Documents can be uploaded in two ways:
   - `department_id` - Filter by department ID
   - `service_id` - Filter by service ID
   - `nic` - Filter by citizen's National ID Card number
+  - `username` - Filter by username (creator of the appointment)
   - `status` - Filter by appointment status
   - `date` - Filter by appointment date (YYYY-MM-DD)
 - **Response**: Array of appointment objects with their related service and department information
@@ -126,6 +129,12 @@ Documents can be uploaded in two ways:
 - **URL**: `/appointments/by-nic/:nic`
 - **Method**: `GET`
 - **Response**: Array of appointment objects for the specified NIC, ordered by appointment time (descending)
+
+### Get Appointments by Username
+
+- **URL**: `/appointments/by-username/:username`
+- **Method**: `GET`
+- **Response**: Array of appointment objects for the specified username, ordered by appointment time (descending)
 
 ### Get a Specific Appointment
 
@@ -199,18 +208,21 @@ The client application should:
 3. Let users fill in their personal details
 4. Provide a document upload interface for required documents
 5. Submit the appointment booking with uploaded documents
-6. Provide a way to check appointment status and document verification status using NIC
+6. Automatically include the current user's username in the appointment data
+7. Provide a way to check appointment status and document verification status using NIC or username
+8. Allow users to view their appointment history based on their username
 
 ## Business Rules
 
 1. Appointments can only be booked within available time slots
 2. A service availability must belong to the selected service
 3. Initial appointment status is set to "pending" by default
-4. Users can track their appointments using their NIC
+4. Users can track their appointments using their NIC or username
 5. Users must upload all required documents for their service
 6. Document verification status starts as "pending" and can be updated by administrators
 7. Appointments can be filtered by various criteria for administrative purposes
 8. Document formats must match the accepted formats specified in the required document
+9. The username field stores the identity of the logged-in user who created the appointment
 
 ## Document Handling
 

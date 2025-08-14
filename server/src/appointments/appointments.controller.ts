@@ -1,7 +1,11 @@
 import { Controller, Get, Post, Put, Delete, Body, Param, Query } from '@nestjs/common';
 import { AppointmentsService } from './appointments.service';
 import { Appointment } from './appointment.entity';
+import { CreateAppointmentDto } from './dto/create-appointment.dto';
+import { FilterAppointmentsDto } from './dto/filter-appointments.dto';
+import { ApiTags, ApiOperation, ApiParam, ApiBody, ApiQuery } from '@nestjs/swagger';
 
+@ApiTags('Appointments')
 @Controller('appointments')
 export class AppointmentsController {
   constructor(private readonly appointmentsService: AppointmentsService) {}
@@ -37,24 +41,22 @@ export class AppointmentsController {
    * }
    */
   @Post()
-  create(@Body() body: Partial<Appointment>) {
+  @ApiOperation({ summary: 'Create a new appointment' })
+  @ApiBody({ type: CreateAppointmentDto })
+  create(@Body() body: CreateAppointmentDto) {
     return this.appointmentsService.create(body);
   }
 
   @Get()
-  findAll(
-    @Query('department_id') departmentId?: number,
-    @Query('service_id') serviceId?: string,
-    @Query('nic') nic?: string,
-    @Query('status') status?: string,
-    @Query('date') date?: string,
-  ) {
+  @ApiOperation({ summary: 'Find all appointments with optional filters' })
+  findAll(@Query() filter: FilterAppointmentsDto) {
     const filters = {
-      department_id: departmentId,
-      service_id: serviceId,
-      nic,
-      status,
-      date
+      department_id: filter.department_id,
+      service_id: filter.service_id,
+      nic: filter.nic,
+      username: filter.username,
+      status: filter.status,
+      date: filter.date
     };
     
     // Remove undefined filters
@@ -64,8 +66,17 @@ export class AppointmentsController {
   }
 
   @Get('by-nic/:nic')
+  @ApiOperation({ summary: 'Find appointments by NIC' })
+  @ApiParam({ name: 'nic', type: String, description: 'National ID Card number' })
   findByNIC(@Param('nic') nic: string) {
     return this.appointmentsService.findByNIC(nic);
+  }
+  
+  @Get('by-username/:username')
+  @ApiOperation({ summary: 'Find appointments by username' })
+  @ApiParam({ name: 'username', type: String, description: 'Username of the appointment creator' })
+  findByUsername(@Param('username') username: string) {
+    return this.appointmentsService.findByUsername(username);
   }
 
   @Get(':id')

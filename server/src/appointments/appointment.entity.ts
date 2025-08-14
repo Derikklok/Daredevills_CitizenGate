@@ -42,6 +42,9 @@ export class Appointment {
   @Column({ type: 'text', nullable: true })
   email: string;
 
+  @Column({ type: 'text', nullable: true })
+  username: string; // Field to store the current user's username
+
   @Column({ type: 'timestamptz' })
   appointment_time: Date;
   
