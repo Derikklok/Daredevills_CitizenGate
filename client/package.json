@@ -13,6 +13,7 @@
     "@clerk/clerk-react": "^5.41.0",
     "@clerk/themes": "^2.4.7",
     "@radix-ui/react-collapsible": "^1.1.12",
+    "@radix-ui/react-progress": "^1.1.7",
     "@radix-ui/react-separator": "^1.1.7",
     "@radix-ui/react-slot": "^1.2.3",
     "@tailwindcss/vite": "^4.1.11",
