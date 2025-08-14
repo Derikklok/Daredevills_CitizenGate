@@ -15,30 +15,29 @@ export default function Header() {
 	return (
 		<div className="flex justify-between items-center p-4 bg-white shadow-sm">
 			<header className="flex justify-between items-center w-full">
-				{isHomePage ? (
-					// Home page header - no back button
-					<Link to="/">
-						<h1 className="text-2xl font-bold">
-							<span className="text-primary-500">Citizen</span>
-							<span className="text-gray-800">Gate</span>
-						</h1>
-					</Link>
-				) : (
-					// Other pages header - with back button
-					<div className="flex items-center space-x-4">
+				<div className="flex items-center space-x-4 transition-all duration-300 ease-in-out">
+					{/* Back button with smooth animation */}
+					<div
+						className={`transition-all duration-300 ease-in-out ${
+							isHomePage
+								? "w-0 opacity-0 -translate-x-4 pointer-events-none"
+								: "w-8 opacity-100 translate-x-0"
+						}`}>
 						<button
 							onClick={handleBack}
 							className="p-1 hover:bg-gray-100 rounded-full transition-colors">
 							<ChevronLeft className="w-5 h-5" />
 						</button>
-						<Link to="/">
-							<h1 className="text-2xl font-bold">
-								<span className="text-primary-500">Citizen</span>
-								<span className="text-gray-800">Gate</span>
-							</h1>
-						</Link>
 					</div>
-				)}
+
+					{/* Logo with smooth positioning */}
+					<Link to="/" className="transition-all duration-300 ease-in-out">
+						<h1 className="text-2xl font-bold transition-all duration-300 ease-in-out">
+							<span className="text-primary-500">Citizen</span>
+							<span className="text-gray-800">Gate</span>
+						</h1>
+					</Link>
+				</div>
 
 				<div className="flex items-center space-x-4">
 					<SignedOut>
