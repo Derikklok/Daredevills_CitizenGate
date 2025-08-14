@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, ILike } from 'typeorm';
 import { GovernmentService } from './government-service.entity';
 
 @Injectable()
@@ -16,17 +16,40 @@ export class GovernmentServicesService {
     return this.serviceRepo.save(service);
   }
 
-  findAll() {
+  findAll(name?: string) {
+    if (name) {
+      return this.serviceRepo.find({
+        where: {
+          name: this.createILikePattern(name)
+        },
+        relations: ['department']
+      });
+    }
     return this.serviceRepo.find({ 
       relations: ['department']
     });
   }
 
-  async findByDepartment(departmentId: number) {
+  async findByDepartment(departmentId: number, name?: string) {
+    if (name) {
+      return this.serviceRepo.find({
+        where: {
+          department_id: departmentId,
+          name: this.createILikePattern(name)
+        },
+        relations: ['department']
+      });
+    }
+    
     return this.serviceRepo.find({
       where: { department_id: departmentId },
       relations: ['department']
     });
+  }
+  
+  private createILikePattern(name: string) {
+    // Create a case-insensitive LIKE pattern for PostgreSQL using TypeORM's ILike
+    return ILike(`%${name}%`);
   }
 
   async findOne(id: string) {
