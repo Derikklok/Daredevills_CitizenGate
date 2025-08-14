@@ -9,7 +9,16 @@ import ServiceAdmin from "./pages/admin-pages/Serviceadmin";
 
 function App() {
   return (
-   <ServiceAdmin />
+    <Routes>
+      <Route path="/" element={<HomePage />} />
+      <Route path="/category/:category" element={<CategoryServicesPage />} />
+      {/*<Route path="/all-services" element={<AllServicesPage />} /> */}
+	  <Route path="/booking/:serviceId" element={<BookingAppointments />} />
+	  <Route path="/my-appointments" element={<MyAppointments />} />
+    <Route path="/admin" element={<HomeAdmin />} />
+    <Route path="/admin/services" element={<ServiceAdmin />} />
+	  {/* Add more routes as needed */}
+    </Routes>
   );
 }
 
