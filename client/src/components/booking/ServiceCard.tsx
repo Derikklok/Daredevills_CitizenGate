@@ -1,13 +1,13 @@
 import React from "react";
 import { Card } from "@/components/ui/card";
 
-interface ServiceCardProps {
+export interface ServiceCardProps {
     icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
     title: string;
     onClick: () => void;
   }
   
-  const ServiceCard = ({ icon: Icon, title, onClick }: ServiceCardProps) => {
+  const ServiceCard: React.FC<ServiceCardProps> = ({ icon: Icon, title, onClick }) => {
     return (
         <Card
         className="bg-gradient-to-br from-primary-500 to-primary-700 border-none shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer group"
