@@ -26,6 +26,30 @@ export class ConfigService {
         return url;
     }
 
+    get sendgridApiKey(): string {
+        const key = process.env.SENDGRID_API_KEY;
+        if (!key) {
+            throw new Error("SENDGRID_API_KEY environment variable is required");
+        }
+        return key;
+    }
+
+    get plunkApiKey(): string {
+        const key = process.env.PLUNK_API_KEY;
+        if (!key) {
+            throw new Error("PLUNK_API_KEY environment variable is required");
+        }
+        return key;
+    }
+
+    get fromEmail(): string {
+        const email = process.env.FROM_EMAIL;
+        if (!email) {
+            throw new Error("SENDGRID_FROM_EMAIL environment variable is required");
+        }
+        return email;
+    }
+
     get nodeEnv(): string {
         return process.env.NODE_ENV || "development";
     }
