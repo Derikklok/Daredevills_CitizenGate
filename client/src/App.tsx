@@ -20,12 +20,21 @@ import UserManagement from "./pages/admin/UserManagement";
 import DepartmentManagement from "./pages/admin/DepartmentManagement";
 import ReportsDashboard from "./pages/admin/ReportsDashboard";
 import SystemSettings from "./pages/admin/SystemSettings";
+// Service Admin components
+import ServiceAdminDashboard from "./pages/service-admin/ServiceAdminDashboard";
+import ServiceManagement from "./pages/service-admin/ServiceManagement";
+import DocumentManagement from "./pages/service-admin/DocumentManagement";
+import AppointmentManagement from "./pages/service-admin/AppointmentManagement";
+import ServiceSettings from "./pages/service-admin/ServiceSettings";
+// Other pages
+import AllGovernmentServices from "./pages/AllGovernmentServices";
 // Custom hooks
-import {useIsAdmin} from "./hooks/useAuth";
+import {useIsAdmin, useIsServiceAdmin} from "./hooks/useAuth";
 
 function App() {
 	const {isSignedIn, isLoaded} = useAuth();
 	const isAdmin = useIsAdmin();
+	const isServiceAdmin = useIsServiceAdmin();
 	
 	// Show loading state while Clerk is initializing
 	if (!isLoaded) {
@@ -98,6 +107,63 @@ function App() {
 				} 
 			/>
 
+			{/* Service Admin Routes - only for service admins */}
+			{/* Service Admin Dashboard */}
+			<Route 
+				path="/service-admin" 
+				element={
+					isSignedIn ? (
+						isServiceAdmin ? <ServiceAdminDashboard /> : <Navigate to="/" replace />
+					) : (
+						<Navigate to="/sign-in" replace />
+					)
+				} 
+			/>
+			{/* Service Management */}
+			<Route 
+				path="/service-admin/services" 
+				element={
+					isSignedIn ? (
+						isServiceAdmin ? <ServiceManagement /> : <Navigate to="/" replace />
+					) : (
+						<Navigate to="/sign-in" replace />
+					)
+				} 
+			/>
+			{/* Document Management */}
+			<Route 
+				path="/service-admin/documents" 
+				element={
+					isSignedIn ? (
+						isServiceAdmin ? <DocumentManagement /> : <Navigate to="/" replace />
+					) : (
+						<Navigate to="/sign-in" replace />
+					)
+				} 
+			/>
+			{/* Appointment Management */}
+			<Route 
+				path="/service-admin/appointments" 
+				element={
+					isSignedIn ? (
+						isServiceAdmin ? <AppointmentManagement /> : <Navigate to="/" replace />
+					) : (
+						<Navigate to="/sign-in" replace />
+					)
+				} 
+			/>
+			{/* Service Settings */}
+			<Route 
+				path="/service-admin/settings" 
+				element={
+					isSignedIn ? (
+						isServiceAdmin ? <ServiceSettings /> : <Navigate to="/" replace />
+					) : (
+						<Navigate to="/sign-in" replace />
+					)
+				} 
+			/>
+
 			{/* Protected routes - require authentication */}
 			<Route path="/" element={<Layout />}>
 				<Route index element={<Home />} />
@@ -118,6 +184,8 @@ function App() {
 					path="/appointment-confirmation"
 					element={<AppointmentConfirmation />}
 				/>
+				{/* All Government Services */}
+				<Route path="/services/all" element={<AllGovernmentServices />} />
 			</Route>
 
 			{/* Auth routes */}
@@ -130,13 +198,15 @@ function App() {
 				element={isSignedIn ? <Navigate to="/" replace /> : <SignUpPage />}
 			/>
 
-			{/* Default redirect - if user is signed in, go to home or admin dashboard based on role, otherwise to landing */}
+			{/* Default redirect - if user is signed in, go to home, admin dashboard, or service admin dashboard based on role, otherwise to landing */}
 			<Route
 				path="*"
 				element={
 					isSignedIn ? (
 						isAdmin ? (
 							<Navigate to="/admin" replace />
+						) : isServiceAdmin ? (
+							<Navigate to="/service-admin" replace />
 						) : (
 							<Navigate to="/" replace />
 						)

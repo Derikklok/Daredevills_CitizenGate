@@ -1,4 +1,18 @@
-import type { CreateDraftAppointmentRequest, DraftAppointmentResponse, CompleteAppointmentRequest, UploadDocumentRequest, Department, Service, ServiceAvailability, RequiredDocument } from "./types";
+import type { 
+    CreateDraftAppointmentRequest, 
+    DraftAppointmentResponse, 
+    CompleteAppointmentRequest, 
+    UploadDocumentRequest, 
+    Department, 
+    Service, 
+    ServiceAvailability, 
+    RequiredDocument,
+    GovernmentService
+} from "./types";
+import { getNormalizedApiUrl } from "./apiUtils";
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const normalizedApiUrl = getNormalizedApiUrl(API_URL);
 
 /**
  * Create a draft appointment (Step 1 of booking process)
@@ -12,7 +26,7 @@ export async function createDraftAppointment(
     }
 
     const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/appointments/draft`,
+        `${normalizedApiUrl}/api/appointments/draft`,
         {
             method: 'POST',
             headers: {
@@ -46,7 +60,7 @@ export async function updateDraftWithService(
     }
 
     const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/appointments/${appointmentId}/update-service`,
+        `${normalizedApiUrl}/api/appointments/${appointmentId}/update-service`,
         {
             method: 'PUT',
             headers: {
@@ -82,7 +96,7 @@ export async function completeAppointment(
     }
 
     const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/appointments/${appointmentId}/complete`,
+        `${normalizedApiUrl}/api/appointments/${appointmentId}/complete`,
         {
             method: 'PUT',
             headers: {
@@ -119,7 +133,7 @@ export async function uploadDocument(
     formData.append('appointmentId', request.appointmentId);
 
     const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/uploaded-service-documents/upload`,
+        `${normalizedApiUrl}/api/uploaded-service-documents/upload`,
         {
             method: 'POST',
             headers: {
@@ -145,7 +159,7 @@ export async function getAppointment(
     token: string
 ): Promise<any> {
     try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/appointments/${appointmentId}`, {
+        const response = await fetch(`${normalizedApiUrl}/api/appointments/${appointmentId}`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -177,7 +191,7 @@ export async function getAppointmentDocuments(
     }
 
     const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/uploaded-service-documents/appointment/${appointmentId}`,
+        `${normalizedApiUrl}/api/uploaded-service-documents/appointment/${appointmentId}`,
         {
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -198,7 +212,7 @@ export async function getAppointmentDocuments(
  */
 export async function getDepartments(): Promise<Department[]> {
     try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/departments`);
+        const response = await fetch(`${normalizedApiUrl}/api/departments`);
 
         if (!response.ok) {
             throw new Error(`Failed to fetch departments: ${response.status}`);
@@ -217,7 +231,7 @@ export async function getDepartments(): Promise<Department[]> {
  */
 export async function getDepartment(id: number): Promise<Department> {
     try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/departments/${id}`);
+        const response = await fetch(`${normalizedApiUrl}/api/departments/${id}`);
 
         if (!response.ok) {
             throw new Error(`Failed to fetch department: ${response.status}`);
@@ -236,7 +250,7 @@ export async function getDepartment(id: number): Promise<Department> {
  */
 export async function getServices(): Promise<Service[]> {
     try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/government-services`);
+        const response = await fetch(`${normalizedApiUrl}/api/government-services`);
 
         if (!response.ok) {
             throw new Error(`Failed to fetch services: ${response.status}`);
@@ -255,7 +269,7 @@ export async function getServices(): Promise<Service[]> {
  */
 export async function getServiceAvailability(serviceId: string): Promise<ServiceAvailability[]> {
     try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/service-availability/service/${serviceId}`);
+        const response = await fetch(`${normalizedApiUrl}/api/service-availability/service/${serviceId}`);
 
         if (!response.ok) {
             throw new Error(`Failed to fetch service availability: ${response.status}`);
@@ -274,7 +288,7 @@ export async function getServiceAvailability(serviceId: string): Promise<Service
  */
 export async function getRequiredDocuments(serviceId: string): Promise<RequiredDocument[]> {
     try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/required-documents/service/${serviceId}`);
+        const response = await fetch(`${normalizedApiUrl}/api/required-documents/service/${serviceId}`);
         if (!response.ok) {
             throw new Error(`Failed to fetch required documents: ${response.status}`);
         }

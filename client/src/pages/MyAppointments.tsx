@@ -5,6 +5,7 @@ import type {Appointment} from "@/lib/types";
 import {useNavigate} from "react-router-dom";
 import {useAuth} from "@clerk/clerk-react";
 import {createDraftAppointment} from "@/lib/api";
+import {getNormalizedApiUrl} from "@/lib/apiUtils";
 
 const MyAppointments = () => {
 	const navigate = useNavigate();
@@ -13,6 +14,9 @@ const MyAppointments = () => {
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const {getToken} = useAuth();
+	
+	const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+	const normalizedApiUrl = getNormalizedApiUrl(API_URL);
 
 	const handleBookAppointment = async () => {
 		try {
@@ -50,7 +54,7 @@ const MyAppointments = () => {
 				}
 
 				const response = await fetch(
-					`${import.meta.env.VITE_API_URL}/api/appointments`,
+					`${normalizedApiUrl}/api/appointments`,
 					{
 						headers: {
 							Authorization: `Bearer ${token}`,

@@ -23,6 +23,29 @@ export type Service = {
     department: Department;
 };
 
+export type GovernmentService = {
+    service_id: string;
+    name: string;
+    description: string;
+    department_id: number;
+    category: string;
+    estimated_total_completion_time: string;
+    created_at: string;
+    updated_at: string;
+    department: {
+        department_id: number;
+        name: string;
+        description: string;
+        address: string;
+        contact_email: string;
+        contact_phone: string;
+        clerk_org_id: string;
+        created_at: string;
+        updated_at: string;
+    };
+    status?: "active" | "inactive";
+};
+
 export type ServiceAvailability = {
     availability_id: string;
     service_id: string;
@@ -60,6 +83,7 @@ export type Appointment = {
     email: string;
     appointment_time: string;
     appointment_status: string;
+    status?: string; // Additional field for statistics compatibility
     notes: string;
     documents_submitted: DocumentSubmitted[];
     reminders_sent: ReminderSent[] | null;
