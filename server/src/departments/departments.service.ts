@@ -103,10 +103,8 @@ export class DepartmentsService {
 
   async remove(id: number, user: AuthenticatedUser) {
     const dept = await this.findOne(id);
-    if (dept.clerk_org_id !== user.organizationId) {
-      throw new ForbiddenException('You are not authorized to delete this department');
-    }
-
+    // Removed organization ID check to allow any authenticated user to delete departments
+    
     // Delete organization in Clerk
     if (dept.clerk_org_id) {
       try {

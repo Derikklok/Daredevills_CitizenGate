@@ -2,14 +2,20 @@ import {useNavigate} from "react-router-dom";
 import {Button} from "@/components/ui/button";
 import {useAuth} from "@clerk/clerk-react";
 import {Bell, Calendar, Smartphone} from "lucide-react";
+import {useIsAdmin} from "@/hooks/useAuth";
 
 const LandingPage = () => {
 	const navigate = useNavigate();
 	const {isSignedIn, isLoaded} = useAuth();
+	const isAdmin = useIsAdmin();
 
 	const handleGetStarted = () => {
 		if (isLoaded && isSignedIn) {
-			navigate("/"); // Navigate to home page (root)
+			if (isAdmin) {
+				navigate("/admin"); // Navigate to admin dashboard
+			} else {
+				navigate("/"); // Navigate to standard home page
+			}
 		} else {
 			navigate("/sign-in");
 		}

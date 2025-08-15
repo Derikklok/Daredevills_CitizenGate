@@ -14,9 +14,19 @@ import CalendarView from "./pages/NewAppointment/CalendarView";
 import NewAppointmentDocumentUpload from "./pages/NewAppointment/NewAppointmentDocumentUpload";
 import CompleteAppointment from "./pages/NewAppointment/CompleteAppointment";
 import AppointmentConfirmation from "./pages/AppointmentConfirmation";
+// Admin components
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import UserManagement from "./pages/admin/UserManagement";
+import DepartmentManagement from "./pages/admin/DepartmentManagement";
+import ReportsDashboard from "./pages/admin/ReportsDashboard";
+import SystemSettings from "./pages/admin/SystemSettings";
+// Custom hooks
+import {useIsAdmin} from "./hooks/useAuth";
+
 function App() {
 	const {isSignedIn, isLoaded} = useAuth();
-
+	const isAdmin = useIsAdmin();
+	
 	// Show loading state while Clerk is initializing
 	if (!isLoaded) {
 		return (
@@ -30,6 +40,63 @@ function App() {
 		<Routes>
 			{/* Landing page - accessible to everyone */}
 			<Route path="/landing" element={<LandingPage />} />
+
+			{/* Admin Routes - only for system admins */}
+			{/* Admin Dashboard */}
+			<Route 
+				path="/admin" 
+				element={
+					isSignedIn ? (
+						isAdmin ? <AdminDashboard /> : <Navigate to="/" replace />
+					) : (
+						<Navigate to="/sign-in" replace />
+					)
+				} 
+			/>
+			{/* User Management */}
+			<Route 
+				path="/admin/users" 
+				element={
+					isSignedIn ? (
+						isAdmin ? <UserManagement /> : <Navigate to="/" replace />
+					) : (
+						<Navigate to="/sign-in" replace />
+					)
+				} 
+			/>
+			{/* Department Management */}
+			<Route 
+				path="/admin/departments" 
+				element={
+					isSignedIn ? (
+						isAdmin ? <DepartmentManagement /> : <Navigate to="/" replace />
+					) : (
+						<Navigate to="/sign-in" replace />
+					)
+				} 
+			/>
+			{/* Reports Dashboard */}
+			<Route 
+				path="/admin/reports" 
+				element={
+					isSignedIn ? (
+						isAdmin ? <ReportsDashboard /> : <Navigate to="/" replace />
+					) : (
+						<Navigate to="/sign-in" replace />
+					)
+				} 
+			/>
+			{/* System Settings */}
+			<Route 
+				path="/admin/settings" 
+				element={
+					isSignedIn ? (
+						isAdmin ? <SystemSettings /> : <Navigate to="/" replace />
+					) : (
+						<Navigate to="/sign-in" replace />
+					)
+				} 
+			/>
 
 			{/* Protected routes - require authentication */}
 			<Route path="/" element={<Layout />}>
@@ -63,12 +130,16 @@ function App() {
 				element={isSignedIn ? <Navigate to="/" replace /> : <SignUpPage />}
 			/>
 
-			{/* Default redirect - if user is signed in, go to home, otherwise to landing */}
+			{/* Default redirect - if user is signed in, go to home or admin dashboard based on role, otherwise to landing */}
 			<Route
 				path="*"
 				element={
 					isSignedIn ? (
-						<Navigate to="/" replace />
+						isAdmin ? (
+							<Navigate to="/admin" replace />
+						) : (
+							<Navigate to="/" replace />
+						)
 					) : (
 						<Navigate to="/landing" replace />
 					)
