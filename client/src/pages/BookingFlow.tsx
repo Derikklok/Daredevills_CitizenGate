@@ -30,24 +30,6 @@ const appointments: Record<AppointmentCategory, string[]> = {
 
 const categories: AppointmentCategory[] = ['Transport', 'Health Services', 'Education', 'Land Permits'];
 
-// Header Component
-// const BookingHeader: React.FC<{ title: string; onBack: () => void }> = ({ title, onBack }) => (
-//   <div className="bg-white border-b border-gray-100 px-4 py-3">
-//     <div className="flex items-center justify-between">
-//       <Button variant="ghost" size="sm" onClick={onBack} className="p-2 hover:bg-gray-100">
-//         <ChevronLeft className="w-5 h-5" />
-//       </Button>
-//       <div className="text-center">
-//         <span className="text-lg font-semibold text-primary-700">Citizen</span>
-//         <span className="text-lg font-semibold text-pink-500">Gate</span>
-//       </div>
-//       <Button variant="ghost" size="sm" className="p-2 hover:bg-gray-100">
-//         <Menu className="w-5 h-5" />
-//       </Button>
-//     </div>
-//     <h1 className="text-xl font-semibold text-primary-700 mt-2">{title}</h1>
-//   </div>
-// );
 
 // Step 1: Select Appointment
 const SelectAppointmentPage: React.FC<{
@@ -390,9 +372,9 @@ const LocationTimePage: React.FC<LocationTimePageProps> = ({ appointmentData, on
             </Select>
           </div>
 
-          {/* Preferprimary Date */}
+          {/* Preferred Date */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Preferprimary Date</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Date</label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
