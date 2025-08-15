@@ -5,15 +5,17 @@ import { AppointmentsService } from './appointments.service';
 import { Appointment } from './appointment.entity';
 import { GovernmentServicesModule } from '../government-services/government-services.module';
 import { ServiceAvailabilityModule } from '../service-availability/service-availability.module';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Appointment]),
     GovernmentServicesModule,
-    ServiceAvailabilityModule
+    ServiceAvailabilityModule,
+    AuthModule
   ],
   controllers: [AppointmentsController],
   providers: [AppointmentsService],
   exports: [AppointmentsService]
 })
-export class AppointmentsModule {}
+export class AppointmentsModule { }

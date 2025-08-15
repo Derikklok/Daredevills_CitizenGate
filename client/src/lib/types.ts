@@ -67,3 +67,37 @@ export type Appointment = {
     service: Service;
     availability: ServiceAvailability;
 };
+
+
+// API utility functions for appointment management
+
+export interface CreateDraftAppointmentRequest {
+    user_id?: string;
+}
+
+export interface DraftAppointmentResponse {
+    appointment_id: string;
+    service_id: string;
+    availability_id: string;
+    appointment_status: 'draft';
+    created_at: string;
+}
+
+export interface CompleteAppointmentRequest {
+    full_name: string;
+    nic: string;
+    phone_number: string;
+    address?: string;
+    birth_date: string;
+    gender: string;
+    email?: string;
+    appointment_time: string;
+    notes?: string;
+}
+
+export interface UploadDocumentRequest {
+    file: File;
+    serviceId: string;
+    requiredDocumentId: string;
+    appointmentId: string;
+}

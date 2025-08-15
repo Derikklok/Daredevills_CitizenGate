@@ -1,50 +1,79 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Query } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { AppointmentsService } from './appointments.service';
 import { Appointment } from './appointment.entity';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
+import { CreateDraftAppointmentDto } from './dto/create-draft-appointment.dto';
+import { CompleteAppointmentDto } from './dto/complete-appointment.dto';
 import { UpdateAppointmentStatusDto } from './dto/update-appointment-status.dto';
 import { AddAppointmentDocumentDto } from './dto/add-appointment-document.dto';
 import { AddAppointmentDocumentsBatchDto } from './dto/add-appointment-documents-batch.dto';
+import { ClerkAuthGuard } from '../auth/guards/clerk-auth.guard';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { AuthenticatedUser } from '../auth/interfaces/authenticated-user.interface';
 
 @ApiTags('Appointments')
 @ApiBearerAuth()
+@UseGuards(ClerkAuthGuard)
 @Controller('appointments')
 export class AppointmentsController {
   constructor(private readonly appointmentsService: AppointmentsService) { }
 
-  /**
-   * Create a new appointment with optional document submissions
-   *
-   * @example Request body
-   * {
-   *   "service_id": "uuid-of-service",
-   *   "availability_id": "uuid-of-availability",
-   *   "full_name": "John Doe",
-   *   "nic": "123456789V",
-   *   "phone_number": "+94 77 123 4567",
-   *   "address": "123 Main St",
-   *   "birth_date": "1990-01-01",
-   *   "gender": "Male",
-   *   "email": "john@example.com",
-   *   "appointment_time": "2025-08-15T10:30:00Z",
-   *   "notes": "First-time application",
-   *   "documents_submitted": [
-   *     {
-   *       "document_id": "uuid-of-required-document",
-   *       "name": "Passport",
-   *       "file_url": "https://storage.example.com/documents/passport.pdf"
-   *     },
-   *     {
-   *       "document_id": "uuid-of-another-document",
-   *       "name": "Birth Certificate",
-   *       "file_url": "https://storage.example.com/documents/birth-cert.jpg"
-   *     }
-   *   ]
-   * }
-   */
+  @Post('draft')
+  @ApiOperation({ summary: 'Create a draft appointment (step 1 of the booking process)' })
+  @ApiResponse({ status: 201, type: Appointment, description: 'Draft appointment created successfully' })
+  @ApiBody({ type: CreateDraftAppointmentDto })
+  async createDraft(
+    @Body() body: CreateDraftAppointmentDto,
+    @CurrentUser() user: AuthenticatedUser
+  ) {
+
+    const userId = await user.accountId;
+    return this.appointmentsService.createDraft(
+      userId
+    );
+  }
+
+  @Put(':id/update-service')
+  @ApiOperation({ summary: 'Update a draft appointment with service and availability' })
+  @ApiParam({ name: 'id', type: String, description: 'Draft appointment ID' })
+  @ApiResponse({ status: 200, type: Appointment, description: 'Draft updated successfully' })
+  @ApiBody({
+    schema: {
+      properties: {
+        service_id: { type: 'string', format: 'uuid' },
+        availability_id: { type: 'string', format: 'uuid' }
+      }
+    }
+  })
+  updateDraftService(
+    @Param('id') id: string,
+    @Body() body: { service_id: string; availability_id: string },
+    @CurrentUser() user: AuthenticatedUser
+  ) {
+    return this.appointmentsService.updateDraftWithService(
+      id,
+      body.service_id,
+      body.availability_id,
+      user.accountId
+    );
+  }
+
+  @Put(':id/complete')
+  @ApiOperation({ summary: 'Complete a draft appointment (step 3 of the booking process)' })
+  @ApiParam({ name: 'id', type: String, description: 'Draft appointment ID' })
+  @ApiResponse({ status: 200, type: Appointment, description: 'Appointment completed successfully' })
+  @ApiBody({ type: CompleteAppointmentDto })
+  completeDraft(
+    @Param('id') id: string,
+    @Body() body: CompleteAppointmentDto,
+    @CurrentUser() user: AuthenticatedUser
+  ) {
+    return this.appointmentsService.completeDraft(id, body, user.accountId);
+  }
+
   @Post()
-  @ApiOperation({ summary: 'Create an appointment' })
+  @ApiOperation({ summary: 'Create a complete appointment (single step)' })
   @ApiResponse({ status: 201, type: Appointment })
   create(@Body() body: CreateAppointmentDto) {
     const payload: Partial<Appointment> = {
