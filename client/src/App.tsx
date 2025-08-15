@@ -9,6 +9,7 @@ import SignUpPage from "./pages/SignUp";
 import LandingPage from "./pages/LandingPage";
 import Home from "./pages/Home";
 import ServiceDetails from "./pages/ServiceDetails";
+import NewAppointmentDocumentUpload from "./pages/NewAppointment/NewAppointmentDocumentUpload";
 
 function App() {
 	const {isSignedIn, isLoaded} = useAuth();
@@ -35,6 +36,10 @@ function App() {
 				<Route
 					path="/service-details/:serviceName"
 					element={<ServiceDetails serviceName={"Transport"} />}
+				/>
+				<Route
+					path="/book-appointment/new"
+					element={<NewAppointmentDocumentUpload />}
 				/>
 			</Route>
 

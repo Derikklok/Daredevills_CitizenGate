@@ -12,6 +12,7 @@ import { RequiredDocumentsModule } from './required-documents/required-documents
 import { AppointmentsModule } from './appointments/appointments.module';
 import { ScheduleModule } from "@nestjs/schedule";
 import { MessagingModule } from "./appointments/messaging/messaging.module";
+import { UploadedServiceDocumentsModule } from './uploaded-service-documents/uploaded-service-documents.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { MessagingModule } from "./appointments/messaging/messaging.module";
     RequiredDocumentsModule,
     AppointmentsModule,
     MessagingModule,
+    UploadedServiceDocumentsModule,
   ],
   controllers: [AppController],
   providers: [],

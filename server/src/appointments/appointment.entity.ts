@@ -14,7 +14,7 @@ export class Appointment {
   service: GovernmentService;
 
   @ApiProperty({ description: 'Service ID', example: '6a3a6e19-4d2d-47a1-9a1e-3d2c7be2e0e1' })
-  @Column({ type: 'uuid' })
+  @Column({ type: 'uuid', nullable: true })
   service_id: string;
 
   @ManyToOne(() => ServiceAvailability, { onDelete: 'CASCADE' })
@@ -22,7 +22,7 @@ export class Appointment {
   availability: ServiceAvailability;
 
   @ApiProperty({ description: 'Availability ID', example: '2c1a5f16-abcd-4f1e-9c12-33f4d2b1a0bc' })
-  @Column({ type: 'uuid' })
+  @Column({ type: 'uuid', nullable: true })
   availability_id: string;
 
   @ApiProperty({ description: 'Full name', example: 'John Doe' })

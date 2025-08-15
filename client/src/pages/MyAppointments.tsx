@@ -3,21 +3,69 @@ import {MyAppointmentCard} from "@/components/appointments/MyAppointmentCard";
 import {Button} from "@/components/ui/button";
 import type {Appointment} from "@/lib/types";
 import {useNavigate} from "react-router-dom";
+import {useAuth} from "@clerk/clerk-react";
+import {createDraftAppointment} from "@/lib/api";
 
 const MyAppointments = () => {
 	const navigate = useNavigate();
 	const [appointments, setAppointments] = useState<Appointment[]>([]);
+	const [isCreatingDraft, setIsCreatingDraft] = useState(false);
+	const {getToken} = useAuth();
+
+	const handleBookAppointment = async () => {
+		try {
+			setIsCreatingDraft(true);
+
+			const token = await getToken();
+			if (!token) return;
+
+			const draft = await createDraftAppointment(
+				{
+					// Empty object - service will be added later
+				},
+				token
+			);
+			if (draft) {
+				navigate(`/book-appointment/new?appointmentId=${draft.appointment_id}`);
+			}
+		} catch (error) {
+			console.error("Failed to start appointment booking:", error);
+		} finally {
+			setIsCreatingDraft(false);
+		}
+	};
 
 	useEffect(() => {
 		const fetchAppointments = async () => {
-			const response = await fetch(
-				`${import.meta.env.VITE_API_URL}/api/appointments`
-			);
-			const data: Appointment[] = await response.json();
-			setAppointments(data);
+			try {
+				const token = await getToken();
+				if (!token) {
+					console.error("No token available");
+					return;
+				}
+
+				const response = await fetch(
+					`${import.meta.env.VITE_API_URL}/api/appointments`,
+					{
+						headers: {
+							Authorization: `Bearer ${token}`,
+						},
+					}
+				);
+
+				if (!response.ok) {
+					throw new Error(`HTTP error! status: ${response.status}`);
+				}
+
+				const data: Appointment[] = await response.json();
+				setAppointments(data);
+			} catch (error) {
+				console.error("Failed to fetch appointments:", error);
+			}
 		};
+
 		fetchAppointments();
-	}, []);
+	}, [getToken]);
 
 	return (
 		<div className="min-h-screen pb-20">
@@ -40,10 +88,9 @@ const MyAppointments = () => {
 			<div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200">
 				<Button
 					className="w-full bg-primary-500 hover:bg-primary-700 text-white"
-					onClick={() => {
-						navigate("/book-appointment/new");
-					}}>
-					Book Appointment
+					onClick={handleBookAppointment}
+					disabled={isCreatingDraft}>
+					{isCreatingDraft ? "Starting..." : "Book Appointment"}
 				</Button>
 			</div>
 		</div>

@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Appointment } from './appointment.entity';
 import { GovernmentServicesService } from '../government-services/government-services.service';
 import { ServiceAvailabilityService } from '../service-availability/service-availability.service';
+import { CompleteAppointmentDto } from './dto/complete-appointment.dto';
 
 @Injectable()
 export class AppointmentsService {
@@ -13,6 +14,91 @@ export class AppointmentsService {
     private readonly governmentServicesService: GovernmentServicesService,
     private readonly serviceAvailabilityService: ServiceAvailabilityService,
   ) { }
+
+  async createDraft(userId: string) {
+    const draftData: Partial<Appointment> = {
+      appointment_status: 'draft',
+      notes: `Draft appointment for user: ${userId}`,
+      full_name: 'DRAFT_PENDING',
+      nic: 'DRAFT_PENDING',
+      phone_number: 'DRAFT_PENDING',
+      birth_date: new Date('1900-01-01'),
+      gender: 'DRAFT_PENDING',
+      appointment_time: new Date(),
+    };
+
+    const appointment = this.appointmentRepo.create(draftData);
+    return this.appointmentRepo.save(appointment);
+  }
+
+  async updateDraftWithService(appointmentId: string, serviceId: string, availabilityId: string, userId: string) {
+    const appointment = await this.findOne(appointmentId);
+
+    // Verify this is a draft appointment
+    if (appointment.appointment_status !== 'draft') {
+      throw new BadRequestException('This appointment is not a draft');
+    }
+
+    // Verify user owns this draft (check notes field for user ID)
+    if (!appointment.notes?.includes(userId)) {
+      throw new BadRequestException('You can only update your own draft appointments');
+    }
+
+    // Verify that the service and availability exist
+    const service = await this.governmentServicesService.findOne(serviceId);
+    const availability = await this.serviceAvailabilityService.findOne(availabilityId);
+
+    // Check if the service matches the availability
+    if (availability.service_id !== serviceId) {
+      throw new BadRequestException('The selected availability does not belong to the selected service');
+    }
+
+    // Update the appointment with service details
+    const updateData = {
+      service_id: serviceId,
+      availability_id: availabilityId,
+      appointment_time: new Date(availability.start_time),
+    };
+
+    await this.appointmentRepo.update(appointmentId, updateData);
+    return this.findOne(appointmentId);
+  }
+
+  async completeDraft(appointmentId: string, completeData: CompleteAppointmentDto, userId: string) {
+    const appointment = await this.findOne(appointmentId);
+
+    // Verify this is a draft appointment
+    if (appointment.appointment_status !== 'draft') {
+      throw new BadRequestException('This appointment is not a draft');
+    }
+
+    // Verify user owns this draft (check notes field for user ID)
+    if (!appointment.notes?.includes(userId)) {
+      throw new BadRequestException('You can only complete your own draft appointments');
+    }
+
+    // Validate appointment time is within availability
+    const appointmentTime = new Date(completeData.appointment_time);
+    const availability = await this.serviceAvailabilityService.findOne(appointment.availability_id);
+
+    const availabilityStart = new Date(availability.start_time);
+    const availabilityEnd = new Date(availability.end_time);
+
+    if (appointmentTime < availabilityStart || appointmentTime > availabilityEnd) {
+      throw new BadRequestException('Appointment time is outside the available time slot');
+    }
+
+    // Update the appointment with complete data
+    const updateData = {
+      ...completeData,
+      birth_date: new Date(completeData.birth_date),
+      appointment_time: appointmentTime,
+      appointment_status: 'pending',
+      notes: completeData.notes || null, // Clear the draft user ID note
+    };
+
+    return this.appointmentRepo.update(appointmentId, updateData);
+  }
 
   async create(data: Partial<Appointment>) {
     // Verify that the service and availability exist
