@@ -1,13 +1,5 @@
 import {useState} from "react";
-import {
-	ChevronLeft,
-	Menu,
-	Check,
-	ArrowRight,
-	Upload,
-	X,
-	Plus,
-} from "lucide-react";
+import {ArrowRight, Upload, X, Plus} from "lucide-react";
 import {Button} from "@/components/ui/button";
 import {Card, CardContent} from "@/components/ui/card";
 import {Progress} from "@/components/ui/progress";

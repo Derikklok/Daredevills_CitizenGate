@@ -61,4 +61,28 @@ export class ConfigService {
     get isProduction(): boolean {
         return this.nodeEnv === "production";
     }
+
+    get supabaseUrl(): string {
+        const url = process.env.SUPABASE_URL;
+        if (!url) {
+            throw new Error("SUPABASE_URL environment variable is required");
+        }
+        return url;
+    }
+
+    get supabaseServiceKey(): string {
+        const key = process.env.SUPABASE_SERVICE_KEY;
+        if (!key) {
+            throw new Error("SUPABASE_SERVICE_KEY environment variable is required");
+        }
+        return key;
+    }
+
+    get supabaseBucketName(): string {
+        const bucket = process.env.SUPABASE_BUCKET_NAME;
+        if (!bucket) {
+            throw new Error("SUPABASE_BUCKET_NAME environment variable is required");
+        }
+        return bucket;
+    }
 }
