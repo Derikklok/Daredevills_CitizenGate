@@ -13,6 +13,8 @@ import {Button} from "./components/ui/button";
 import SignInPage from "./pages/SignIn";
 import SignUpPage from "./pages/SignUp";
 import LandingPage from "./pages/LandingPage";
+import CalendarView from "./pages/CalendarView";
+import BookingFlow from "./pages/BookingFlow";
 
 function Home() {
 	return (
@@ -58,7 +60,8 @@ function Home() {
 
 				{/* Navigation Links */}
 				<nav className="flex gap-4 text-sm text-gray-600">
-					<Link to="/booking-appointments" className="hover:underline">Booking Appointments</Link>
+					<Link to="/booking-appointments" className="hover:underline">Book Appointments</Link>
+					<Link to="/booking-services" className="hover:underline">Browse Services</Link>
 					<Link to="/my-appointments" className="hover:underline">My Appointments</Link>
 				</nav>
 			</main>
@@ -78,8 +81,10 @@ function App() {
 		<Routes>
 				<Route path="/" element={<LandingPage />} />
 				<Route path="/home" element={<Home />} />
-				<Route path="/booking-appointments" element={<BookingAppointments />} />
+				<Route path="/booking-appointments" element={<BookingFlow />} />
+				<Route path="/booking-services" element={<BookingAppointments />} />
 				<Route path="/my-appointments" element={<MyAppointments />} />
+				<Route path="/calendar/:serviceId" element={<CalendarView />} />
 				<Route
 					path="/sign-in"
 					element={isSignedIn ? <Navigate to="/home" replace /> : <SignInPage />}

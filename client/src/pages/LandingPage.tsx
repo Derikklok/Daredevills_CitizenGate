@@ -9,7 +9,7 @@ const LandingPage = () => {
 
   const handleGetStarted = () => {
     if (isLoaded && isSignedIn) {
-      navigate("/home");
+      navigate("/booking-appointments"); // This now points to our new BookingFlow
     } else {
       navigate("/sign-in");
     }
