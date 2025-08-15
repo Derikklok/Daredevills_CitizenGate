@@ -11,8 +11,6 @@ node_modules
 dist
 dist-ssr
 *.local
-env
-.env  # Add this line to properly ignore .env files
 
 # Editor directories and files
 .vscode/*
@@ -24,3 +22,10 @@ env
 *.njsproj
 *.sln
 *.sw?
+
+
+.env
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
