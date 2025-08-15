@@ -13,8 +13,9 @@ import {
 	Phone,
 	Settings,
 } from "lucide-react";
-import {SignOutButton, UserButton, useUser} from "@clerk/clerk-react";
+import {SignOutButton, UserButton} from "@clerk/clerk-react";
 import {Button} from "../ui/button";
+import {useUserContext} from "@/lib/contexts/UserContext";
 
 interface SidebarProps {
 	isOpen: boolean;
@@ -24,7 +25,7 @@ interface SidebarProps {
 export function Sidebar({isOpen, onClose}: SidebarProps) {
 	const location = useLocation();
 	const navigate = useNavigate();
-	const {user} = useUser();
+	const {fullName} = useUserContext();
 	const handleNavigation = (path: string) => {
 		navigate(path);
 		onClose();
@@ -154,7 +155,7 @@ export function Sidebar({isOpen, onClose}: SidebarProps) {
 								}}
 							/>
 							<h2 className="text-lg font-semibold text-gray-900">
-								{user?.fullName || "User"}
+								{fullName || "User"}
 							</h2>
 						</div>
 					</div>

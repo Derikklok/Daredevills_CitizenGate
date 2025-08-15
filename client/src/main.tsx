@@ -5,6 +5,7 @@ import App from "./App.tsx";
 import {BrowserRouter} from "react-router-dom";
 import {ClerkProvider} from "@clerk/clerk-react";
 import {shadcn} from "@clerk/themes";
+import {UserProvider} from "./lib/contexts/UserContext";
 
 // Import your Publishable Key
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
@@ -28,9 +29,11 @@ root.render(
 			signInUrl="/sign-in"
 			signUpUrl="/sign-up"
 			publishableKey={PUBLISHABLE_KEY}>
-			<BrowserRouter>
-				<App />
-			</BrowserRouter>
+			<UserProvider>
+				<BrowserRouter>
+					<App />
+				</BrowserRouter>
+			</UserProvider>
 		</ClerkProvider>
 	</StrictMode>
 );
