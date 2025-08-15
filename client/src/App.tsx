@@ -10,7 +10,7 @@ import LandingPage from "./pages/LandingPage";
 import Home from "./pages/Home";
 import ServiceDetails from "./pages/ServiceDetails";
 import BookingFlow from "./pages/NewAppointment/BookingFlow";
-import CalendarView from "./pages/CalendarView";
+import CalendarView from "./pages/NewAppointment/CalendarView";
 import NewAppointmentDocumentUpload from "./pages/NewAppointment/NewAppointmentDocumentUpload";
 import CompleteAppointment from "./pages/NewAppointment/CompleteAppointment";
 import AppointmentConfirmation from "./pages/AppointmentConfirmation";

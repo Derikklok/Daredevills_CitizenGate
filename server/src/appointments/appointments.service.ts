@@ -31,7 +31,7 @@ export class AppointmentsService {
     return this.appointmentRepo.save(appointment);
   }
 
-  async updateDraftWithService(appointmentId: string, serviceId: string, availabilityId: string, userId: string) {
+  async updateDraftWithService(appointmentId: string, serviceId: string, availabilityId: string, appointmentTime: string, userId: string) {
     const appointment = await this.findOne(appointmentId);
 
     // Verify this is a draft appointment
@@ -61,15 +61,28 @@ export class AppointmentsService {
     }
 
     // Update the appointment with service details
-    // Create a proper timestamp for appointment_time using current date + availability start time
+    // Use the specific appointment time selected by the user
+    const selectedAppointmentTime = new Date(appointmentTime);
+
+    // Validate that the selected time is within the availability window
     const today = new Date();
-    const [hours, minutes] = availability.start_time.split(':').map(Number);
-    const appointmentTime = new Date(today.getFullYear(), today.getMonth(), today.getDate(), hours, minutes, 0);
+    const [startHours, startMinutes] = availability.start_time.split(':').map(Number);
+    const [endHours, endMinutes] = availability.end_time.split(':').map(Number);
+
+    const availabilityStart = new Date(today.getFullYear(), today.getMonth(), today.getDate(), startHours, startMinutes, 0);
+    const availabilityEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate(), endHours, endMinutes, 0);
+
+    const selectedTimeOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(),
+      selectedAppointmentTime.getHours(), selectedAppointmentTime.getMinutes(), 0);
+
+    if (selectedTimeOfDay < availabilityStart || selectedTimeOfDay >= availabilityEnd) {
+      throw new BadRequestException('Selected appointment time is outside the available time slot');
+    }
 
     const updateData = {
       service_id: serviceId,
       availability_id: availabilityId,
-      appointment_time: appointmentTime,
+      appointment_time: selectedAppointmentTime,
     };
 
     await this.appointmentRepo.update(appointmentId, updateData);

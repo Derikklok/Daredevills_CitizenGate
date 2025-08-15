@@ -8,7 +8,6 @@ import {
 	createDraftAppointment,
 	updateDraftWithService,
 } from "@/lib/api";
-import TimeSlotSelector from "@/components/TimeSlotSelector";
 import type {ServiceAvailability} from "@/lib/types";
 
 // Helper function to format time (HH:MM:SS to HH:MM AM/PM)
@@ -21,11 +20,12 @@ const formatTime = (timeStr: string): string => {
 	return `${displayHours}:${minutes} ${period}`;
 };
 
-// Helper function to generate time slots between start and end time
+// Helper function to generate time slots between start and end time (excluding past slots for today)
 const generateTimeSlots = (
 	startTime: string,
 	endTime: string,
-	durationMinutes: number
+	durationMinutes: number,
+	isToday: boolean = false
 ): string[] => {
 	const slots: string[] = [];
 	const [startHour, startMinute] = startTime.split(":").map(Number);
@@ -34,11 +34,20 @@ const generateTimeSlots = (
 	const startTotalMinutes = startHour * 60 + startMinute;
 	const endTotalMinutes = endHour * 60 + endMinute;
 
+	// Get current time in minutes for filtering past slots
+	const now = new Date();
+	const currentTotalMinutes = now.getHours() * 60 + now.getMinutes();
+
 	for (
 		let minutes = startTotalMinutes;
 		minutes < endTotalMinutes;
 		minutes += durationMinutes
 	) {
+		// Skip past time slots if this is for today
+		if (isToday && minutes <= currentTotalMinutes) {
+			continue;
+		}
+
 		const hour = Math.floor(minutes / 60);
 		const minute = minutes % 60;
 		const timeString = `${hour.toString().padStart(2, "0")}:${minute
@@ -69,53 +78,14 @@ const CalendarView = () => {
 		const fetchServiceAvailability = async () => {
 			try {
 				setIsLoading(true);
-				console.log("Fetching availability for service:", serviceId);
 				const data = await getServiceAvailability(serviceId!);
-				console.log("Availability data received:", data);
 				setAvailability(data);
 				setError(null);
 			} catch (err) {
-				console.error("Error fetching service availability:", err);
 				setError(
 					"Failed to load service availability. Please try again later."
 				);
-				// Sample data for demonstration - using the current serviceId
-				const sampleData = [
-					{
-						availability_id: "46e5fc10-370f-493f-8526-1e84ad9047ae",
-						service_id: serviceId!, // Use the actual serviceId from URL
-						day_of_week: "Wednesday",
-						start_time: "08:00:00",
-						end_time: "15:00:00",
-						duration_minutes: 45,
-						created_at: "2025-08-13T01:59:39.296Z",
-						updated_at: "2025-08-13T02:04:21.353Z",
-						service: {
-							service_id: serviceId!, // Use the actual serviceId from URL
-							name: "New Driving License 2025",
-							description:
-								"Instructions to obtain the new smart card Driving License.This driving license is issued in following two methods.",
-							department_id: 1,
-							category: "Transport",
-							estimated_total_completion_time: "8 Months",
-							created_at: "2025-08-13T00:20:54.268Z",
-							updated_at: "2025-08-13T00:29:15.687Z",
-							department: {
-								department_id: 1,
-								name: "Department of Motor Vehicles",
-								description: null,
-								address: "address updated",
-								contact_email: "dmv@gov.lk",
-								contact_phone: "0112444555",
-								clerk_org_id: "org_123456789",
-								created_at: "2025-08-12T14:41:24.796Z",
-								updated_at: "2025-08-14T09:43:08.121Z",
-							},
-						},
-					},
-				];
-				console.log("Using sample data with service ID:", serviceId);
-				setAvailability(sampleData);
+				setAvailability([]); // No sample data fallback
 			} finally {
 				setIsLoading(false);
 			}
@@ -200,7 +170,7 @@ const CalendarView = () => {
 			<div className="overflow-auto">
 				<table className="w-full border-collapse">
 					<thead>
-						<tr className="bg-[#8D153A] text-white">
+						<tr className="bg-primary-600 text-white">
 							<th className="border p-2">Time</th>
 							{daysOfWeek.map((day) => (
 								<th key={day} className="border p-2">
@@ -219,18 +189,41 @@ const CalendarView = () => {
 									const available = orderedAvailability.find(
 										(a) =>
 											a.day_of_week === day &&
-											isTimeInRange(timeSlot, a.start_time, a.end_time)
+											isTimeInRange(timeSlot, a.start_time, a.end_time, day)
 									);
+									// Check if this is a past time slot for today
+									const today = new Date();
+									const todayDayName = today.toLocaleDateString("en-US", {
+										weekday: "long",
+									});
+									const isToday = day === todayDayName;
+									const [hour, minute] = timeSlot.split(":");
+									const timeSlotMinutes =
+										parseInt(hour) * 60 + parseInt(minute);
+									const currentTotalMinutes =
+										today.getHours() * 60 + today.getMinutes();
+									const isPastSlot =
+										isToday && timeSlotMinutes <= currentTotalMinutes;
+
 									return (
 										<td
 											key={`${day}-${timeSlot}`}
 											className={`border p-2 ${
-												available ? "bg-green-100" : "bg-gray-50"
+												available
+													? "bg-green-100"
+													: isPastSlot
+													? "bg-red-50"
+													: "bg-gray-50"
 											}`}>
 											{available && (
 												<div className="h-full w-full flex items-center justify-center">
 													<span className="w-3 h-3 bg-green-500 rounded-full mr-1"></span>
 													Available
+												</div>
+											)}
+											{isPastSlot && !available && (
+												<div className="h-full w-full flex items-center justify-center text-red-400 text-xs">
+													Past
 												</div>
 											)}
 										</td>
@@ -244,11 +237,12 @@ const CalendarView = () => {
 		);
 	};
 
-	// Check if time is within range
+	// Check if time is within range and not in the past (for today)
 	const isTimeInRange = (
 		timeSlot: string,
 		startTime: string,
-		endTime: string
+		endTime: string,
+		dayName: string
 	): boolean => {
 		const [hour, minute] = timeSlot.split(":");
 		const timeSlotMinutes = parseInt(hour) * 60 + parseInt(minute);
@@ -259,18 +253,25 @@ const CalendarView = () => {
 		const [endHour, endMinute] = endTime.split(":");
 		const endTimeMinutes = parseInt(endHour) * 60 + parseInt(endMinute);
 
+		// Check if this day is today
+		const today = new Date();
+		const todayDayName = today.toLocaleDateString("en-US", {weekday: "long"});
+		const isToday = dayName === todayDayName;
+
+		// If it's today, check if the time slot is in the past
+		if (isToday) {
+			const currentTotalMinutes = today.getHours() * 60 + today.getMinutes();
+			if (timeSlotMinutes <= currentTotalMinutes) {
+				return false; // Hide past time slots
+			}
+		}
+
 		return (
 			timeSlotMinutes >= startTimeMinutes && timeSlotMinutes < endTimeMinutes
 		);
 	};
 
 	const handleTimeSlotSelect = (time: string, availabilityId: string) => {
-		console.log(
-			"Time slot selected:",
-			time,
-			"Availability ID:",
-			availabilityId
-		);
 		setSelectedTime(time);
 		setSelectedAvailabilityId(availabilityId);
 	};
@@ -298,30 +299,34 @@ const CalendarView = () => {
 
 			// Step 1: Create a draft appointment
 			const draft = await createDraftAppointment({}, token);
-			console.log("Draft appointment created:", draft);
 
-			// Step 2: Update the draft with service and availability details
-			console.log("Updating draft with:", {
-				appointmentId: draft.appointment_id,
-				serviceId: serviceId,
-				availabilityId: selectedAvailabilityId,
-			});
+			// Step 2: Update the draft with service, availability, and specific time
+			// Construct the full appointment datetime using today's date + selected time
+			const today = new Date();
+			const [hours, minutes] = selectedTime.split(":").map(Number);
+			const appointmentDateTime = new Date(
+				today.getFullYear(),
+				today.getMonth(),
+				today.getDate(),
+				hours,
+				minutes,
+				0
+			);
 
-			const updatedDraft = await updateDraftWithService(
+			await updateDraftWithService(
 				draft.appointment_id,
 				serviceId,
 				selectedAvailabilityId,
+				appointmentDateTime.toISOString(),
 				token
 			);
-			console.log("Draft updated with service details:", updatedDraft);
 
 			// Step 3: Navigate to document upload page
 			navigate(
 				`/book-appointment/documents?appointmentId=${draft.appointment_id}&serviceId=${serviceId}`
 			);
 		} catch (error) {
-			console.error("Failed to book appointment:", error);
-			alert(`Failed to start booking process: ${error.message}`);
+			alert(`Failed to start booking process: ${error}`);
 		} finally {
 			setIsBooking(false);
 		}
@@ -330,7 +335,7 @@ const CalendarView = () => {
 	return (
 		<div className="min-h-screen bg-white">
 			{/* Header with service details */}
-			<div className="bg-[#8D153A] text-white p-6">
+			<div className="bg-primary-600 text-white p-6">
 				<div className="max-w-6xl mx-auto">
 					<div className="flex items-center mb-6">
 						<Link
@@ -348,10 +353,10 @@ const CalendarView = () => {
 					) : availability.length > 0 ? (
 						<>
 							<h1 className="text-3xl font-bold mb-2">
-								{availability[0].service.name}
+								{availability[0].service?.name}
 							</h1>
 							<p className="text-lg mb-1">
-								{availability[0].service.description}
+								{availability[0].service?.description}
 							</p>
 							<div className="flex flex-wrap gap-4 mt-4">
 								<div className="bg-white/10 px-4 py-2 rounded-lg">
@@ -394,7 +399,7 @@ const CalendarView = () => {
 
 				{isLoading ? (
 					<div className="flex justify-center p-10">
-						<div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#8D153A]"></div>
+						<div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-700"></div>
 					</div>
 				) : error ? (
 					<div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
@@ -418,7 +423,7 @@ const CalendarView = () => {
 									<Button
 										key={day}
 										variant={selectedDay === day ? "default" : "outline"}
-										className={selectedDay === day ? "bg-[#8D153A]" : ""}
+										className={selectedDay === day ? "bg-primary-600" : ""}
 										onClick={() => setSelectedDay(day)}>
 										{day}
 									</Button>
@@ -433,11 +438,19 @@ const CalendarView = () => {
 								{orderedAvailability
 									.filter((item) => item.day_of_week === selectedDay)
 									.map((item) => {
-										// Generate time slots for this availability
+										// Check if the selected day is today
+										const today = new Date();
+										const todayDayName = today.toLocaleDateString("en-US", {
+											weekday: "long",
+										});
+										const isToday = selectedDay === todayDayName;
+
+										// Generate time slots for this availability (filter past slots if today)
 										const timeSlots = generateTimeSlots(
 											item.start_time,
 											item.end_time,
-											item.duration_minutes
+											item.duration_minutes,
+											isToday
 										);
 
 										return (
@@ -450,31 +463,44 @@ const CalendarView = () => {
 													<span className="text-sm text-gray-500 ml-2">
 														({item.duration_minutes} min slots)
 													</span>
+													{isToday && (
+														<span className="text-xs text-blue-600 ml-2">
+															(Today - past slots hidden)
+														</span>
+													)}
 												</h4>
-												<div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
-													{timeSlots.map((timeSlot) => (
-														<Button
-															key={timeSlot}
-															variant={
-																selectedTime === timeSlot
-																	? "default"
-																	: "outline"
-															}
-															className={`text-sm ${
-																selectedTime === timeSlot
-																	? "bg-primary-600 text-white"
-																	: "hover:bg-primary-50"
-															}`}
-															onClick={() =>
-																handleTimeSlotSelect(
-																	timeSlot,
-																	item.availability_id
-																)
-															}>
-															{formatTime(`${timeSlot}:00`)}
-														</Button>
-													))}
-												</div>
+												{timeSlots.length === 0 ? (
+													<div className="text-center p-4 text-gray-500 bg-gray-50 rounded">
+														{isToday
+															? "No more time slots available today. Please select another day."
+															: "No time slots available for this time period."}
+													</div>
+												) : (
+													<div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+														{timeSlots.map((timeSlot) => (
+															<Button
+																key={timeSlot}
+																variant={
+																	selectedTime === timeSlot
+																		? "default"
+																		: "outline"
+																}
+																className={`text-sm ${
+																	selectedTime === timeSlot
+																		? "bg-primary-600 text-white"
+																		: "hover:bg-primary-50"
+																}`}
+																onClick={() =>
+																	handleTimeSlotSelect(
+																		timeSlot,
+																		item.availability_id
+																	)
+																}>
+																{formatTime(`${timeSlot}:00`)}
+															</Button>
+														))}
+													</div>
+												)}
 											</div>
 										);
 									})}
@@ -538,7 +564,7 @@ const CalendarView = () => {
 												</p>
 												<Button
 													variant="outline"
-													className="mt-3 text-[#8D153A] border-[#8D153A] hover:bg-[#8D153A] hover:text-white">
+													className="mt-3 text-primary-600 border-primary-600 hover:bg-primary-700 hover:text-white">
 													Select Time Slot
 												</Button>
 											</div>

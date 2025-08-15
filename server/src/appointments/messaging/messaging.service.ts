@@ -14,7 +14,7 @@ export class MessagingService {
         private readonly emailService: EmailServicePlunk
     ) { }
 
-    @Cron(CronExpression.EVERY_HOUR, {
+    @Cron(CronExpression.EVERY_MINUTE, {
         name: "send-reminders"
     })
     async sendReminders() {

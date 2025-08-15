@@ -38,6 +38,7 @@ export async function updateDraftWithService(
     appointmentId: string,
     serviceId: string,
     availabilityId: string,
+    appointmentTime: string,
     token: string
 ): Promise<any> {
     if (!token) {
@@ -54,7 +55,8 @@ export async function updateDraftWithService(
             },
             body: JSON.stringify({
                 service_id: serviceId,
-                availability_id: availabilityId
+                availability_id: availabilityId,
+                appointment_time: appointmentTime
             })
         }
     );
@@ -253,7 +255,7 @@ export async function getServices(): Promise<Service[]> {
  */
 export async function getServiceAvailability(serviceId: string): Promise<ServiceAvailability[]> {
     try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/service-availability?service_id=${serviceId}`);
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/service-availability/service/${serviceId}`);
 
         if (!response.ok) {
             throw new Error(`Failed to fetch service availability: ${response.status}`);

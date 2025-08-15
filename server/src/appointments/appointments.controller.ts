@@ -42,19 +42,21 @@ export class AppointmentsController {
     schema: {
       properties: {
         service_id: { type: 'string', format: 'uuid' },
-        availability_id: { type: 'string', format: 'uuid' }
+        availability_id: { type: 'string', format: 'uuid' },
+        appointment_time: { type: 'string', format: 'date-time', description: 'Specific appointment time selected by user' }
       }
     }
   })
   updateDraftService(
     @Param('id') id: string,
-    @Body() body: { service_id: string; availability_id: string },
+    @Body() body: { service_id: string; availability_id: string; appointment_time: string },
     @CurrentUser() user: AuthenticatedUser
   ) {
     return this.appointmentsService.updateDraftWithService(
       id,
       body.service_id,
       body.availability_id,
+      body.appointment_time,
       user.accountId
     );
   }
