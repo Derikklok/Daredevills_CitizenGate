@@ -1,631 +1,528 @@
-// import {useState, useEffect} from "react";
-// import {useNavigate, useSearchParams} from "react-router-dom";
-// import {useAuth} from "@clerk/clerk-react";
-// import {Button} from "@/components/ui/button";
-// import {
-// 	createDraftAppointment,
-// 	uploadDocument,
-// 	completeAppointment,
-// } from "@/lib/api";
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Card, CardContent } from '@/components/ui/card';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { 
+  ChevronLeft, 
+  Menu, 
+  Search, 
+  Clock, 
+  MapPin, 
+  Users, 
+  Calendar as CalendarIcon,
+  CheckCircle2
+} from 'lucide-react';
 
-// // Example booking flow component demonstrating the 3-step process
-// const BookingFlow = () => {
-// 	const navigate = useNavigate();
-// 	const {getToken} = useAuth();
-// 	const [searchParams] = useSearchParams();
+// Define types at the top level
+type AppointmentCategory = 'Transport' | 'Health Services' | 'Education' | 'Land Permits';
 
-// 	// Step tracking
-// 	const [currentStep, setCurrentStep] = useState(1);
-// 	const [appointmentId, setAppointmentId] = useState<string | null>(
-// 		searchParams.get("appointmentId")
-// 	);
+const appointments: Record<AppointmentCategory, string[]> = {
+  'Transport': ['New Drivers License', 'Vehicle Registration', 'License Renewal'],
+  'Health Services': ['Medical Records', 'Health Card Application', 'Vaccination Certificate'],
+  'Education': ['School Enrollment', 'Transcript Request', 'Scholarship Application'],
+  'Land Permits': ['Building Permit', 'Land Registration', 'Zoning Application']
+};
 
-// 	// Form data
-// 	const [selectedService, setSelectedService] = useState("");
-// 	const [selectedAvailability, setSelectedAvailability] = useState("");
-// 	const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
-// 	const [personalInfo, setPersonalInfo] = useState({
-// 		full_name: "",
-// 		nic: "",
-// 		phone_number: "",
-// 		birth_date: "",
-// 		gender: "",
-// 		email: "",
-// 		appointment_time: "",
-// 		notes: "",
-// 	});
+const categories: AppointmentCategory[] = ['Transport', 'Health Services', 'Education', 'Land Permits'];
 
-// 	// Loading states
-// 	const [isCreatingDraft, setIsCreatingDraft] = useState(false);
-// 	const [isUploadingFiles, setIsUploadingFiles] = useState(false);
-// 	const [isCompletingAppointment, setIsCompletingAppointment] = useState(false);
+// Header Component
+// const BookingHeader: React.FC<{ title: string; onBack: () => void }> = ({ title, onBack }) => (
+//   <div className="bg-white border-b border-gray-100 px-4 py-3">
+//     <div className="flex items-center justify-between">
+//       <Button variant="ghost" size="sm" onClick={onBack} className="p-2 hover:bg-gray-100">
+//         <ChevronLeft className="w-5 h-5" />
+//       </Button>
+//       <div className="text-center">
+//         <span className="text-lg font-semibold text-primary-700">Citizen</span>
+//         <span className="text-lg font-semibold text-pink-500">Gate</span>
+//       </div>
+//       <Button variant="ghost" size="sm" className="p-2 hover:bg-gray-100">
+//         <Menu className="w-5 h-5" />
+//       </Button>
+//     </div>
+//     <h1 className="text-xl font-semibold text-primary-700 mt-2">{title}</h1>
+//   </div>
+// );
 
-// 	// Step 1: Service & Availability Selection + Draft Creation
-// 	const handleServiceSelection = async (
-// 		serviceId: string,
-// 		availabilityId: string
-// 	) => {
-// 		try {
-// 			setIsCreatingDraft(true);
-// 			const token = await getToken();
-// 			if (!token) throw new Error("No authentication token");
+// Step 1: Select Appointment
+const SelectAppointmentPage: React.FC<{
+  preselectedCategory?: string;
+  preselectedService?: string;
+  onNext: (data: { category: string; appointment: string }) => void;
+  onBack: () => void;
+}> = ({ preselectedCategory, preselectedService, onNext, onBack }) => {
+  const [category, setCategory] = useState<AppointmentCategory | ''>(preselectedCategory as AppointmentCategory || '');
+  const [appointment, setAppointment] = useState(preselectedService || '');
 
-// 			const draft = await createDraftAppointment(
-// 				{
-// 					service_id: serviceId,
-// 					availability_id: availabilityId,
-// 				},
-// 				token
-// 			);
-
-// 			setAppointmentId(draft.appointment_id);
-// 			setSelectedService(serviceId);
-// 			setSelectedAvailability(availabilityId);
-
-// 			// Update URL with appointment ID
-// 			navigate(`?appointmentId=${draft.appointment_id}`, {replace: true});
-
-// 			setCurrentStep(2);
-// 		} catch (error) {
-// 			console.error("Failed to create draft appointment:", error);
-// 			alert("Failed to start appointment. Please try again.");
-// 		} finally {
-// 			setIsCreatingDraft(false);
-// 		}
-// 	};
-
-// 	// Step 2: Document Upload
-// 	const handleFileUpload = async (file: File, requiredDocumentId: string) => {
-// 		if (!appointmentId) return;
-
-// 		try {
-// 			setIsUploadingFiles(true);
-// 			const token = await getToken();
-// 			if (!token) throw new Error("No authentication token");
-
-// 			await uploadDocument(
-// 				{
-// 					file,
-// 					serviceId: selectedService,
-// 					requiredDocumentId,
-// 					appointmentId,
-// 				},
-// 				token
-// 			);
-
-// 			setUploadedFiles((prev) => [...prev, file]);
-
-// 			// Auto-advance to step 3 after first file upload
-// 			if (uploadedFiles.length === 0) {
-// 				setCurrentStep(3);
-// 			}
-// 		} catch (error) {
-// 			console.error("Failed to upload file:", error);
-// 			alert("Failed to upload file. Please try again.");
-// 		} finally {
-// 			setIsUploadingFiles(false);
-// 		}
-// 	};
-
-// 	// Step 3: Complete Appointment
-// 	const handleCompleteAppointment = async () => {
-// 		if (!appointmentId) return;
-
-// 		try {
-// 			setIsCompletingAppointment(true);
-// 			const token = await getToken();
-// 			if (!token) throw new Error("No authentication token");
-
-// 			await completeAppointment(appointmentId, personalInfo, token);
-
-// 			// Success! Navigate to confirmation or appointments list
-// 			navigate("/my-appointments?success=true");
-// 		} catch (error) {
-// 			console.error("Failed to complete appointment:", error);
-// 			alert("Failed to complete appointment. Please try again.");
-// 		} finally {
-// 			setIsCompletingAppointment(false);
-// 		}
-// 	};
-
-// 	return (
-// 		<div className="min-h-screen p-4">
-// 			<div className="max-w-md mx-auto">
-// 				{/* Progress Indicator */}
-// 				<div className="mb-6">
-// 					<div className="flex justify-between items-center">
-// 						<div
-// 							className={`w-8 h-8 rounded-full flex items-center justify-center ${
-// 								currentStep >= 1 ? "bg-primary-500 text-white" : "bg-gray-200"
-// 							}`}>
-// 							1
-// 						</div>
-// 						<div
-// 							className={`flex-1 h-1 mx-2 ${
-// 								currentStep >= 2 ? "bg-primary-500" : "bg-gray-200"
-// 							}`}
-// 						/>
-// 						<div
-// 							className={`w-8 h-8 rounded-full flex items-center justify-center ${
-// 								currentStep >= 2 ? "bg-primary-500 text-white" : "bg-gray-200"
-// 							}`}>
-// 							2
-// 						</div>
-// 						<div
-// 							className={`flex-1 h-1 mx-2 ${
-// 								currentStep >= 3 ? "bg-primary-500" : "bg-gray-200"
-// 							}`}
-// 						/>
-// 						<div
-// 							className={`w-8 h-8 rounded-full flex items-center justify-center ${
-// 								currentStep >= 3 ? "bg-primary-500 text-white" : "bg-gray-200"
-// 							}`}>
-// 							3
-// 						</div>
-// 					</div>
-// 					<div className="flex justify-between text-xs mt-2">
-// 						<span>Select Service</span>
-// 						<span>Upload Docs</span>
-// 						<span>Complete</span>
-// 					</div>
-// 				</div>
-
-// 				{/* Step 1: Service Selection */}
-// 				{currentStep === 1 && (
-// 					<div>
-// 						<h2 className="text-lg font-semibold mb-4">
-// 							Select Service & Time
-// 						</h2>
-// 						<div className="space-y-4">
-// 							{/* Example service selection buttons */}
-// 							<Button
-// 								onClick={() =>
-// 									handleServiceSelection("service-1", "availability-1")
-// 								}
-// 								disabled={isCreatingDraft}
-// 								className="w-full">
-// 								{isCreatingDraft
-// 									? "Creating..."
-// 									: "Passport Renewal - 10:00 AM"}
-// 							</Button>
-// 							<Button
-// 								onClick={() =>
-// 									handleServiceSelection("service-2", "availability-2")
-// 								}
-// 								disabled={isCreatingDraft}
-// 								className="w-full">
-// 								{isCreatingDraft
-// 									? "Creating..."
-// 									: "Birth Certificate - 2:00 PM"}
-// 							</Button>
-// 						</div>
-// 						{appointmentId && (
-// 							<div className="mt-4 p-3 bg-green-50 rounded">
-// 								<p className="text-sm text-green-700">
-// 									Draft created! ID: {appointmentId.slice(0, 8)}...
-// 								</p>
-// 							</div>
-// 						)}
-// 					</div>
-// 				)}
-
-// 				{/* Step 2: Document Upload */}
-// 				{currentStep === 2 && (
-// 					<div>
-// 						<h2 className="text-lg font-semibold mb-4">Upload Documents</h2>
-// 						<div className="space-y-4">
-// 							<div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-// 								<input
-// 									type="file"
-// 									onChange={(e) => {
-// 										const file = e.target.files?.[0];
-// 										if (file) {
-// 											handleFileUpload(file, "required-doc-1");
-// 										}
-// 									}}
-// 									accept=".pdf,.jpg,.jpeg,.png"
-// 									className="w-full"
-// 								/>
-// 							</div>
-
-// 							{uploadedFiles.length > 0 && (
-// 								<div className="space-y-2">
-// 									<h3 className="font-medium">Uploaded Files:</h3>
-// 									{uploadedFiles.map((file, index) => (
-// 										<div key={index} className="p-2 bg-gray-50 rounded">
-// 											{file.name}
-// 										</div>
-// 									))}
-// 								</div>
-// 							)}
-
-// 							<Button onClick={() => setCurrentStep(3)} className="w-full">
-// 								Continue to Personal Info
-// 							</Button>
-// 						</div>
-// 					</div>
-// 				)}
-
-// 				{/* Step 3: Personal Information */}
-// 				{currentStep === 3 && (
-// 					<div>
-// 						<h2 className="text-lg font-semibold mb-4">Personal Information</h2>
-// 						<div className="space-y-4">
-// 							<input
-// 								type="text"
-// 								placeholder="Full Name"
-// 								value={personalInfo.full_name}
-// 								onChange={(e) =>
-// 									setPersonalInfo((prev) => ({
-// 										...prev,
-// 										full_name: e.target.value,
-// 									}))
-// 								}
-// 								className="w-full p-2 border rounded"
-// 							/>
-// 							<input
-// 								type="text"
-// 								placeholder="NIC"
-// 								value={personalInfo.nic}
-// 								onChange={(e) =>
-// 									setPersonalInfo((prev) => ({...prev, nic: e.target.value}))
-// 								}
-// 								className="w-full p-2 border rounded"
-// 							/>
-// 							<input
-// 								type="tel"
-// 								placeholder="Phone Number"
-// 								value={personalInfo.phone_number}
-// 								onChange={(e) =>
-// 									setPersonalInfo((prev) => ({
-// 										...prev,
-// 										phone_number: e.target.value,
-// 									}))
-// 								}
-// 								className="w-full p-2 border rounded"
-// 							/>
-// 							<input
-// 								type="date"
-// 								placeholder="Birth Date"
-// 								value={personalInfo.birth_date}
-// 								onChange={(e) =>
-// 									setPersonalInfo((prev) => ({
-// 										...prev,
-// 										birth_date: e.target.value,
-// 									}))
-// 								}
-// 								className="w-full p-2 border rounded"
-// 							/>
-// 							<select
-// 								value={personalInfo.gender}
-// 								onChange={(e) =>
-// 									setPersonalInfo((prev) => ({...prev, gender: e.target.value}))
-// 								}
-// 								className="w-full p-2 border rounded">
-// 								<option value="">Select Gender</option>
-// 								<option value="Male">Male</option>
-// 								<option value="Female">Female</option>
-// 								<option value="Other">Other</option>
-// 							</select>
-// 							<input
-// 								type="datetime-local"
-// 								placeholder="Appointment Time"
-// 								value={personalInfo.appointment_time}
-// 								onChange={(e) =>
-// 									setPersonalInfo((prev) => ({
-// 										...prev,
-// 										appointment_time: e.target.value,
-// 									}))
-// 								}
-// 								className="w-full p-2 border rounded"
-// 							/>
-
-// 							<Button
-// 								onClick={handleCompleteAppointment}
-// 								disabled={
-// 									isCompletingAppointment ||
-// 									!personalInfo.full_name ||
-// 									!personalInfo.nic
-// 								}
-// 								className="w-full">
-// 								{isCompletingAppointment
-// 									? "Completing..."
-// 									: "Complete Appointment"}
-// 							</Button>
-// 						</div>
-// 					</div>
-// 				)}
-// 			</div>
-// 		</div>
-// 	);
-// */
-import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Building2, ChevronRight, ClipboardList, MapPin, Phone, Mail, Clock } from "lucide-react";
-import ApiService from "@/lib/api-service";
-import type { Department, Service } from "@/lib/api-service";
-
-const BookingFlow = () => {
-  const [departments, setDepartments] = useState<Department[]>([]);
-  const [selectedDepartment, setSelectedDepartment] = useState<Department | null>(null);
-  const [selectedService, setSelectedService] = useState<Service | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // Fetch departments data
-  useEffect(() => {
-    const fetchDepartments = async () => {
-      try {
-        setIsLoading(true);
-        const data = await ApiService.getDepartments();
-        setDepartments(data);
-        setError(null);
-      } catch (err) {
-        console.error("Error fetching departments:", err);
-        setError("Failed to load departments. Please try again later.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchDepartments();
-  }, []);
-
-  // Handle department selection
-  const handleDepartmentSelect = (department: Department) => {
-    setSelectedDepartment(department);
-    setSelectedService(null);
-  };
-
-  // Handle service selection
-  const handleServiceSelect = (service: Service) => {
-    setSelectedService(service);
-  };
-
-  // Reset selection to go back to department list
-  const handleBackToDepartments = () => {
-    setSelectedDepartment(null);
-    setSelectedService(null);
-  };
-
-  // Reset selection to go back to service list
-  const handleBackToServices = () => {
-    setSelectedService(null);
+  const handleNext = () => {
+    if (category && appointment) {
+      onNext({ category, appointment });
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-[#8D153A] text-white p-6">
-        <div className="max-w-6xl mx-auto">
-          <h1 className="text-3xl font-bold mb-2">Book Government Appointments</h1>
-          <p className="text-lg">Select a department, service, and schedule your appointment</p>
-        </div>
-      </header>
+    <div className="min-h-screen bg-white">
+      {/* <BookingHeader title="Select Appointment" onBack={onBack} /> */}
+      
+      <div className="px-4 py-6">
+        <div className="space-y-6">
+          {/* Category */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+            <Select value={category} onValueChange={(value) => setCategory(value as AppointmentCategory)}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select category" />
+              </SelectTrigger>
+              <SelectContent>
+                {categories.map((cat) => (
+                  <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-      {/* Breadcrumb Navigation */}
-      <div className="bg-white border-b">
-        <div className="max-w-6xl mx-auto py-4 px-6">
-          <div className="flex items-center text-sm">
-            <Link to="/" className="text-gray-500 hover:text-[#8D153A]">Home</Link>
-            <ChevronRight size={16} className="mx-2 text-gray-400" />
-            <span className="text-gray-500">Book Appointment</span>
-            {selectedDepartment && (
-              <>
-                <ChevronRight size={16} className="mx-2 text-gray-400" />
-                <button 
-                  onClick={handleBackToDepartments} 
-                  className="text-[#8D153A] hover:underline"
-                >
-                  {selectedDepartment.name}
-                </button>
-              </>
-            )}
-            {selectedService && (
-              <>
-                <ChevronRight size={16} className="mx-2 text-gray-400" />
-                <button 
-                  onClick={handleBackToServices} 
-                  className="text-[#8D153A] hover:underline"
-                >
-                  {selectedService.name}
-                </button>
-              </>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <main className="max-w-6xl mx-auto p-6">
-        {isLoading ? (
-          <div className="flex justify-center p-10">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#8D153A]"></div>
-          </div>
-        ) : error ? (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-            {error}
-          </div>
-        ) : (
-          <>
-            {/* Step 1: Select Department */}
-            {!selectedDepartment && (
-              <div>
-                <div className="flex items-center mb-6">
-                  <Building2 size={24} className="mr-3 text-[#8D153A]" />
-                  <h2 className="text-2xl font-bold">Select a Department</h2>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {departments.map((department) => (
-                    <div 
-                      key={department.department_id} 
-                      className="bg-white border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer"
-                      onClick={() => handleDepartmentSelect(department)}
-                    >
-                      <div className="p-6">
-                        <h3 className="font-bold text-xl mb-3 text-[#8D153A]">{department.name}</h3>
-                        
-                        <div className="space-y-3 mb-4 text-gray-600">
-                          {department.address && (
-                            <div className="flex items-start">
-                              <MapPin size={18} className="mr-2 text-gray-400 mt-0.5 flex-shrink-0" />
-                              <span>{department.address}</span>
-                            </div>
-                          )}
-                          {department.contact_email && (
-                            <div className="flex items-center">
-                              <Mail size={18} className="mr-2 text-gray-400 flex-shrink-0" />
-                              <span className="text-sm">{department.contact_email}</span>
-                            </div>
-                          )}
-                          {department.contact_phone && (
-                            <div className="flex items-center">
-                              <Phone size={18} className="mr-2 text-gray-400 flex-shrink-0" />
-                              <span>{department.contact_phone}</span>
-                            </div>
-                          )}
-                        </div>
-                        
-                        <div className="flex justify-between items-center mt-4">
-                          <span className="text-sm bg-gray-100 text-gray-700 px-2 py-1 rounded">
-                            {department.services.length} Services
-                          </span>
-                          <ChevronRight size={20} className="text-[#8D153A]" />
-                        </div>
-                      </div>
-                    </div>
+          {/* Appointment */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Appointment</label>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Select value={appointment} onValueChange={setAppointment}>
+                <SelectTrigger className="w-full pl-10">
+                  <SelectValue placeholder="Select appointment type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {category && appointments[category]?.map((apt) => (
+                    <SelectItem key={apt} value={apt}>{apt}</SelectItem>
                   ))}
-                </div>
-              </div>
-            )}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
 
-            {/* Step 2: Select Service */}
-            {selectedDepartment && !selectedService && (
-              <div>
-                <div className="flex items-center mb-6">
-                  <ClipboardList size={24} className="mr-3 text-[#8D153A]" />
-                  <h2 className="text-2xl font-bold">Select a Service</h2>
+          {/* General Information */}
+          <Card className="bg-gray-50">
+            <CardContent className="p-4">
+              <h3 className="font-medium text-gray-700 mb-3">General Information</h3>
+              <div className="space-y-2 text-sm text-gray-600">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4" />
+                  <span>1 Hour</span>
                 </div>
-                
-                <div className="bg-white p-6 rounded-lg shadow-sm border mb-8">
-                  <h3 className="font-bold text-xl mb-3 text-[#8D153A]">{selectedDepartment.name}</h3>
-                  <div className="space-y-2 text-gray-600 mb-4">
-                    {selectedDepartment.address && (
-                      <div className="flex items-start">
-                        <MapPin size={18} className="mr-2 text-gray-400 mt-0.5 flex-shrink-0" />
-                        <span>{selectedDepartment.address}</span>
-                      </div>
-                    )}
-                    {selectedDepartment.contact_email && (
-                      <div className="flex items-center">
-                        <Mail size={18} className="mr-2 text-gray-400 flex-shrink-0" />
-                        <span className="text-sm">{selectedDepartment.contact_email}</span>
-                      </div>
-                    )}
-                    {selectedDepartment.contact_phone && (
-                      <div className="flex items-center">
-                        <Phone size={18} className="mr-2 text-gray-400 flex-shrink-0" />
-                        <span>{selectedDepartment.contact_phone}</span>
-                      </div>
-                    )}
-                  </div>
-                  <Button
-                    variant="outline"
-                    className="text-[#8D153A] border-[#8D153A]"
-                    onClick={handleBackToDepartments}
-                  >
-                    Choose Different Department
-                  </Button>
+                <div className="flex items-center gap-2">
+                  <span>Rs. 500</span>
                 </div>
-                
-                <div className="mt-8">
-                  <h3 className="text-xl font-semibold mb-4">Available Services</h3>
-                  
-                  {selectedDepartment.services.length === 0 ? (
-                    <div className="bg-amber-50 border border-amber-200 text-amber-700 px-4 py-3 rounded">
-                      No services available for this department at the moment.
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {selectedDepartment.services.map((service) => (
-                        <div 
-                          key={service.service_id}
-                          className="bg-white p-6 rounded-lg border hover:border-[#8D153A] hover:shadow-md transition-all cursor-pointer"
-                          onClick={() => handleServiceSelect(service)}
-                        >
-                          <h4 className="text-lg font-bold text-[#8D153A] mb-2">{service.name}</h4>
-                          <p className="text-gray-600 mb-4">{service.description}</p>
-                          
-                          <div className="flex flex-wrap gap-3">
-                            <div className="bg-gray-100 px-3 py-1 rounded text-sm flex items-center">
-                              <Clock size={14} className="mr-1 text-gray-500" />
-                              {service.estimated_total_completion_time}
-                            </div>
-                            {service.category && (
-                              <div className="bg-gray-100 px-3 py-1 rounded text-sm">
-                                {service.category}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4" />
+                  <span>Nugegoda</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Users className="w-4 h-4" />
+                  <span>Booking slots available for physical sessions</span>
                 </div>
               </div>
-            )}
+            </CardContent>
+          </Card>
 
-            {/* Step 3: View Availability */}
-            {selectedService && (
-              <div>
-                <div className="flex items-center mb-6">
-                  <Clock size={24} className="mr-3 text-[#8D153A]" />
-                  <h2 className="text-2xl font-bold">Service Details & Availability</h2>
-                </div>
-                
-                <div className="bg-white p-6 rounded-lg shadow-sm border mb-8">
-                  <h3 className="font-bold text-xl mb-2 text-[#8D153A]">{selectedService.name}</h3>
-                  <p className="text-gray-600 mb-4">{selectedService.description}</p>
-                  
-                  <div className="flex flex-wrap gap-4 mb-6">
-                    <div className="bg-gray-100 px-4 py-2 rounded-lg">
-                      <span className="text-gray-500 font-medium">Department:</span>{" "}
-                      <span className="text-gray-800">{selectedDepartment?.name}</span>
-                    </div>
-                    <div className="bg-gray-100 px-4 py-2 rounded-lg">
-                      <span className="text-gray-500 font-medium">Category:</span>{" "}
-                      <span className="text-gray-800">{selectedService.category}</span>
-                    </div>
-                    <div className="bg-gray-100 px-4 py-2 rounded-lg">
-                      <span className="text-gray-500 font-medium">Estimated Time:</span>{" "}
-                      <span className="text-gray-800">{selectedService.estimated_total_completion_time}</span>
-                    </div>
-                  </div>
-                  
-                  <div className="flex gap-3">
-                    <Button
-                      variant="outline"
-                      className="text-[#8D153A] border-[#8D153A]"
-                      onClick={handleBackToServices}
-                    >
-                      Choose Different Service
-                    </Button>
-                    
-                    <Link to={`/calendar/${selectedService.service_id}`}>
-                      <Button className="bg-[#8D153A] hover:bg-[#8D153A]/90">
-                        View Available Slots
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            )}
-          </>
-        )}
-      </main>
+          {/* Description */}
+          <div>
+            <h3 className="font-medium text-gray-700 mb-2">Description</h3>
+            <p className="text-sm text-gray-600">
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt. 
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt. 
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+            </p>
+          </div>
+        </div>
+
+        <Button 
+          onClick={handleNext}
+          disabled={!category || !appointment}
+          className="w-full mt-8 bg-primary-700 hover:bg-primary-800"
+        >
+          Next →
+        </Button>
+      </div>
     </div>
   );
+};
+
+// Step 2: Personal Details
+interface PersonalDetailsPageProps {
+  appointmentData: Record<string, any>;
+  onNext: (data: Record<string, any>) => void;
+  onBack: () => void;
+}
+
+const PersonalDetailsPage: React.FC<PersonalDetailsPageProps> = ({ appointmentData, onNext, onBack }) => {
+  const [formData, setFormData] = useState({
+    name: '',
+    phone: '',
+    email: ''
+  });
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleNext = () => {
+    if (formData.name && formData.phone && formData.email) {
+      onNext({ ...appointmentData, personalDetails: formData });
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-white">
+      {/* <BookingHeader title="Personal Details" onBack={onBack} /> */}
+      
+      <div className="px-4 py-6">
+        <div className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Name</label>
+            <Input
+              type="text"
+              placeholder="Name"
+              value={formData.name}
+              onChange={(e) => handleInputChange('name', e.target.value)}
+              className="w-full"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+            <Input
+              type="tel"
+              placeholder="+94 77 123 456"
+              value={formData.phone}
+              onChange={(e) => handleInputChange('phone', e.target.value)}
+              className="w-full"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+            <Input
+              type="email"
+              placeholder="example@email.com"
+              value={formData.email}
+              onChange={(e) => handleInputChange('email', e.target.value)}
+              className="w-full"
+            />
+          </div>
+        </div>
+
+        <Button 
+          onClick={handleNext}
+          disabled={!formData.name || !formData.phone || !formData.email}
+          className="w-full mt-8 bg-primary-700 hover:bg-primary-800"
+        >
+          Next →
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+// Step 3: Document Checklist
+interface DocumentChecklistPageProps {
+  appointmentData: Record<string, any>;
+  onNext: (data: Record<string, any>) => void;
+  onBack: () => void;
+}
+
+const DocumentChecklistPage: React.FC<DocumentChecklistPageProps> = ({ appointmentData, onNext, onBack }) => {
+  const [checkedDocuments, setCheckedDocuments] = useState<Record<string, boolean>>({});
+  const [additionalInfo, setAdditionalInfo] = useState('');
+
+  const documents = [
+    { id: 'nic', label: 'National Identity Card (Original + Photocopy)', requiprimary: true },
+    { id: 'birth', label: 'Birth Certificate (Original)', requiprimary: false },
+    { id: 'photo', label: 'Photograph (specify size)', requiprimary: false }
+  ];
+
+  const handleDocumentChange = (docId: string, checked: boolean) => {
+    setCheckedDocuments(prev => ({ ...prev, [docId]: checked }));
+  };
+
+  const handleNext = () => {
+    const requiprimaryDocs = documents.filter(doc => doc.requiprimary);
+    const allRequiprimaryChecked = requiprimaryDocs.every(doc => checkedDocuments[doc.id]);
+    
+    if (allRequiprimaryChecked) {
+      onNext({ 
+        ...appointmentData, 
+        documents: checkedDocuments,
+        additionalInfo 
+      });
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-white">
+      {/* <BookingHeader title="Document Checklist" onBack={onBack} /> */}
+      
+      <div className="px-4 py-6">
+        <div className="space-y-6">
+          <div className="space-y-4">
+            {documents.map((doc) => (
+              <div key={doc.id} className="flex items-start space-x-3">
+                <Checkbox
+                  id={doc.id}
+                  checked={checkedDocuments[doc.id] || false}
+                  onCheckedChange={(checked) => handleDocumentChange(doc.id, !!checked)}
+                  className="mt-1"
+                />
+                <label 
+                  htmlFor={doc.id} 
+                  className="text-sm text-gray-700 flex-1 cursor-pointer"
+                >
+                  {doc.label}
+                  {doc.requiprimary && <span className="text-primary-500 ml-1">*</span>}
+                </label>
+              </div>
+            ))}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Application Fee (Rs. 500)
+            </label>
+            <div className="space-y-3">
+              <div className="flex items-center space-x-3">
+                <Checkbox id="pay-online" />
+                <label htmlFor="pay-online" className="text-sm text-gray-700">Pay online</label>
+              </div>
+              <div className="flex items-center space-x-3">
+                <Checkbox id="pay-cash" />
+                <label htmlFor="pay-cash" className="text-sm text-gray-700">Cash</label>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Additional context for docs
+            </label>
+            <Textarea
+              placeholder="Copies will be retained"
+              value={additionalInfo}
+              onChange={(e) => setAdditionalInfo(e.target.value)}
+              className="w-full h-20"
+            />
+          </div>
+
+          <div className="bg-primary-50 border border-primary-200 rounded-lg p-3">
+            <div className="flex items-center gap-2 text-primary-700">
+              <CheckCircle2 className="w-4 h-4" />
+              <span className="text-sm font-medium">Progress saved</span>
+            </div>
+          </div>
+        </div>
+
+        <Button 
+          onClick={handleNext}
+          className="w-full mt-8 bg-primary-700 hover:bg-primary-800"
+        >
+          Next →
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+// Step 4: Choose Location & Time
+interface LocationTimePageProps {
+  appointmentData: Record<string, any>;
+  onNext: (data: Record<string, any>) => void;
+  onBack: () => void;
+}
+
+const LocationTimePage: React.FC<LocationTimePageProps> = ({ appointmentData, onNext, onBack }) => {
+  const [location, setLocation] = useState('');
+  const [date, setDate] = useState<Date | undefined>(undefined);
+  const [selectedTime, setSelectedTime] = useState('');
+
+  const locations = ['Nugegoda Office', 'Colombo Office', 'Kandy Office'];
+  const timeSlots = [
+    '08:00 AM', '08:30 AM', '09:00 AM',
+    '11:00 AM', '12:30 PM', '01:30 PM'
+  ];
+
+  const handleSubmit = () => {
+    if (location && date && selectedTime) {
+      const finalData = {
+        ...appointmentData,
+        location,
+        date,
+        time: selectedTime
+      };
+      onNext(finalData);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-white">
+      {/* <BookingHeader title="Book Appointment" onBack={onBack} /> */}
+      
+      <div className="px-4 py-6">
+        <div className="space-y-6">
+          {/* Progress indicator */}
+          <div className="w-full bg-gray-200 rounded-full h-1">
+            <div className="bg-teal-500 h-1 rounded-full w-full"></div>
+          </div>
+
+          {/* Choose Location */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Choose Location</label>
+            <Select value={location} onValueChange={setLocation}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select" />
+              </SelectTrigger>
+              <SelectContent>
+                {locations.map((loc) => (
+                  <SelectItem key={loc} value={loc}>{loc}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Preferprimary Date */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Preferprimary Date</label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start text-left font-normal"
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {date ? date.toLocaleDateString() : "dd/mm/yyyy"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={date}
+                  onSelect={setDate}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          {/* Available Time Slots */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Available Time Slots</label>
+            <div className="grid grid-cols-3 gap-2">
+              {timeSlots.map((time) => (
+                <Button
+                  key={time}
+                  variant={selectedTime === time ? "default" : "outline"}
+                  onClick={() => setSelectedTime(time)}
+                  className={`text-xs ${
+                    selectedTime === time 
+                      ? "bg-primary-500 hover:bg-primary-700" 
+                      : "border-gray-300"
+                  }`}
+                >
+                  {time}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          {/* Additional info */}
+          <Card className="bg-gray-50">
+            <CardContent className="p-4">
+              <h3 className="font-medium text-gray-700 mb-2">Additional info based on location</h3>
+              <p className="text-sm text-gray-600 mb-1">Nugegoda Office: Address</p>
+              <p className="text-sm text-gray-600">Open hours: 8am - 4pm</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Button 
+          onClick={handleSubmit}
+          disabled={!location || !date || !selectedTime}
+          className="w-full mt-8 bg-primary-500 hover:bg-primary-700"
+        >
+          Submit
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+// Main Booking Flow Component
+interface BookingFlowProps {
+  preselectedCategory?: string;
+  preselectedService?: string;
+  onComplete: (data: Record<string, any>) => void;
+  onCancel: () => void;
+}
+
+const BookingFlow: React.FC<BookingFlowProps> = ({ preselectedCategory, preselectedService, onComplete, onCancel }) => {
+  const [currentStep, setCurrentStep] = useState(1);
+  const [bookingData, setBookingData] = useState({});
+
+  const handleStepComplete = (data: Record<string, any>) => {
+    setBookingData(data);
+    if (currentStep < 4) {
+      setCurrentStep(currentStep + 1);
+    } else {
+      onComplete(data);
+    }
+  };
+
+  const handleBack = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    } else {
+      onCancel();
+    }
+  };
+
+  switch (currentStep) {
+    case 1:
+      return (
+        <SelectAppointmentPage
+          preselectedCategory={preselectedCategory}
+          preselectedService={preselectedService}
+          onNext={handleStepComplete}
+          onBack={handleBack}
+        />
+      );
+    case 2:
+      return (
+        <PersonalDetailsPage
+          appointmentData={bookingData}
+          onNext={handleStepComplete}
+          onBack={handleBack}
+        />
+      );
+    case 3:
+      return (
+        <DocumentChecklistPage
+          appointmentData={bookingData}
+          onNext={handleStepComplete}
+          onBack={handleBack}
+        />
+      );
+    case 4:
+      return (
+        <LocationTimePage
+          appointmentData={bookingData}
+          onNext={handleStepComplete}
+          onBack={handleBack}
+        />
+      );
+    default:
+      return null;
+  }
 };
 
 export default BookingFlow;
