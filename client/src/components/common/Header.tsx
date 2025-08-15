@@ -17,7 +17,7 @@ export default function Header() {
 
 	return (
 		<>
-			<div className="flex justify-between items-center p-4 bg-white shadow-sm">
+			<div className="flex justify-between items-center p-4 bg-white shadow-sm sticky top-0 z-50">
 				<header className="flex justify-between items-center w-full">
 					<div className="flex items-center space-x-4 transition-all duration-300 ease-in-out">
 						{/* Back button with smooth animation */}

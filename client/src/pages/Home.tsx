@@ -3,7 +3,7 @@ import {Button} from "@/components/ui/button";
 
 export default function Home() {
 	return (
-		<div className="constrained-width container mx-auto bg-white min-h-screen flex flex-col items-center">
+		<div className="constrained-width container mx-auto bg-white min-h-screen flex flex-col items-center py-4 px-4">
 			<main className="py-6">
 				<div className="mb-8">
 					<h1 className="text-2xl font-bold mb-4">Welcome to CitizenGate</h1>

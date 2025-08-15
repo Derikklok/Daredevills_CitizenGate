@@ -5,7 +5,11 @@ import {Card, CardContent} from "@/components/ui/card";
 import {Progress} from "@/components/ui/progress";
 import {useNavigate, useSearchParams} from "react-router-dom";
 import {useAuth} from "@clerk/clerk-react";
-import {uploadDocument, getAppointmentDocuments} from "@/lib/api";
+import {
+	uploadDocument,
+	getAppointmentDocuments,
+	getRequiredDocuments,
+} from "@/lib/api";
 
 interface FileItem {
 	id: string;
@@ -23,6 +27,7 @@ interface DocumentItem {
 	file: FileItem | null;
 	required: boolean;
 	requiredDocumentId: string; // Backend document type ID
+	acceptedFormats?: string; // e.g., "pdf,jpg,png"
 }
 
 export default function NewAppointmentDocumentUpload() {
@@ -34,32 +39,7 @@ export default function NewAppointmentDocumentUpload() {
 	const appointmentId = searchParams.get("appointmentId");
 	const serviceId = searchParams.get("serviceId");
 
-	const [documents, setDocuments] = useState<DocumentItem[]>([
-		{
-			id: "nationalId",
-			title: "National Identity Card",
-			description: "Original + Photocopy",
-			file: null,
-			required: true,
-			requiredDocumentId: "doc-id-national-id", // Replace with actual required document IDs
-		},
-		{
-			id: "birthCertificate",
-			title: "Birth Certificate",
-			description: "Original",
-			file: null,
-			required: true,
-			requiredDocumentId: "doc-id-birth-cert",
-		},
-		{
-			id: "photograph",
-			title: "Photograph",
-			description: "specify size",
-			file: null,
-			required: true,
-			requiredDocumentId: "doc-id-photograph",
-		},
-	]);
+	const [documents, setDocuments] = useState<DocumentItem[]>([]);
 
 	const [additionalDocuments, setAdditionalDocuments] = useState<
 		DocumentItem[]
@@ -67,13 +47,74 @@ export default function NewAppointmentDocumentUpload() {
 
 	const [isUploading, setIsUploading] = useState(false);
 	const [uploadingDocId, setUploadingDocId] = useState<string | null>(null);
+	const [isLoadingDocuments, setIsLoadingDocuments] = useState(true);
 
-	// Load existing documents on component mount
+	// Load required documents and existing documents on component mount
 	useEffect(() => {
-		if (appointmentId) {
+		if (appointmentId && serviceId) {
+			loadRequiredDocuments();
 			loadExistingDocuments();
 		}
-	}, [appointmentId]);
+	}, [appointmentId, serviceId]);
+
+	const loadRequiredDocuments = async () => {
+		if (!serviceId) return;
+
+		try {
+			setIsLoadingDocuments(true);
+			const requiredDocs = await getRequiredDocuments(serviceId);
+
+			// Transform API response to our DocumentItem format
+			const documentItems: DocumentItem[] = requiredDocs.map((doc) => ({
+				id: doc.document_id,
+				title: doc.name,
+				description: doc.description || "Required for this service",
+				file: null,
+				required: doc.is_mandatory,
+				requiredDocumentId: doc.document_id,
+				acceptedFormats: doc.document_format,
+			}));
+
+			setDocuments(documentItems);
+			console.log("Required documents loaded:", documentItems);
+		} catch (error) {
+			console.error("Failed to load required documents:", error);
+			// Fallback to default documents if API fails
+			const fallbackDocs: DocumentItem[] = [
+				{
+					id: "nationalId",
+					title: "National Identity Card",
+					description: "Original + Photocopy",
+					file: null,
+					required: true,
+					requiredDocumentId: "doc-id-national-id",
+					acceptedFormats: "pdf,jpg,png",
+				},
+				{
+					id: "birthCertificate",
+					title: "Birth Certificate",
+					description: "Original",
+					file: null,
+					required: true,
+					requiredDocumentId: "doc-id-birth-cert",
+					acceptedFormats: "pdf,jpg,png",
+				},
+				{
+					id: "photograph",
+					title: "Photograph",
+					description: "specify size",
+					file: null,
+					required: true,
+					requiredDocumentId: "doc-id-photograph",
+					acceptedFormats: "jpg,png",
+				},
+			];
+			setDocuments(fallbackDocs);
+			console.log("Using fallback documents due to API error");
+		} finally {
+			setIsLoadingDocuments(false);
+		}
+	};
 
 	const loadExistingDocuments = async () => {
 		if (!appointmentId) return;
@@ -254,7 +295,7 @@ export default function NewAppointmentDocumentUpload() {
 
 		// Navigate to final step (complete appointment form)
 		navigate(
-			`/book-appointment/complete?appointmentId=${appointmentId}&serviceId=${serviceId}`
+			`/complete-appointment?appointmentId=${appointmentId}&serviceId=${serviceId}`
 		);
 	};
 
@@ -299,217 +340,249 @@ export default function NewAppointmentDocumentUpload() {
 						<h2 className="text-lg font-semibold text-gray-900 mb-4">
 							Document Checklist
 						</h2>
-						<div className="space-y-4">
-							{/* Required Documents */}
-							{documents.map((doc) => (
-								<div key={doc.id} className="space-y-2">
-									<div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-										<div className="flex-1">
-											<h3 className="font-medium text-gray-900">
-												{doc.title}{" "}
-												{doc.required && (
-													<span className="text-red-500">*</span>
-												)}
-											</h3>
-											<p className="text-sm text-gray-600">{doc.description}</p>
-										</div>
 
-										{/* File Upload/Display Area */}
-										<div className="ml-4">
-											{doc.file ? (
-												<div className="flex items-center space-x-2">
-													<div
-														className={`flex items-center space-x-2 p-2 rounded border ${
-															doc.file.uploaded
-																? "bg-green-50 border-green-200"
-																: "bg-white border-gray-200"
-														}`}>
-														<div
-															className={`w-6 h-6 rounded flex items-center justify-center ${
-																doc.file.uploaded
-																	? "bg-green-100"
-																	: "bg-primary-100"
-															}`}>
-															{doc.file.uploaded ? (
-																<CheckCircle className="w-4 h-4 text-green-600" />
-															) : (
-																<span className="text-xs text-primary-600 font-medium">
-																	{doc.file.type.split("/")[1]?.toUpperCase() ||
-																		"FILE"}
-																</span>
-															)}
-														</div>
-														<div className="text-xs">
-															<p className="font-medium text-gray-900 truncate max-w-24">
-																{doc.file.name}
-															</p>
-															<p
-																className={`${
-																	doc.file.uploaded
-																		? "text-green-600"
-																		: "text-gray-500"
-																}`}>
-																{doc.file.uploaded
-																	? "Uploaded"
-																	: formatFileSize(doc.file.size)}
-															</p>
-														</div>
-													</div>
-													{!doc.file.uploaded && (
-														<button
-															onClick={() => removeFile(doc.id)}
-															className="p-1 hover:bg-red-100 rounded-full transition-colors"
-															title="Remove file">
-															<X className="w-4 h-4 text-red-500" />
-														</button>
-													)}
-												</div>
-											) : (
-												<div className="border-2 border-dashed border-gray-300 rounded-lg p-2 hover:border-primary-500 transition-colors">
-													<label
-														htmlFor={`file-upload-${doc.id}`}
-														className={`cursor-pointer ${
-															isUploading && uploadingDocId === doc.id
-																? "pointer-events-none"
-																: ""
-														}`}>
-														<div className="flex items-center space-x-2">
-															<Upload
-																className={`w-4 h-4 ${
-																	isUploading && uploadingDocId === doc.id
-																		? "text-primary-500 animate-pulse"
-																		: "text-gray-400"
-																}`}
-															/>
-															<span className="text-xs text-gray-600">
-																{isUploading && uploadingDocId === doc.id
-																	? "Uploading..."
-																	: "Upload"}
-															</span>
-														</div>
-													</label>
-													<input
-														id={`file-upload-${doc.id}`}
-														type="file"
-														accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.txt,.zip,.rar"
-														className="hidden"
-														disabled={isUploading}
-														onChange={(e) =>
-															handleFileUpload(doc.id, e.target.files)
-														}
-													/>
-												</div>
-											)}
-										</div>
+						{isLoadingDocuments ? (
+							<div className="text-center py-8">
+								<div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary-500 mx-auto mb-4"></div>
+								<p className="text-gray-600">Loading required documents...</p>
+							</div>
+						) : (
+							<div className="space-y-4">
+								{/* Required Documents */}
+								{documents.length === 0 ? (
+									<div className="text-center py-8">
+										<p className="text-gray-600">
+											No required documents found for this service.
+										</p>
 									</div>
-								</div>
-							))}
-
-							{/* Additional Documents */}
-							{additionalDocuments.length > 0 && (
-								<div className="space-y-4">
-									<h3 className="font-medium text-gray-900">
-										Additional Documents
-									</h3>
-									{additionalDocuments.map((doc) => (
+								) : (
+									documents.map((doc) => (
 										<div key={doc.id} className="space-y-2">
 											<div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
 												<div className="flex-1">
-													<input
-														type="text"
-														value={doc.title}
-														onChange={(e) =>
-															updateAdditionalDocumentTitle(
-																doc.id,
-																e.target.value
-															)
-														}
-														className="font-medium text-gray-900 bg-transparent border-none outline-none focus:ring-0"
-														placeholder="Document title"
-													/>
+													<h3 className="font-medium text-gray-900">
+														{doc.title}{" "}
+														{doc.required && (
+															<span className="text-red-500">*</span>
+														)}
+													</h3>
 													<p className="text-sm text-gray-600">
 														{doc.description}
 													</p>
+													{doc.acceptedFormats && (
+														<p className="text-xs text-gray-500 mt-1">
+															Accepted formats:{" "}
+															{doc.acceptedFormats.toUpperCase()}
+														</p>
+													)}
 												</div>
 
-												{/* File Upload/Display Area for Additional Documents */}
-												<div className="ml-4 flex items-center space-x-2">
+												{/* File Upload/Display Area */}
+												<div className="ml-4">
 													{doc.file ? (
 														<div className="flex items-center space-x-2">
-															<div className="flex items-center space-x-2 p-2 bg-white rounded border">
-																<div className="w-6 h-6 bg-primary-100 rounded flex items-center justify-center">
-																	<span className="text-xs text-primary-600 font-medium">
-																		{doc.file.type
-																			.split("/")[1]
-																			?.toUpperCase() || "FILE"}
-																	</span>
+															<div
+																className={`flex items-center space-x-2 p-2 rounded border ${
+																	doc.file.uploaded
+																		? "bg-green-50 border-green-200"
+																		: "bg-white border-gray-200"
+																}`}>
+																<div
+																	className={`w-6 h-6 rounded flex items-center justify-center ${
+																		doc.file.uploaded
+																			? "bg-green-100"
+																			: "bg-primary-100"
+																	}`}>
+																	{doc.file.uploaded ? (
+																		<CheckCircle className="w-4 h-4 text-green-600" />
+																	) : (
+																		<span className="text-xs text-primary-600 font-medium">
+																			{doc.file.type
+																				.split("/")[1]
+																				?.toUpperCase() || "FILE"}
+																		</span>
+																	)}
 																</div>
 																<div className="text-xs">
 																	<p className="font-medium text-gray-900 truncate max-w-24">
 																		{doc.file.name}
 																	</p>
-																	<p className="text-gray-500">
-																		{formatFileSize(doc.file.size)}
+																	<p
+																		className={`${
+																			doc.file.uploaded
+																				? "text-green-600"
+																				: "text-gray-500"
+																		}`}>
+																		{doc.file.uploaded
+																			? "Uploaded"
+																			: formatFileSize(doc.file.size)}
 																	</p>
 																</div>
 															</div>
-															<button
-																onClick={() => removeAdditionalFile(doc.id)}
-																className="p-1 hover:bg-red-100 rounded-full transition-colors"
-																title="Remove file">
-																<X className="w-4 h-4 text-red-500" />
-															</button>
+															{!doc.file.uploaded && (
+																<button
+																	onClick={() => removeFile(doc.id)}
+																	className="p-1 hover:bg-red-100 rounded-full transition-colors"
+																	title="Remove file">
+																	<X className="w-4 h-4 text-red-500" />
+																</button>
+															)}
 														</div>
 													) : (
 														<div className="border-2 border-dashed border-gray-300 rounded-lg p-2 hover:border-primary-500 transition-colors">
 															<label
-																htmlFor={`additional-file-upload-${doc.id}`}
-																className="cursor-pointer">
+																htmlFor={`file-upload-${doc.id}`}
+																className={`cursor-pointer ${
+																	isUploading && uploadingDocId === doc.id
+																		? "pointer-events-none"
+																		: ""
+																}`}>
 																<div className="flex items-center space-x-2">
-																	<Upload className="w-4 h-4 text-gray-400" />
+																	<Upload
+																		className={`w-4 h-4 ${
+																			isUploading && uploadingDocId === doc.id
+																				? "text-primary-500 animate-pulse"
+																				: "text-gray-400"
+																		}`}
+																	/>
 																	<span className="text-xs text-gray-600">
-																		Upload
+																		{isUploading && uploadingDocId === doc.id
+																			? "Uploading..."
+																			: "Upload"}
 																	</span>
 																</div>
 															</label>
 															<input
-																id={`additional-file-upload-${doc.id}`}
+																id={`file-upload-${doc.id}`}
 																type="file"
-																accept=".pdf,.jpg,.jpeg,.png"
+																accept={
+																	doc.acceptedFormats
+																		? doc.acceptedFormats
+																				.split(",")
+																				.map((format) => `.${format.trim()}`)
+																				.join(",")
+																		: ".pdf,.jpg,.jpeg,.png,.doc,.docx,.txt,.zip,.rar"
+																}
 																className="hidden"
+																disabled={isUploading}
 																onChange={(e) =>
-																	handleAdditionalFileUpload(
-																		doc.id,
-																		e.target.files
-																	)
+																	handleFileUpload(doc.id, e.target.files)
 																}
 															/>
 														</div>
 													)}
-
-													<button
-														onClick={() => removeAdditionalDocument(doc.id)}
-														className="p-1 hover:bg-red-100 rounded-full transition-colors"
-														title="Remove document">
-														<X className="w-4 h-4 text-red-500" />
-													</button>
 												</div>
 											</div>
 										</div>
-									))}
-								</div>
-							)}
+									))
+								)}
 
-							{/* Add Additional Document Button */}
-							<button
-								onClick={addAdditionalDocument}
-								className="flex items-center space-x-2 text-primary-500 hover:text-primary-600 transition-colors">
-								<Plus className="w-4 h-4" />
-								<span className="text-sm font-medium">
-									Add Additional Document
-								</span>
-							</button>
-						</div>
+								{/* Additional Documents */}
+								{additionalDocuments.length > 0 && (
+									<div className="space-y-4">
+										<h3 className="font-medium text-gray-900">
+											Additional Documents
+										</h3>
+										{additionalDocuments.map((doc) => (
+											<div key={doc.id} className="space-y-2">
+												<div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+													<div className="flex-1">
+														<input
+															type="text"
+															value={doc.title}
+															onChange={(e) =>
+																updateAdditionalDocumentTitle(
+																	doc.id,
+																	e.target.value
+																)
+															}
+															className="font-medium text-gray-900 bg-transparent border-none outline-none focus:ring-0"
+															placeholder="Document title"
+														/>
+														<p className="text-sm text-gray-600">
+															{doc.description}
+														</p>
+													</div>
+
+													{/* File Upload/Display Area for Additional Documents */}
+													<div className="ml-4 flex items-center space-x-2">
+														{doc.file ? (
+															<div className="flex items-center space-x-2">
+																<div className="flex items-center space-x-2 p-2 bg-white rounded border">
+																	<div className="w-6 h-6 bg-primary-100 rounded flex items-center justify-center">
+																		<span className="text-xs text-primary-600 font-medium">
+																			{doc.file.type
+																				.split("/")[1]
+																				?.toUpperCase() || "FILE"}
+																		</span>
+																	</div>
+																	<div className="text-xs">
+																		<p className="font-medium text-gray-900 truncate max-w-24">
+																			{doc.file.name}
+																		</p>
+																		<p className="text-gray-500">
+																			{formatFileSize(doc.file.size)}
+																		</p>
+																	</div>
+																</div>
+																<button
+																	onClick={() => removeAdditionalFile(doc.id)}
+																	className="p-1 hover:bg-red-100 rounded-full transition-colors"
+																	title="Remove file">
+																	<X className="w-4 h-4 text-red-500" />
+																</button>
+															</div>
+														) : (
+															<div className="border-2 border-dashed border-gray-300 rounded-lg p-2 hover:border-primary-500 transition-colors">
+																<label
+																	htmlFor={`additional-file-upload-${doc.id}`}
+																	className="cursor-pointer">
+																	<div className="flex items-center space-x-2">
+																		<Upload className="w-4 h-4 text-gray-400" />
+																		<span className="text-xs text-gray-600">
+																			Upload
+																		</span>
+																	</div>
+																</label>
+																<input
+																	id={`additional-file-upload-${doc.id}`}
+																	type="file"
+																	accept=".pdf,.jpg,.jpeg,.png"
+																	className="hidden"
+																	onChange={(e) =>
+																		handleAdditionalFileUpload(
+																			doc.id,
+																			e.target.files
+																		)
+																	}
+																/>
+															</div>
+														)}
+
+														<button
+															onClick={() => removeAdditionalDocument(doc.id)}
+															className="p-1 hover:bg-red-100 rounded-full transition-colors"
+															title="Remove document">
+															<X className="w-4 h-4 text-red-500" />
+														</button>
+													</div>
+												</div>
+											</div>
+										))}
+									</div>
+								)}
+
+								{/* Add Additional Document Button */}
+								<button
+									onClick={addAdditionalDocument}
+									className="flex items-center space-x-2 text-primary-500 hover:text-primary-600 transition-colors">
+									<Plus className="w-4 h-4" />
+									<span className="text-sm font-medium">
+										Add Additional Document
+									</span>
+								</button>
+							</div>
+						)}
 					</CardContent>
 				</Card>
 

@@ -17,9 +17,8 @@ export class SupabaseService {
             }
 
             this.supabase = createClient(supabaseUrl, supabaseKey);
-            console.log('Supabase client initialized successfully');
+
         } catch (error) {
-            console.error('Failed to initialize Supabase client:', error.message);
             throw error;
         }
     }
@@ -29,13 +28,6 @@ export class SupabaseService {
         folderPath: string = ''
     ): Promise<{ key: string; url: string }> {
         try {
-            console.log('Starting file upload:', {
-                fileName: file.originalname,
-                fileSize: file.size,
-                mimeType: file.mimetype,
-                folderPath
-            });
-
             // Validate file
             if (!file.buffer || file.buffer.length === 0) {
                 throw new Error('File buffer is empty');
@@ -46,22 +38,15 @@ export class SupabaseService {
             const fileName = `${uuidv4()}.${fileExtension}`;
             const filePath = folderPath ? `${folderPath}/${fileName}` : fileName;
 
-            console.log('Uploading to path:', filePath);
-            console.log('Bucket name:', this.configService.supabaseBucketName);
-            console.log('Supabase URL:', this.configService.supabaseUrl);
-
             // First, let's test if the bucket exists
             const { data: buckets, error: listError } = await this.supabase.storage.listBuckets();
-            console.log('Available buckets:', buckets);
 
             if (listError) {
-                console.error('Failed to list buckets:', listError);
                 throw new Error(`Cannot access Supabase storage: ${JSON.stringify(listError)}`);
             }
 
             const bucketExists = buckets?.some(bucket => bucket.name === this.configService.supabaseBucketName);
             if (!bucketExists) {
-                console.error('Bucket not found. Available buckets:', buckets?.map(b => b.name));
                 throw new Error(`Bucket '${this.configService.supabaseBucketName}' does not exist. Available buckets: ${buckets?.map(b => b.name).join(', ')}`);
             }
 
@@ -74,25 +59,19 @@ export class SupabaseService {
                 });
 
             if (error) {
-                console.error('Supabase upload error:', error);
                 throw new Error(`Upload failed: ${JSON.stringify(error)}`);
             }
-
-            console.log('Upload successful:', data);
 
             // Get public URL
             const { data: urlData } = this.supabase.storage
                 .from(this.configService.supabaseBucketName)
                 .getPublicUrl(filePath);
 
-            console.log('Generated public URL:', urlData.publicUrl);
-
             return {
                 key: filePath,
                 url: urlData.publicUrl
             };
         } catch (error) {
-            console.error('File upload error details:', error);
             throw new Error(`File upload failed: ${error.message}`);
         }
     }

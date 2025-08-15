@@ -48,16 +48,28 @@ export class AppointmentsService {
     const service = await this.governmentServicesService.findOne(serviceId);
     const availability = await this.serviceAvailabilityService.findOne(availabilityId);
 
+    console.log('Service ID from request:', serviceId);
+    console.log('Availability ID from request:', availabilityId);
+    console.log('Service found:', service ? 'Yes' : 'No');
+    console.log('Availability found:', availability ? 'Yes' : 'No');
+    console.log('Availability service_id:', availability?.service_id);
+
     // Check if the service matches the availability
     if (availability.service_id !== serviceId) {
+      console.error(`Service mismatch: availability.service_id (${availability.service_id}) !== serviceId (${serviceId})`);
       throw new BadRequestException('The selected availability does not belong to the selected service');
     }
 
     // Update the appointment with service details
+    // Create a proper timestamp for appointment_time using current date + availability start time
+    const today = new Date();
+    const [hours, minutes] = availability.start_time.split(':').map(Number);
+    const appointmentTime = new Date(today.getFullYear(), today.getMonth(), today.getDate(), hours, minutes, 0);
+
     const updateData = {
       service_id: serviceId,
       availability_id: availabilityId,
-      appointment_time: new Date(availability.start_time),
+      appointment_time: appointmentTime,
     };
 
     await this.appointmentRepo.update(appointmentId, updateData);

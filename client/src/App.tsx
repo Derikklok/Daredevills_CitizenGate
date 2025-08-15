@@ -9,8 +9,11 @@ import SignUpPage from "./pages/SignUp";
 import LandingPage from "./pages/LandingPage";
 import Home from "./pages/Home";
 import ServiceDetails from "./pages/ServiceDetails";
+import BookingFlow from "./pages/NewAppointment/BookingFlow";
+import CalendarView from "./pages/CalendarView";
 import NewAppointmentDocumentUpload from "./pages/NewAppointment/NewAppointmentDocumentUpload";
-
+import CompleteAppointment from "./pages/NewAppointment/CompleteAppointment";
+import AppointmentConfirmation from "./pages/AppointmentConfirmation";
 function App() {
 	const {isSignedIn, isLoaded} = useAuth();
 
@@ -37,9 +40,16 @@ function App() {
 					path="/service-details/:serviceName"
 					element={<ServiceDetails serviceName={"Transport"} />}
 				/>
+				<Route path="/book-appointment/new" element={<BookingFlow />} />
+				<Route path="/calendar/:serviceId" element={<CalendarView />} />
 				<Route
-					path="/book-appointment/new"
+					path="/book-appointment/documents"
 					element={<NewAppointmentDocumentUpload />}
+				/>
+				<Route path="/complete-appointment" element={<CompleteAppointment />} />
+				<Route
+					path="/appointment-confirmation"
+					element={<AppointmentConfirmation />}
 				/>
 			</Route>
 

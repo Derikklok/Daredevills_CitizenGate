@@ -10,6 +10,8 @@ const MyAppointments = () => {
 	const navigate = useNavigate();
 	const [appointments, setAppointments] = useState<Appointment[]>([]);
 	const [isCreatingDraft, setIsCreatingDraft] = useState(false);
+	const [isLoading, setIsLoading] = useState(true);
+	const [error, setError] = useState<string | null>(null);
 	const {getToken} = useAuth();
 
 	const handleBookAppointment = async () => {
@@ -38,9 +40,12 @@ const MyAppointments = () => {
 	useEffect(() => {
 		const fetchAppointments = async () => {
 			try {
+				setIsLoading(true);
+				setError(null);
+
 				const token = await getToken();
 				if (!token) {
-					console.error("No token available");
+					setError("Authentication required");
 					return;
 				}
 
@@ -54,13 +59,18 @@ const MyAppointments = () => {
 				);
 
 				if (!response.ok) {
-					throw new Error(`HTTP error! status: ${response.status}`);
+					throw new Error(`Failed to fetch appointments: ${response.status}`);
 				}
 
 				const data: Appointment[] = await response.json();
 				setAppointments(data);
 			} catch (error) {
 				console.error("Failed to fetch appointments:", error);
+				setError(
+					error instanceof Error ? error.message : "Failed to load appointments"
+				);
+			} finally {
+				setIsLoading(false);
 			}
 		};
 
@@ -68,7 +78,7 @@ const MyAppointments = () => {
 	}, [getToken]);
 
 	return (
-		<div className="min-h-screen pb-20">
+		<div className="min-h-screen pb-20 py-4 px-4">
 			<div>
 				<h1 className="text-xl font-semibold text-primary-600 mb-2 text-left">
 					My Appointments
@@ -77,14 +87,34 @@ const MyAppointments = () => {
 					The bookings you've made through the app are shown below.
 				</p>
 			</div>
-			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-				{appointments.map((appointment) => (
-					<MyAppointmentCard
-						key={appointment.appointment_id}
-						appointment={appointment}
-					/>
-				))}
-			</div>
+
+			{isLoading ? (
+				<div className="flex justify-center items-center h-40">
+					<div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary-500"></div>
+					<span className="ml-3 text-gray-600">Loading appointments...</span>
+				</div>
+			) : error ? (
+				<div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+					{error}
+				</div>
+			) : appointments.length === 0 ? (
+				<div className="text-center py-12">
+					<p className="text-gray-500 mb-4">No appointments found.</p>
+					<p className="text-sm text-gray-400">
+						Click "Book Appointment" below to get started.
+					</p>
+				</div>
+			) : (
+				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+					{appointments.map((appointment) => (
+						<MyAppointmentCard
+							key={appointment.appointment_id}
+							appointment={appointment}
+						/>
+					))}
+				</div>
+			)}
+
 			<div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200">
 				<Button
 					className="w-full bg-primary-500 hover:bg-primary-700 text-white"

@@ -1,4 +1,5 @@
 export type Department = {
+    services: any;
     department_id: number;
     name: string;
     description: string | null;
@@ -100,4 +101,36 @@ export interface UploadDocumentRequest {
     serviceId: string;
     requiredDocumentId: string;
     appointmentId: string;
+}
+
+export interface RequiredDocument {
+    document_id: string;
+    service_id: string;
+    name: string;
+    description?: string;
+    is_mandatory: boolean;
+    document_format?: string;
+    created_at: string;
+    updated_at: string;
+    service?: {
+        service_id: string;
+        name: string;
+        description?: string;
+        department_id: number;
+        category: string;
+        estimated_total_completion_time: string;
+        created_at: string;
+        updated_at: string;
+        department?: {
+            department_id: number;
+            name: string;
+            description?: string;
+            address: string;
+            contact_email: string;
+            contact_phone: string;
+            clerk_org_id: string;
+            created_at: string;
+            updated_at: string;
+        };
+    };
 }

@@ -1,4 +1,4 @@
-import type { CreateDraftAppointmentRequest, DraftAppointmentResponse, CompleteAppointmentRequest, UploadDocumentRequest } from "./types";
+import type { CreateDraftAppointmentRequest, DraftAppointmentResponse, CompleteAppointmentRequest, UploadDocumentRequest, Department, Service, ServiceAvailability, RequiredDocument } from "./types";
 
 /**
  * Create a draft appointment (Step 1 of booking process)
@@ -136,6 +136,34 @@ export async function uploadDocument(
 }
 
 /**
+ * Get appointment details
+ */
+export async function getAppointment(
+    appointmentId: string,
+    token: string
+): Promise<any> {
+    try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/appointments/${appointmentId}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Failed to fetch appointment: ${response.status} ${errorText}`);
+        }
+
+        return response.json();
+    } catch (error) {
+        console.error('Error fetching appointment:', error);
+        throw error;
+    }
+}
+
+/**
  * Get documents for an appointment
  */
 export async function getAppointmentDocuments(
@@ -161,4 +189,96 @@ export async function getAppointmentDocuments(
     }
 
     return response.json();
+}
+
+/**
+ * Get all departments with their services
+ */
+export async function getDepartments(): Promise<Department[]> {
+    try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/departments`);
+
+        if (!response.ok) {
+            throw new Error(`Failed to fetch departments: ${response.status}`);
+        }
+
+        const departments: Department[] = await response.json();
+        return departments;
+    } catch (error) {
+        console.error('Error fetching departments:', error);
+        throw error;
+    }
+}
+
+/**
+ * Get a specific department by ID
+ */
+export async function getDepartment(id: number): Promise<Department> {
+    try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/departments/${id}`);
+
+        if (!response.ok) {
+            throw new Error(`Failed to fetch department: ${response.status}`);
+        }
+
+        const department: Department = await response.json();
+        return department;
+    } catch (error) {
+        console.error('Error fetching department:', error);
+        throw error;
+    }
+}
+
+/**
+ * Get all services
+ */
+export async function getServices(): Promise<Service[]> {
+    try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/government-services`);
+
+        if (!response.ok) {
+            throw new Error(`Failed to fetch services: ${response.status}`);
+        }
+
+        const services: Service[] = await response.json();
+        return services;
+    } catch (error) {
+        console.error('Error fetching services:', error);
+        throw error;
+    }
+}
+
+/**
+ * Get service availability for a specific service
+ */
+export async function getServiceAvailability(serviceId: string): Promise<ServiceAvailability[]> {
+    try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/service-availability?service_id=${serviceId}`);
+
+        if (!response.ok) {
+            throw new Error(`Failed to fetch service availability: ${response.status}`);
+        }
+
+        const availability: ServiceAvailability[] = await response.json();
+        return availability;
+    } catch (error) {
+        console.error('Error fetching service availability:', error);
+        throw error;
+    }
+}
+
+/**
+ * Get required documents for a specific service
+ */
+export async function getRequiredDocuments(serviceId: string): Promise<RequiredDocument[]> {
+    try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/required-documents/service/${serviceId}`);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch required documents: ${response.status}`);
+        }
+        return response.json();
+    } catch (error) {
+        console.error('Error fetching required documents:', error);
+        throw error;
+    }
 }

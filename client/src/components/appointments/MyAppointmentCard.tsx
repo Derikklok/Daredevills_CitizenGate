@@ -59,7 +59,7 @@ export function MyAppointmentCard({
 				<div className="flex items-start justify-between">
 					<div className="flex-1">
 						<CardTitle className="text-left text-lg font-semibold text-gray-900 mb-1">
-							{appointment.service.name}
+							{appointment.service?.name || "Service Name Unavailable"}
 						</CardTitle>
 						<p className="text-left text-sm text-gray-500">
 							Ref: {appointment.appointment_id}
@@ -86,7 +86,7 @@ export function MyAppointmentCard({
 					</div>
 					<div className="flex items-center text-sm text-gray-600">
 						<MapPin className="w-4 h-4 mr-2 text-gray-400" />
-						{appointment.service.department.name}
+						{appointment.service?.department?.name || "Department Unavailable"}
 					</div>
 				</div>
 
