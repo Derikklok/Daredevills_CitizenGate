@@ -14,6 +14,7 @@ import { ScheduleModule } from "@nestjs/schedule";
 import { MessagingModule } from "./appointments/messaging/messaging.module";
 import { UploadedServiceDocumentsModule } from './uploaded-service-documents/uploaded-service-documents.module';
 import { FeedbackModule } from './feedback/feedback.module';
+import { AnalyticsModule } from './analytics/analytics.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { FeedbackModule } from './feedback/feedback.module';
     MessagingModule,
     UploadedServiceDocumentsModule,
     FeedbackModule,
+    AnalyticsModule,
   ],
   controllers: [AppController],
   providers: [],

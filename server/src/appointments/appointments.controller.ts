@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards, UnauthorizedException } from '@nestjs/common';
 import { AppointmentsService } from './appointments.service';
 import { Appointment } from './appointment.entity';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -9,8 +9,14 @@ import { UpdateAppointmentStatusDto } from './dto/update-appointment-status.dto'
 import { AddAppointmentDocumentDto } from './dto/add-appointment-document.dto';
 import { AddAppointmentDocumentsBatchDto } from './dto/add-appointment-documents-batch.dto';
 import { ClerkAuthGuard } from '../auth/guards/clerk-auth.guard';
+import { OrganizationAuthGuard } from '../auth/guards/organization-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { CurrentUserWithOrg } from '../auth/decorators/current-user-with-org.decorator';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { RolesEnum } from '../auth/enums/roles.enum';
 import { AuthenticatedUser } from '../auth/interfaces/authenticated-user.interface';
+import { AuthenticatedUserWithOrganization } from '../auth/guards/organization-auth.guard';
 
 @ApiTags('Appointments')
 @ApiBearerAuth()
@@ -77,50 +83,163 @@ export class AppointmentsController {
   @Post()
   @ApiOperation({ summary: 'Create a complete appointment (single step)' })
   @ApiResponse({ status: 201, type: Appointment })
-  create(@Body() body: CreateAppointmentDto) {
+  create(
+    @Body() body: CreateAppointmentDto,
+    @CurrentUser() user: AuthenticatedUser
+  ) {
     const payload: Partial<Appointment> = {
       ...body,
       birth_date: new Date(body.birth_date),
       appointment_time: new Date(body.appointment_time),
+      user_id: user.accountId,
     } as unknown as Partial<Appointment>;
     return this.appointmentsService.create(payload);
   }
 
-  @Get()
-  @ApiOperation({ summary: 'List appointments with optional filters' })
+  @Get('my')
+  @ApiOperation({ summary: 'Get appointments for the current user' })
+  @ApiQuery({ name: 'status', required: false, type: String })
+  @ApiQuery({ name: 'date', required: false, type: String, description: 'YYYY-MM-DD' })
+  @ApiResponse({ status: 200, type: [Appointment] })
+  async getMyAppointments(
+    @CurrentUser() user: AuthenticatedUser,
+    @Query('status') status?: string,
+    @Query('date') date?: string,
+  ) {
+    const filters = {
+      user_id: user.accountId,
+      status: status,
+      date: date,
+    };
+
+    // Remove undefined and null string filters
+    Object.keys(filters).forEach(key => {
+      if (filters[key] === undefined || filters[key] === null || filters[key] === 'null' || filters[key] === '') {
+        delete filters[key];
+      }
+    });
+
+    return this.appointmentsService.findAll(filters);
+  }
+
+  @Get('admin')
+  @UseGuards(ClerkAuthGuard, OrganizationAuthGuard, RolesGuard)
+  @Roles(RolesEnum.ADMIN, RolesEnum.SYSTEM_ADMIN)
+  @ApiOperation({ summary: 'Get all appointments in the organization (Admin only)' })
   @ApiQuery({ name: 'department_id', required: false, type: Number })
   @ApiQuery({ name: 'service_id', required: false, type: String })
   @ApiQuery({ name: 'nic', required: false, type: String })
   @ApiQuery({ name: 'status', required: false, type: String })
   @ApiQuery({ name: 'date', required: false, type: String, description: 'YYYY-MM-DD' })
+
   @ApiResponse({ status: 200, type: [Appointment] })
-  findAll(
+  async getOrganizationAppointments(
+    @CurrentUserWithOrg() user: AuthenticatedUserWithOrganization,
     @Query('department_id') departmentId?: number,
     @Query('service_id') serviceId?: string,
     @Query('nic') nic?: string,
     @Query('status') status?: string,
     @Query('date') date?: string,
+
   ) {
+    const organizationId = user.organization?.id;
+
+    if (!organizationId) {
+      throw new UnauthorizedException('User must be part of an organization to access this endpoint');
+    }
+
     const filters = {
       department_id: departmentId,
       service_id: serviceId,
-      nic,
-      status,
-      date
+      nic: nic,
+      status: status,
+      date: date,
+      organization_id: organizationId,
     };
 
-    // Remove undefined filters
-    Object.keys(filters).forEach(key => filters[key] === undefined && delete filters[key]);
+    // Remove undefined and null string filters
+    Object.keys(filters).forEach(key => {
+      if (filters[key] === undefined || filters[key] === null || filters[key] === 'null' || filters[key] === '') {
+        delete filters[key];
+      }
+    });
 
-    return this.appointmentsService.findAll(filters);
+    return this.appointmentsService.findAllForOrganization(filters);
+  }
+
+  @Get('organization')
+  @UseGuards(ClerkAuthGuard, OrganizationAuthGuard)
+  @ApiOperation({ summary: 'Get all appointments in the organization (Organization users)' })
+  @ApiQuery({ name: 'department_id', required: false, type: Number })
+  @ApiQuery({ name: 'service_id', required: false, type: String })
+  @ApiQuery({ name: 'nic', required: false, type: String })
+  @ApiQuery({ name: 'status', required: false, type: String })
+  @ApiQuery({ name: 'date', required: false, type: String, description: 'YYYY-MM-DD' })
+
+  @ApiResponse({ status: 200, type: [Appointment] })
+  async getOrganizationAppointmentsForMembers(
+    @CurrentUserWithOrg() user: AuthenticatedUserWithOrganization,
+    @Query('department_id') departmentId?: number,
+    @Query('service_id') serviceId?: string,
+    @Query('nic') nic?: string,
+    @Query('status') status?: string,
+    @Query('date') date?: string,
+
+  ) {
+    const organizationId = user.organization?.id;
+
+    // If user has an organization, return org appointments
+    if (organizationId) {
+      const filters = {
+        department_id: departmentId,
+        service_id: serviceId,
+        nic: nic,
+        status: status,
+        date: date,
+        organization_id: organizationId,
+      };
+
+      // Remove undefined and null string filters
+      Object.keys(filters).forEach(key => {
+        if (filters[key] === undefined || filters[key] === null || filters[key] === 'null' || filters[key] === '') {
+          delete filters[key];
+        }
+      });
+
+      return this.appointmentsService.findAllForOrganization(filters);
+    } else {
+      // If user has no organization, return their personal appointments
+      const filters = {
+        user_id: user.accountId,
+        status: status,
+        date: date,
+      };
+
+      // Remove undefined and null string filters
+      Object.keys(filters).forEach(key => {
+        if (filters[key] === undefined || filters[key] === null || filters[key] === 'null' || filters[key] === '') {
+          delete filters[key];
+        }
+      });
+
+      return this.appointmentsService.findAll(filters);
+    }
   }
 
   @Get('by-nic/:nic')
   @ApiOperation({ summary: 'Find appointments by NIC' })
   @ApiParam({ name: 'nic', type: String })
   @ApiResponse({ status: 200, type: [Appointment] })
+
   findByNIC(@Param('nic') nic: string) {
     return this.appointmentsService.findByNIC(nic);
+  }
+
+  @Get('by-user/:userId')
+  @ApiOperation({ summary: 'Find appointments by user ID' })
+  @ApiParam({ name: 'userId', type: String, description: 'User ID of the appointment creator' })
+  findByUserId(@Param('userId') userId: string) {
+    return this.appointmentsService.findByUserId(userId);
   }
 
   @Get(':id')

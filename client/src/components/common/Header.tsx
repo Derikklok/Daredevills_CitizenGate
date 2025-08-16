@@ -1,4 +1,9 @@
-import {SignedIn, SignedOut, UserButton} from "@clerk/clerk-react";
+import {
+	SignedIn,
+	SignedOut,
+	UserButton,
+	OrganizationSwitcher,
+} from "@clerk/clerk-react";
 import {Link, useLocation, useNavigate} from "react-router-dom";
 import {Menu, ChevronLeft} from "lucide-react";
 import {Button} from "@/components/ui/button";
@@ -50,10 +55,24 @@ export default function Header() {
 							</Link>
 						</SignedOut>
 						<SignedIn>
+							{/* Organization Switcher - hidden on mobile */}
+							<div className="hidden md:block">
+								<OrganizationSwitcher
+									appearance={{
+										elements: {
+											organizationSwitcherTrigger:
+												"border border-gray-200 rounded-lg px-3 py-2 hover:bg-gray-50 transition-colors",
+											organizationPreview: "gap-2",
+											organizationSwitcherTriggerIcon: "text-gray-500",
+										},
+									}}
+								/>
+							</div>
 							<UserButton />
+							{/* Menu button - only visible on mobile */}
 							<button
 								onClick={() => setIsSidebarOpen(true)}
-								className="p-1 hover:bg-gray-100 rounded-full transition-colors">
+								className="md:hidden p-1 hover:bg-gray-100 rounded-full transition-colors">
 								<Menu className="w-6 h-6 cursor-pointer" />
 							</button>
 						</SignedIn>
