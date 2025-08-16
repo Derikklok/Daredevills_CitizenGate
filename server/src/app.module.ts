@@ -13,6 +13,7 @@ import { AppointmentsModule } from './appointments/appointments.module';
 import { ScheduleModule } from "@nestjs/schedule";
 import { MessagingModule } from "./appointments/messaging/messaging.module";
 import { UploadedServiceDocumentsModule } from './uploaded-service-documents/uploaded-service-documents.module';
+import { AnalyticsModule } from './analytics/analytics.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { UploadedServiceDocumentsModule } from './uploaded-service-documents/upl
     AppointmentsModule,
     MessagingModule,
     UploadedServiceDocumentsModule,
+    AnalyticsModule,
   ],
   controllers: [AppController],
   providers: [],
