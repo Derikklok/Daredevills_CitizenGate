@@ -168,7 +168,7 @@ export default function Home() {
 			{/* Admin Section */}
 			{isAnyAdmin && (
 				<div className="mb-8">
-					<h2 className="text-xl sm:text-2xl font-bold text-[#600D29] mb-4">
+					<h2 className="text-xl sm:text-2xl font-bold text-primary-500 mb-4">
 						Administration
 					</h2>
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -189,7 +189,7 @@ export default function Home() {
 								<CardFooter>
 									<Button
 										asChild
-										className="w-full bg-[#600D29] hover:bg-[#600D29]/90">
+										className="w-full bg-primary-500 hover:bg-primary-600/90">
 										<Link to="/admin">Go to Admin Dashboard</Link>
 									</Button>
 								</CardFooter>

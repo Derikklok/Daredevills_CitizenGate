@@ -1,7 +1,7 @@
 import {useState, useEffect} from "react";
 import ServiceAdminLayout from "./components/ServiceAdminLayout";
 import {Button} from "@/components/ui/button";
-import {Input} from "@/components/ui/input";
+
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {
 	Select,
@@ -70,7 +70,7 @@ const AppointmentManagement = () => {
 	const {getToken} = useAuth();
 	const [appointments, setAppointments] = useState<Appointment[]>([]);
 	const [loading, setLoading] = useState(true);
-	const [searchTerm, setSearchTerm] = useState("");
+	const [searchTerm] = useState("");
 	const [statusFilter, setStatusFilter] = useState<string>("all");
 	const [updateLoading, setUpdateLoading] = useState<string | null>(null);
 	const {organization} = useOrganization();

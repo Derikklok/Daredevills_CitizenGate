@@ -42,7 +42,7 @@ services:
       VITE_API_URL: ${VITE_API_URL:-http://localhost:3000}
       VITE_CLERK_PUBLISHABLE_KEY: ${VITE_CLERK_PUBLISHABLE_KEY}
     ports:
-      - "${CLIENT_PORT:-5173}:${NODE_ENV:-development == 'production' && 80 || 5173}"
+      - "${CLIENT_PORT:-5173}:5173"
     volumes:
       # Only mount source code in development
       - ./client:/app

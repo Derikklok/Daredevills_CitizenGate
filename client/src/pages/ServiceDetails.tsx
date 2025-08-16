@@ -29,7 +29,7 @@ export default function ServiceDetails({serviceName}: ServiceDetailsProps) {
 		<div className="min-h-screen bg-white">
 			{/* Content */}
 			<div className="px-4 py-6">
-				<h1 className="text-xl font-semibold text-primary-700 mb-2">
+				<h1 className="text-xl font-semibold text-primary-500 mb-2">
 					{serviceName}
 				</h1>
 				<p className="text-sm text-gray-600 mb-6">

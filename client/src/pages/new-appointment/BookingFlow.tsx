@@ -327,10 +327,10 @@ const BookingFlow = () => {
 										</div>
 									</div>
 
-									<div className="flex gap-3">
+									<div className="flex gap-3 flex-col md:flex-row md:justify-end">
 										<Button
 											variant="outline"
-											className="text-primary-600 border-primary-600"
+											className="text-primary-600 border-primary-600 w-full md:w-auto"
 											onClick={handleBackToServices}>
 											Choose Different Service
 										</Button>
@@ -339,7 +339,7 @@ const BookingFlow = () => {
 											to={`/calendar/${selectedService.service_id}${
 												appointmentId ? `?appointmentId=${appointmentId}` : ""
 											}`}>
-											<Button className="bg-primary-600 hover:bg-primary-600/90">
+											<Button className="bg-primary-600 hover:bg-primary-600/90 w-full md:w-auto">
 												View Available Slots
 											</Button>
 										</Link>

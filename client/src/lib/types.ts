@@ -158,3 +158,19 @@ export interface RequiredDocument {
         };
     };
 }
+
+// Feedback types
+export interface Feedback {
+    id: string;
+    serviceId: string;
+    rating: number;
+    description?: string;
+    createdAt: string;
+    service?: Service;
+}
+
+export interface CreateFeedbackRequest {
+    serviceId: string;
+    rating: number;
+    description?: string;
+}
