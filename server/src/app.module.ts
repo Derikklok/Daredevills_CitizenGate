@@ -10,6 +10,9 @@ import { GovernmentServicesModule } from "./government-services/government-servi
 import { ServiceAvailabilityModule } from './service-availability/service-availability.module';
 import { RequiredDocumentsModule } from './required-documents/required-documents.module';
 import { AppointmentsModule } from './appointments/appointments.module';
+import { ScheduleModule } from "@nestjs/schedule";
+import { MessagingModule } from "./appointments/messaging/messaging.module";
+import { UploadedServiceDocumentsModule } from './uploaded-service-documents/uploaded-service-documents.module';
 
 @Module({
   imports: [
@@ -30,13 +33,15 @@ import { AppointmentsModule } from './appointments/appointments.module';
       }),
       inject: [ConfigService],
     }),
+    ScheduleModule.forRoot(),
     AuthModule,
     DepartmentsModule,
     GovernmentServicesModule,
     ServiceAvailabilityModule,
     RequiredDocumentsModule,
     AppointmentsModule,
-
+    MessagingModule,
+    UploadedServiceDocumentsModule,
   ],
   controllers: [AppController],
   providers: [],

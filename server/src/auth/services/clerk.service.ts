@@ -1,7 +1,6 @@
 import { Injectable, Inject } from "@nestjs/common";
 import { AuthenticatedUser } from "../interfaces/authenticated-user.interface";
 import { RolesEnum } from "../enums/roles.enum";
-import { Organization } from "@clerk/clerk-sdk-node";
 
 export interface ClerkClient {
   users: {
@@ -26,12 +25,9 @@ export class ClerkService {
   async verifyToken(token: string): Promise<AuthenticatedUser> {
     try {
       const payload = await this.clerkClient.verifyToken(token);
-      console.log('Full Clerk payload:', JSON.stringify(payload, null, 2));
 
       // Map Clerk roles to our application roles
       const mapClerkRolesToAppRoles = (clerkRoles: any): RolesEnum[] => {
-        console.log('Raw Clerk roles input:', clerkRoles);
-
         // Handle different input types
         let rolesArray: string[] = [];
         if (Array.isArray(clerkRoles)) {
@@ -42,27 +38,29 @@ export class ClerkService {
           rolesArray = [clerkRoles.toString()];
         }
 
-        console.log('Processed roles array:', rolesArray);
-
         const roleMap: { [key: string]: RolesEnum } = {
           'admin': RolesEnum.ADMIN,
           'org:admin': RolesEnum.ADMIN,
           'member': RolesEnum.MEMBER,
           'user': RolesEnum.USER,
+          'system-admin': RolesEnum.SYSTEM_ADMIN,
         };
 
         const mappedRoles = rolesArray.map(role => {
           const mappedRole = roleMap[role.toLowerCase()];
-          console.log(`Mapping role: ${role} -> ${mappedRole}`);
           return mappedRole;
         }).filter(Boolean);
-
-        console.log('Final mapped roles:', mappedRoles);
 
         // If no roles are mapped, default to USER
         return mappedRoles.length > 0 ? mappedRoles : [RolesEnum.USER];
       };
 
+      // Check if user has a role in public metadata
+      let metadataRole = null;
+      if (payload.public_metadata && payload.public_metadata.role) {
+        metadataRole = payload.public_metadata.role;
+      }
+      
       const user = {
         accountId: payload.sub,
         organizationId: payload.org_id || payload.organizationId,
@@ -70,7 +68,8 @@ export class ClerkService {
         firstName: payload.first_name || payload.firstName,
         lastName: payload.last_name || payload.lastName,
         roles: mapClerkRolesToAppRoles(
-          payload.org_role || // Prioritize org_role since that's what Clerk sends
+          metadataRole || // First check public metadata role
+          payload.org_role || // Then check org_role
           payload.roles ||
           payload.organization_roles ||
           payload.org_roles ||

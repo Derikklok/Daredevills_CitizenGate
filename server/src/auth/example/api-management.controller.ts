@@ -100,9 +100,7 @@ export class APIManagementController {
     @Param("jwtId") jwtId: string
   ): Promise<{ success: boolean }> {
     // Mock implementation - replace with your actual deletion logic
-    console.log(
-      `Deleting API key with jwtId: ${jwtId} for user: ${curUser.accountId}`
-    );
+
     return { success: true };
   }
 

@@ -1,8 +1,10 @@
-import { createRoot } from "react-dom/client";
+import {StrictMode} from "react";
+import {createRoot} from "react-dom/client";
 import "./index.css";
 import App from "./App.tsx";
-import { BrowserRouter } from "react-router-dom";
-import { ClerkProvider } from "@clerk/clerk-react";
+import {BrowserRouter} from "react-router-dom";
+import {ClerkProvider} from "@clerk/clerk-react";
+import {shadcn} from "@clerk/themes";
 
 // Import your Publishable Key
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
@@ -13,9 +15,22 @@ if (!PUBLISHABLE_KEY) {
 
 const root = createRoot(document.getElementById("root")!);
 root.render(
-		<ClerkProvider publishableKey={PUBLISHABLE_KEY}>
+	<StrictMode>
+		<ClerkProvider
+			appearance={{
+				baseTheme: [shadcn],
+				variables: {colorPrimary: "#8D153A"},
+				signIn: {
+					baseTheme: [shadcn],
+					variables: {colorPrimary: "#8D153A"},
+				},
+			}}
+			signInUrl="/sign-in"
+			signUpUrl="/sign-up"
+			publishableKey={PUBLISHABLE_KEY}>
 			<BrowserRouter>
 				<App />
 			</BrowserRouter>
 		</ClerkProvider>
+	</StrictMode>
 );
