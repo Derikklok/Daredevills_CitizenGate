@@ -23,7 +23,13 @@ import {
 	AlertCircle,
 } from "lucide-react";
 import {Badge} from "@/components/ui/badge";
-import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger,
+} from "@/components/ui/dialog";
 
 // Types
 interface Appointment {
@@ -66,6 +72,7 @@ const AppointmentManagement = () => {
 	const [loading, setLoading] = useState(true);
 	const [searchTerm, setSearchTerm] = useState("");
 	const [statusFilter, setStatusFilter] = useState<string>("all");
+	const [updateLoading, setUpdateLoading] = useState<string | null>(null);
 	const {organization} = useOrganization();
 
 	console.log(organization?.name);
@@ -142,6 +149,53 @@ const AppointmentManagement = () => {
 		(a) => a.appointment_status === "cancelled"
 	).length;
 
+	// Update appointment status
+	const updateAppointmentStatus = async (
+		appointmentId: string,
+		newStatus: "confirmed" | "pending" | "cancelled" | "completed" | "drafted"
+	) => {
+		try {
+			setUpdateLoading(appointmentId);
+			const token = await getToken();
+			if (!token) {
+				throw new Error("No authentication token available");
+			}
+
+			const response = await fetch(
+				`http://localhost:3000/api/appointments/${appointmentId}/status`,
+				{
+					method: "PUT",
+					headers: {
+						"Content-Type": "application/json",
+						Authorization: `Bearer ${token}`,
+					},
+					body: JSON.stringify({status: newStatus}),
+				}
+			);
+
+			if (!response.ok) {
+				throw new Error("Failed to update appointment status");
+			}
+
+			// Update the appointment in local state
+			setAppointments((prev) =>
+				prev.map((appointment) =>
+					appointment.appointment_id === appointmentId
+						? {
+								...appointment,
+								appointment_status:
+									newStatus as typeof appointment.appointment_status,
+						  }
+						: appointment
+				)
+			);
+		} catch (error) {
+			console.error("Error updating appointment status:", error);
+		} finally {
+			setUpdateLoading(null);
+		}
+	};
+
 	// Get status badge styling
 	const getStatusBadge = (status: string) => {
 		switch (status) {
@@ -197,15 +251,15 @@ const AppointmentManagement = () => {
 				</header>
 
 				{/* Dashboard Stats */}
-				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+				<div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
 					<Card>
-						<CardHeader className="pb-2">
+						<CardHeader className="pb-0">
 							<CardTitle className="text-sm font-medium text-gray-500">
 								Today's Appointments
 							</CardTitle>
 						</CardHeader>
 						<CardContent>
-							<div className="flex items-center">
+							<div className="flex items-center justify-center">
 								<Calendar className="h-4 w-4 text-blue-600 mr-2" />
 								<span className="text-2xl font-bold">{todayCount}</span>
 							</div>
@@ -213,13 +267,13 @@ const AppointmentManagement = () => {
 					</Card>
 
 					<Card>
-						<CardHeader className="pb-2">
+						<CardHeader className="pb-0">
 							<CardTitle className="text-sm font-medium text-gray-500">
 								Pending
 							</CardTitle>
 						</CardHeader>
 						<CardContent>
-							<div className="flex items-center">
+							<div className="flex items-center justify-center">
 								<AlertCircle className="h-4 w-4 text-yellow-600 mr-2" />
 								<span className="text-2xl font-bold">{pendingCount}</span>
 							</div>
@@ -227,13 +281,13 @@ const AppointmentManagement = () => {
 					</Card>
 
 					<Card>
-						<CardHeader className="pb-2">
+						<CardHeader className="pb-0">
 							<CardTitle className="text-sm font-medium text-gray-500">
 								Confirmed
 							</CardTitle>
 						</CardHeader>
 						<CardContent>
-							<div className="flex items-center">
+							<div className="flex items-center justify-center">
 								<CheckCircle className="h-4 w-4 text-green-600 mr-2" />
 								<span className="text-2xl font-bold">{confirmedCount}</span>
 							</div>
@@ -241,30 +295,32 @@ const AppointmentManagement = () => {
 					</Card>
 
 					<Card>
-						<CardHeader className="pb-2">
+						<CardHeader className="pb-0">
 							<CardTitle className="text-sm font-medium text-gray-500">
 								Cancelled
 							</CardTitle>
 						</CardHeader>
 						<CardContent>
-							<div className="flex items-center">
+							<div className="flex items-center justify-center">
 								<XCircle className="h-4 w-4 text-red-600 mr-2" />
-								<span className="text-2xl font-bold">{cancelledCount}</span>
+								<span className="text-2xl font-bold align-text-bottom">
+									{cancelledCount}
+								</span>
 							</div>
 						</CardContent>
 					</Card>
 				</div>
 
-				<div className="flex justify-between items-center mb-6">
-					<div className="flex-1 max-w-md">
+				<div className="flex flex-col md:flex-row gap-4 mb-6">
+					{/* <div className="flex-1">
 						<Input
 							placeholder="Search appointments..."
 							value={searchTerm}
 							onChange={(e) => setSearchTerm(e.target.value)}
 							className="w-full"
 						/>
-					</div>
-					<div className="w-40 mx-4">
+					</div> */}
+					<div className="w-full md:w-48">
 						<Select value={statusFilter} onValueChange={setStatusFilter}>
 							<SelectTrigger>
 								<SelectValue placeholder="Filter by status" />
@@ -272,7 +328,7 @@ const AppointmentManagement = () => {
 							<SelectContent>
 								<SelectGroup>
 									<SelectItem value="all">All Statuses</SelectItem>
-									<SelectItem value="drafted">Draft</SelectItem>
+									<SelectItem value="draft">Draft</SelectItem>
 									<SelectItem value="pending">Pending</SelectItem>
 									<SelectItem value="confirmed">Confirmed</SelectItem>
 									<SelectItem value="completed">Completed</SelectItem>
@@ -281,123 +337,174 @@ const AppointmentManagement = () => {
 							</SelectContent>
 						</Select>
 					</div>
-					<Button>Create Appointment</Button>
 				</div>
 
-				<Tabs defaultValue="list" className="w-full">
-					<TabsList className="mb-4">
-						<TabsTrigger value="list">List View</TabsTrigger>
-						<TabsTrigger value="calendar">Calendar View</TabsTrigger>
-					</TabsList>
+				{loading ? (
+					<div className="text-center py-10">Loading appointments...</div>
+				) : filteredAppointments.length === 0 ? (
+					<div className="text-center py-10">
+						<p className="text-gray-500">
+							No appointments found matching your criteria.
+						</p>
+					</div>
+				) : (
+					<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+						{filteredAppointments.map((appointment) => {
+							const appointmentDate = new Date(
+								appointment.appointment_time
+							).toLocaleDateString("en-US", {
+								year: "numeric",
+								month: "short",
+								day: "numeric",
+							});
+							const appointmentTime = new Date(
+								appointment.appointment_time
+							).toLocaleTimeString("en-US", {
+								hour: "2-digit",
+								minute: "2-digit",
+								hour12: true,
+							});
 
-					<TabsContent value="list">
-						{loading ? (
-							<div className="text-center py-10">Loading appointments...</div>
-						) : filteredAppointments.length === 0 ? (
-							<div className="text-center py-10">
-								<p className="text-gray-500">
-									No appointments found matching your criteria.
-								</p>
-							</div>
-						) : (
-							<div className="space-y-4">
-								{filteredAppointments.map((appointment) => {
-									const appointmentDate = new Date(
-										appointment.appointment_time
-									).toLocaleDateString("en-US", {
-										year: "numeric",
-										month: "short",
-										day: "numeric",
-									});
-									const appointmentTime = new Date(
-										appointment.appointment_time
-									).toLocaleTimeString("en-US", {
-										hour: "2-digit",
-										minute: "2-digit",
-										hour12: true,
-									});
+							return (
+								<Card
+									key={appointment.appointment_id}
+									className="overflow-hidden hover:shadow-md transition-shadow">
+									<CardHeader className="pb-3">
+										<div className="flex items-center justify-between">
+											<div className="flex items-center">
+												<User className="h-4 w-4 mr-2 text-blue-600" />
+												<CardTitle className="text-lg">
+													{appointment.full_name}
+												</CardTitle>
+											</div>
+											{getStatusBadge(appointment.appointment_status)}
+										</div>
+									</CardHeader>
+									<CardContent className="pt-0">
+										<div className="space-y-2 mb-4">
+											<div className="flex items-center text-sm text-gray-600">
+												<Calendar className="h-4 w-4 mr-2" />
+												<span>{appointmentDate}</span>
+											</div>
+											<div className="flex items-center text-sm text-gray-600">
+												<Clock className="h-4 w-4 mr-2" />
+												<span>{appointmentTime}</span>
+											</div>
+											<div className="flex items-center text-sm text-gray-600">
+												<MapPin className="h-4 w-4 mr-2" />
+												<span className="truncate">
+													{appointment.service?.name || "Service Name N/A"}
+												</span>
+											</div>
+										</div>
 
-									return (
-										<Card
-											key={appointment.appointment_id}
-											className="overflow-hidden">
-											<CardContent className="p-4">
-												<div className="flex flex-col md:flex-row justify-between">
-													<div className="mb-4 md:mb-0">
-														<div className="flex items-center mb-2">
-															<User className="h-4 w-4 mr-2" />
-															<h3 className="font-medium text-lg">
-																{appointment.full_name}
-															</h3>
+										<div className="space-y-1 mb-4 text-sm text-gray-500">
+											<div className="flex items-center">
+												<span className="mr-1">📧</span>
+												<span className="truncate">{appointment.email}</span>
+											</div>
+											<div className="flex items-center">
+												<span className="mr-1">📱</span>
+												<span>{appointment.phone_number}</span>
+											</div>
+											<div className="flex items-center">
+												<span className="mr-1">🆔</span>
+												<span>{appointment.nic}</span>
+											</div>
+										</div>
+
+										{appointment.notes && (
+											<p className="text-sm text-gray-500 mb-4 p-2 bg-gray-50 rounded-md">
+												<strong>Note:</strong> {appointment.notes}
+											</p>
+										)}
+
+										<div className="text-xs text-gray-400 mb-4">
+											Department:{" "}
+											{appointment.service?.department?.name || "N/A"}
+										</div>
+
+										<div className="flex flex-col gap-2">
+											<Dialog>
+												<DialogTrigger asChild>
+													<Button
+														size="sm"
+														variant="outline"
+														className="w-full">
+														View Details
+													</Button>
+												</DialogTrigger>
+												<DialogContent className="max-w-md">
+													<DialogHeader>
+														<DialogTitle>Appointment Details</DialogTitle>
+													</DialogHeader>
+													<div className="space-y-3">
+														<div>
+															<strong>Name:</strong> {appointment.full_name}
 														</div>
-														<div className="flex items-center text-sm text-gray-600 mb-2">
-															<Calendar className="h-4 w-4 mr-2" />
-															<span>{appointmentDate}</span>
-															<Clock className="h-4 w-4 ml-4 mr-2" />
-															<span>{appointmentTime}</span>
+														<div>
+															<strong>Service:</strong>{" "}
+															{appointment.service?.name}
 														</div>
-														<div className="flex items-center text-sm text-gray-600 mb-1">
-															<MapPin className="h-4 w-4 mr-2" />
-															<span>
-																{appointment.service?.name ||
-																	"Service Name N/A"}
-															</span>
+														<div>
+															<strong>Date & Time:</strong> {appointmentDate} at{" "}
+															{appointmentTime}
 														</div>
-														<div className="text-sm text-gray-500 mb-1">
-															<span>📧 {appointment.email}</span>
+														<div>
+															<strong>Email:</strong> {appointment.email}
 														</div>
-														<div className="text-sm text-gray-500 mb-1">
-															<span>📱 {appointment.phone_number}</span>
+														<div>
+															<strong>Phone:</strong> {appointment.phone_number}
 														</div>
-														<div className="text-sm text-gray-500">
-															<span>🆔 {appointment.nic}</span>
+														<div>
+															<strong>NIC:</strong> {appointment.nic}
+														</div>
+														<div>
+															<strong>Status:</strong>{" "}
+															{getStatusBadge(appointment.appointment_status)}
 														</div>
 														{appointment.notes && (
-															<p className="mt-2 text-sm text-gray-500">
-																Note: {appointment.notes}
-															</p>
+															<div>
+																<strong>Notes:</strong> {appointment.notes}
+															</div>
 														)}
 													</div>
-													<div className="flex flex-col items-start md:items-end">
-														{getStatusBadge(appointment.appointment_status)}
-														<div className="mt-2 text-xs text-gray-500">
-															{appointment.service?.department?.name ||
-																"Department N/A"}
-														</div>
-														<div className="mt-2 flex space-x-2">
-															<Button size="sm" variant="outline">
-																Details
-															</Button>
-															<Button size="sm" variant="outline">
-																Update Status
-															</Button>
-														</div>
-													</div>
-												</div>
-											</CardContent>
-										</Card>
-									);
-								})}
-							</div>
-						)}
-					</TabsContent>
+												</DialogContent>
+											</Dialog>
 
-					<TabsContent value="calendar">
-						<Card>
-							<CardContent className="p-6">
-								<div className="text-center p-8 border rounded-md bg-slate-50">
-									<p className="text-gray-500">
-										Calendar view will be implemented in the next phase.
-									</p>
-									<p className="text-gray-500 text-sm">
-										This view will allow viewing and managing appointments in a
-										calendar format.
-									</p>
-								</div>
-							</CardContent>
-						</Card>
-					</TabsContent>
-				</Tabs>
+											<Select
+												value={appointment.appointment_status}
+												onValueChange={(newStatus) =>
+													updateAppointmentStatus(
+														appointment.appointment_id,
+														newStatus as
+															| "confirmed"
+															| "pending"
+															| "cancelled"
+															| "completed"
+															| "drafted"
+													)
+												}
+												disabled={updateLoading === appointment.appointment_id}>
+												<SelectTrigger className="w-full">
+													<SelectValue />
+												</SelectTrigger>
+												<SelectContent>
+													<SelectGroup>
+														<SelectItem value="pending">Pending</SelectItem>
+														<SelectItem value="confirmed">Confirmed</SelectItem>
+														<SelectItem value="completed">Completed</SelectItem>
+														<SelectItem value="cancelled">Cancelled</SelectItem>
+													</SelectGroup>
+												</SelectContent>
+											</Select>
+										</div>
+									</CardContent>
+								</Card>
+							);
+						})}
+					</div>
+				)}
 			</div>
 		</ServiceAdminLayout>
 	);
