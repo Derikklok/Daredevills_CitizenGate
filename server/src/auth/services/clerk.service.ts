@@ -43,6 +43,7 @@ export class ClerkService {
           'org:admin': RolesEnum.ADMIN,
           'member': RolesEnum.MEMBER,
           'user': RolesEnum.USER,
+          'system-admin': RolesEnum.SYSTEM_ADMIN,
         };
 
         const mappedRoles = rolesArray.map(role => {
@@ -54,6 +55,12 @@ export class ClerkService {
         return mappedRoles.length > 0 ? mappedRoles : [RolesEnum.USER];
       };
 
+      // Check if user has a role in public metadata
+      let metadataRole = null;
+      if (payload.public_metadata && payload.public_metadata.role) {
+        metadataRole = payload.public_metadata.role;
+      }
+      
       const user = {
         accountId: payload.sub,
         organizationId: payload.org_id || payload.organizationId,
@@ -61,7 +68,8 @@ export class ClerkService {
         firstName: payload.first_name || payload.firstName,
         lastName: payload.last_name || payload.lastName,
         roles: mapClerkRolesToAppRoles(
-          payload.org_role || // Prioritize org_role since that's what Clerk sends
+          metadataRole || // First check public metadata role
+          payload.org_role || // Then check org_role
           payload.roles ||
           payload.organization_roles ||
           payload.org_roles ||
