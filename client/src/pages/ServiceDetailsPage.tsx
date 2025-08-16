@@ -26,6 +26,8 @@ import {
 	createDraftAppointment,
 } from "@/lib/api";
 import type {Service, RequiredDocument} from "@/lib/types";
+import FeedbackForm from "@/components/feedback/FeedbackForm";
+import FeedbackDisplay from "@/components/feedback/FeedbackDisplay";
 
 export default function ServiceDetailsPage() {
 	const {serviceId} = useParams<{serviceId: string}>();
@@ -40,6 +42,7 @@ export default function ServiceDetailsPage() {
 	const [loading, setLoading] = useState(true);
 	const [bookingLoading, setBookingLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const [feedbackRefreshTrigger, setFeedbackRefreshTrigger] = useState(0);
 
 	useEffect(() => {
 		const fetchServiceDetails = async () => {
@@ -114,6 +117,11 @@ export default function ServiceDetailsPage() {
 		} finally {
 			setBookingLoading(false);
 		}
+	};
+
+	const handleFeedbackSubmitted = () => {
+		// Trigger refresh of feedback display
+		setFeedbackRefreshTrigger((prev) => prev + 1);
 	};
 
 	if (loading) {
@@ -365,7 +373,7 @@ export default function ServiceDetailsPage() {
 				)}
 
 				{/* Quick Booking Section */}
-				<Card className="bg-gradient-to-r from-[#600D29]/5 to-[#A8174E]/5 border-[#600D29]/20">
+				<Card className="bg-gradient-to-r from-[#600D29]/5 to-[#A8174E]/5 border-[#600D29]/20 mb-8">
 					<CardHeader>
 						<CardTitle className="text-[#600D29]">Ready to Book?</CardTitle>
 						<CardDescription>
@@ -409,6 +417,23 @@ export default function ServiceDetailsPage() {
 						</div>
 					</CardContent>
 				</Card>
+
+				{/* Feedback Section */}
+				<div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+					{/* Feedback Display */}
+					<FeedbackDisplay
+						serviceId={service.service_id}
+						serviceName={service.name}
+						refreshTrigger={feedbackRefreshTrigger}
+					/>
+
+					{/* Feedback Form */}
+					<FeedbackForm
+						serviceId={service.service_id}
+						serviceName={service.name}
+						onFeedbackSubmitted={handleFeedbackSubmitted}
+					/>
+				</div>
 			</div>
 		</div>
 	);

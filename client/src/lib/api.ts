@@ -6,6 +6,8 @@ import type {
     Department,
     Service,
     RequiredDocument,
+    Feedback,
+    CreateFeedbackRequest,
 } from "./types";
 import { getNormalizedApiUrl } from "./apiUtils";
 
@@ -589,11 +591,11 @@ export async function addRequiredDocument(documentData: {
             },
             body: JSON.stringify(documentData)
         });
-        
+
         if (!response.ok) {
             throw new Error(`Failed to add required document: ${response.status}`);
         }
-        
+
         return response.json();
     } catch (error) {
         console.error('Error adding required document:', error);
@@ -616,7 +618,7 @@ export async function deleteRequiredDocument(documentId: string, token: string):
                 Authorization: `Bearer ${token}`,
             }
         });
-        
+
         if (!response.ok) {
             throw new Error(`Failed to delete required document: ${response.status}`);
         }
@@ -652,14 +654,76 @@ export async function updateRequiredDocument(
             },
             body: JSON.stringify(documentData)
         });
-        
+
         if (!response.ok) {
             throw new Error(`Failed to update required document: ${response.status}`);
         }
-        
+
         return response.json();
     } catch (error) {
         console.error('Error updating required document:', error);
+        throw error;
+    }
+}
+
+/**
+ * Submit feedback for a government service
+ */
+export async function submitFeedback(
+    feedbackData: CreateFeedbackRequest
+): Promise<Feedback> {
+    try {
+        const response = await fetch(`${normalizedApiUrl}/api/feedback`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(feedbackData)
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to submit feedback: ${response.status}`);
+        }
+
+        return response.json();
+    } catch (error) {
+        console.error('Error submitting feedback:', error);
+        throw error;
+    }
+}
+
+/**
+ * Get all feedback for a specific service
+ */
+export async function getServiceFeedback(serviceId: string): Promise<Feedback[]> {
+    try {
+        const response = await fetch(`${normalizedApiUrl}/api/feedback/service/${serviceId}`);
+
+        if (!response.ok) {
+            throw new Error(`Failed to fetch service feedback: ${response.status}`);
+        }
+
+        return response.json();
+    } catch (error) {
+        console.error('Error fetching service feedback:', error);
+        throw error;
+    }
+}
+
+/**
+ * Get all feedback
+ */
+export async function getAllFeedback(): Promise<Feedback[]> {
+    try {
+        const response = await fetch(`${normalizedApiUrl}/api/feedback`);
+
+        if (!response.ok) {
+            throw new Error(`Failed to fetch all feedback: ${response.status}`);
+        }
+
+        return response.json();
+    } catch (error) {
+        console.error('Error fetching all feedback:', error);
         throw error;
     }
 }
