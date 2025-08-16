@@ -7,10 +7,10 @@ import {useIsAdmin} from "@/hooks/useAuth";
 const LandingPage = () => {
 	const navigate = useNavigate();
 	const {isSignedIn, isLoaded} = useAuth();
-	const isAdmin = useIsAdmin();
+	const {isAdmin, isLoading: adminLoading} = useIsAdmin();
 
 	const handleGetStarted = () => {
-		if (isLoaded && isSignedIn) {
+		if (isLoaded && isSignedIn && !adminLoading) {
 			if (isAdmin) {
 				navigate("/admin"); // Navigate to admin dashboard
 			} else {
