@@ -9,10 +9,10 @@ import LandingPage from "./pages/LandingPage";
 import Home from "./pages/Home";
 import ServiceDetails from "./pages/ServiceDetails";
 import ServiceDetailsPage from "./pages/ServiceDetailsPage";
-import BookingFlow from "./pages/NewAppointment/BookingFlow";
-import CalendarView from "./pages/NewAppointment/CalendarView";
-import NewAppointmentDocumentUpload from "./pages/NewAppointment/NewAppointmentDocumentUpload";
-import CompleteAppointment from "./pages/NewAppointment/CompleteAppointment";
+import BookingFlow from "./pages/new-appointment/BookingFlow";
+import CalendarView from "./pages/new-appointment/CalendarView";
+import NewAppointmentDocumentUpload from "./pages/new-appointment/NewAppointmentDocumentUpload";
+import CompleteAppointment from "./pages/new-appointment/CompleteAppointment";
 import AppointmentConfirmation from "./pages/AppointmentConfirmation";
 // Admin components
 import AdminDashboard from "./pages/admin/AdminDashboard";
