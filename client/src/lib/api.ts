@@ -549,3 +549,117 @@ export async function getRequiredDocuments(serviceId: string): Promise<RequiredD
         throw error;
     }
 }
+
+/**
+ * Get all required documents
+ */
+export async function getAllRequiredDocuments(): Promise<RequiredDocument[]> {
+    try {
+        const response = await fetch(`${normalizedApiUrl}/api/required-documents`);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch all required documents: ${response.status}`);
+        }
+        return response.json();
+    } catch (error) {
+        console.error('Error fetching all required documents:', error);
+        throw error;
+    }
+}
+
+/**
+ * Add a new required document
+ */
+export async function addRequiredDocument(documentData: {
+    service_id: string;
+    name: string;
+    description: string;
+    is_mandatory: boolean;
+    document_format: string;
+}, token: string): Promise<RequiredDocument> {
+    if (!token) {
+        throw new Error('Authentication token is required');
+    }
+
+    try {
+        const response = await fetch(`${normalizedApiUrl}/api/required-documents`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(documentData)
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Failed to add required document: ${response.status}`);
+        }
+        
+        return response.json();
+    } catch (error) {
+        console.error('Error adding required document:', error);
+        throw error;
+    }
+}
+
+/**
+ * Delete a required document
+ */
+export async function deleteRequiredDocument(documentId: string, token: string): Promise<void> {
+    if (!token) {
+        throw new Error('Authentication token is required');
+    }
+
+    try {
+        const response = await fetch(`${normalizedApiUrl}/api/required-documents/${documentId}`, {
+            method: 'DELETE',
+            headers: {
+                Authorization: `Bearer ${token}`,
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Failed to delete required document: ${response.status}`);
+        }
+    } catch (error) {
+        console.error('Error deleting required document:', error);
+        throw error;
+    }
+}
+
+/**
+ * Update a required document
+ */
+export async function updateRequiredDocument(
+    documentId: string,
+    documentData: {
+        name: string;
+        description: string;
+        is_mandatory: boolean;
+        document_format: string;
+    },
+    token: string
+): Promise<RequiredDocument> {
+    if (!token) {
+        throw new Error('Authentication token is required');
+    }
+
+    try {
+        const response = await fetch(`${normalizedApiUrl}/api/required-documents/${documentId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(documentData)
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Failed to update required document: ${response.status}`);
+        }
+        
+        return response.json();
+    } catch (error) {
+        console.error('Error updating required document:', error);
+        throw error;
+    }
+}
