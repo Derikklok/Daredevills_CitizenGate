@@ -1,4 +1,4 @@
-import type { GovernmentService } from "./types";
+import type { GovernmentService, Department } from "./types";
 import { getNormalizedApiUrl } from "./apiUtils";
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
@@ -204,5 +204,51 @@ export async function deleteGovernmentService(serviceId: string, token: string):
     if (!response.ok) {
         const errorText = await response.text();
         throw new Error(`Failed to delete government service: ${response.status} ${errorText}`);
+    }
+}
+
+/**
+ * Get department by Clerk organization ID
+ */
+export async function getDepartmentByOrgId(orgId: string, token?: string): Promise<Department> {
+    const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+    };
+
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    try {
+        // Get all departments
+        const response = await fetch(`${normalizedApiUrl}/api/departments`, {
+            method: 'GET',
+            headers
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Failed to fetch departments: ${response.status} ${errorText}`);
+        }
+
+        const departments: Department[] = await response.json();
+        console.log(`Found ${departments.length} departments, searching for one with clerk_org_id: ${orgId}`);
+        
+        // Log department IDs and org IDs for debugging
+        departments.forEach(dept => {
+            console.log(`Department: ${dept.name}, ID: ${dept.department_id}, Clerk Org ID: ${dept.clerk_org_id}`);
+        });
+        
+        // Find the department with the matching clerk_org_id
+        const department = departments.find(dept => dept.clerk_org_id === orgId);
+        
+        if (!department) {
+            throw new Error(`Department not found for organization ID: ${orgId}`);
+        }
+        
+        return department;
+    } catch (error) {
+        console.error('Error fetching department by organization ID:', error);
+        throw error;
     }
 }
