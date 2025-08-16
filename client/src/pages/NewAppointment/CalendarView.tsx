@@ -1,5 +1,5 @@
 import {useState, useEffect} from "react";
-import {useParams, Link, useNavigate} from "react-router-dom";
+import {useParams, Link, useNavigate, useSearchParams} from "react-router-dom";
 import {useAuth} from "@clerk/clerk-react";
 import {Button} from "@/components/ui/button";
 import {ArrowLeft} from "lucide-react";
@@ -52,6 +52,7 @@ const generateTimeSlots = (
 const CalendarView = () => {
 	const {serviceId} = useParams<{serviceId: string}>();
 	const navigate = useNavigate();
+	const [searchParams] = useSearchParams();
 	const [availability, setAvailability] = useState<ServiceAvailability[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
@@ -212,25 +213,35 @@ const CalendarView = () => {
 				throw new Error("Authentication required");
 			}
 
-			// Step 1: Create a draft appointment
-			const draft = await createDraftAppointment({}, token);
+			// Check if we have an existing draft appointment from query params
+			const existingAppointmentId = searchParams.get("appointmentId");
+			let draftAppointmentId: string;
 
-			// Step 2: Update the draft with service, availability, and specific time
+			if (existingAppointmentId) {
+				// Use existing draft
+				draftAppointmentId = existingAppointmentId;
+			} else {
+				// Create a new draft appointment
+				const draft = await createDraftAppointment({}, token);
+				draftAppointmentId = draft.appointment_id;
+			}
+
+			// Update the draft with service, availability, and specific time
 			const [hours, minutes] = selectedTimeSlot.time.split(":").map(Number);
 			const appointmentDateTime = new Date(selectedTimeSlot.date);
 			appointmentDateTime.setHours(hours, minutes, 0, 0);
 
 			await updateDraftWithService(
-				draft.appointment_id,
+				draftAppointmentId,
 				serviceId,
 				selectedTimeSlot.availabilityId,
 				appointmentDateTime.toISOString(),
 				token
 			);
 
-			// Step 3: Navigate to document upload page
+			// Navigate to document upload page
 			navigate(
-				`/book-appointment/documents?appointmentId=${draft.appointment_id}&serviceId=${serviceId}`
+				`/book-appointment/documents?appointmentId=${draftAppointmentId}&serviceId=${serviceId}`
 			);
 		} catch (error) {
 			alert(`Failed to start booking process: ${error}`);

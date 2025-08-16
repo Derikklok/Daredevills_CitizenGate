@@ -11,8 +11,8 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import {useUser, useAuth} from "@clerk/clerk-react";
-import {fetchDepartmentAppointments} from "@/lib/serviceApi";
+import {useAuth, useOrganization} from "@clerk/clerk-react";
+import {fetchOrganizationAppointments} from "@/lib/serviceApi";
 import {
 	Calendar,
 	Clock,
@@ -29,152 +29,117 @@ import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 interface Appointment {
 	appointment_id: string;
 	service_id: string;
-	service_name: string;
 	user_id: string;
-	user_name: string;
-	user_email: string;
-	appointment_date: string;
+	full_name: string;
+	nic: string;
+	phone_number: string;
+	email: string;
 	appointment_time: string;
-	status: "confirmed" | "pending" | "cancelled" | "completed";
+	appointment_status:
+		| "confirmed"
+		| "pending"
+		| "cancelled"
+		| "completed"
+		| "drafted";
 	notes?: string;
 	created_at: string;
+	service: {
+		service_id: string;
+		name: string;
+		description: string;
+		department: {
+			department_id: number;
+			name: string;
+		};
+	};
+	availability: {
+		availability_id: string;
+		day_of_week: string;
+		start_time: string;
+		end_time: string;
+	};
 }
 
 const AppointmentManagement = () => {
-	const {user} = useUser();
 	const {getToken} = useAuth();
 	const [appointments, setAppointments] = useState<Appointment[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [searchTerm, setSearchTerm] = useState("");
 	const [statusFilter, setStatusFilter] = useState<string>("all");
+	const {organization} = useOrganization();
+
+	console.log(organization?.name);
 
 	useEffect(() => {
 		const fetchAppointments = async () => {
 			try {
-				const departmentId = user?.publicMetadata?.departmentId;
+				setLoading(true);
 
-				if (departmentId) {
-					// Get authentication token
-					const token = await getToken();
-					if (!token) {
-						throw new Error("No authentication token available");
-					}
-
-					// Fetch real appointments data
-					const appointmentsData = await fetchDepartmentAppointments(
-						departmentId as number,
-						token
-					);
-					setAppointments(appointmentsData);
-					setLoading(false);
-					return;
+				// Get authentication token
+				const token = await getToken();
+				if (!token) {
+					throw new Error("No authentication token available");
 				}
 
-				// Fallback mock data for demonstration (when no department ID)
-				const mockAppointments: Appointment[] = [
-					{
-						appointment_id: "1",
-						service_id: "1",
-						service_name: "Passport Application",
-						user_id: "user1",
-						user_name: "John Doe",
-						user_email: "john.doe@example.com",
-						appointment_date: "2023-12-15",
-						appointment_time: "10:00",
-						status: "confirmed",
-						created_at: "2023-12-01T10:30:00Z",
-					},
-					{
-						appointment_id: "2",
-						service_id: "1",
-						service_name: "Passport Application",
-						user_id: "user2",
-						user_name: "Jane Smith",
-						user_email: "jane.smith@example.com",
-						appointment_date: "2023-12-15",
-						appointment_time: "11:30",
-						status: "pending",
-						created_at: "2023-12-02T09:15:00Z",
-					},
-					{
-						appointment_id: "3",
-						service_id: "2",
-						service_name: "Passport Renewal",
-						user_id: "user3",
-						user_name: "Robert Johnson",
-						user_email: "robert.j@example.com",
-						appointment_date: "2023-12-16",
-						appointment_time: "09:00",
-						status: "confirmed",
-						notes: "Bringing family members as well",
-						created_at: "2023-12-01T14:20:00Z",
-					},
-					{
-						appointment_id: "4",
-						service_id: "2",
-						service_name: "Passport Renewal",
-						user_id: "user4",
-						user_name: "Emily Wilson",
-						user_email: "emily.w@example.com",
-						appointment_date: "2023-12-14",
-						appointment_time: "14:00",
-						status: "cancelled",
-						notes: "Requested rescheduling",
-						created_at: "2023-11-30T16:45:00Z",
-					},
-					{
-						appointment_id: "5",
-						service_id: "1",
-						service_name: "Passport Application",
-						user_id: "user5",
-						user_name: "Michael Brown",
-						user_email: "michael.b@example.com",
-						appointment_date: "2023-12-13",
-						appointment_time: "13:30",
-						status: "completed",
-						created_at: "2023-11-29T11:00:00Z",
-					},
-				];
-
-				setAppointments(mockAppointments);
-				setLoading(false);
+				// Fetch all appointments for the organization
+				const appointmentsData = await fetchOrganizationAppointments(token);
+				setAppointments(appointmentsData);
 			} catch (error) {
 				console.error("Error fetching appointments:", error);
+			} finally {
 				setLoading(false);
 			}
 		};
 
 		fetchAppointments();
-	}, [user]);
+	}, [getToken]);
 
 	// Filter appointments based on search term and status
 	const filteredAppointments = appointments.filter((appointment) => {
+		const appointmentDate = new Date(appointment.appointment_time)
+			.toISOString()
+			.split("T")[0];
+		const appointmentTime = new Date(
+			appointment.appointment_time
+		).toLocaleTimeString("en-US", {
+			hour: "2-digit",
+			minute: "2-digit",
+			hour12: true,
+		});
+
 		const matchesSearch =
-			appointment.user_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-			appointment.service_name
-				.toLowerCase()
+			appointment.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+			appointment.service?.name
+				?.toLowerCase()
 				.includes(searchTerm.toLowerCase()) ||
-			appointment.appointment_date.includes(searchTerm) ||
-			appointment.appointment_time.includes(searchTerm);
+			appointment.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+			appointment.nic.includes(searchTerm) ||
+			appointmentDate.includes(searchTerm) ||
+			appointmentTime.toLowerCase().includes(searchTerm.toLowerCase());
 
 		const matchesStatus =
-			statusFilter === "all" || appointment.status === statusFilter;
+			statusFilter === "all" || appointment.appointment_status === statusFilter;
 
 		return matchesSearch && matchesStatus;
 	});
 
 	// Calculate counts for dashboard metrics
-	const todayCount = appointments.filter(
-		(a) => a.appointment_date === new Date().toISOString().split("T")[0]
-	).length;
+	const today = new Date().toISOString().split("T")[0];
+	const todayCount = appointments.filter((a) => {
+		const appointmentDate = new Date(a.appointment_time)
+			.toISOString()
+			.split("T")[0];
+		return appointmentDate === today;
+	}).length;
+
 	const pendingCount = appointments.filter(
-		(a) => a.status === "pending"
+		(a) => a.appointment_status === "pending"
 	).length;
 	const confirmedCount = appointments.filter(
-		(a) => a.status === "confirmed"
+		(a) => a.appointment_status === "confirmed"
 	).length;
 	const cancelledCount = appointments.filter(
-		(a) => a.status === "cancelled"
+		(a) => a.appointment_status === "cancelled"
 	).length;
 
 	// Get status badge styling
@@ -204,6 +169,12 @@ const AppointmentManagement = () => {
 						Completed
 					</Badge>
 				);
+			case "drafted":
+				return (
+					<Badge className="bg-gray-100 text-gray-800 hover:bg-gray-100">
+						Draft
+					</Badge>
+				);
 			default:
 				return (
 					<Badge className="bg-gray-100 text-gray-800 hover:bg-gray-100">
@@ -221,7 +192,7 @@ const AppointmentManagement = () => {
 						Appointment Management
 					</h1>
 					<p className="text-gray-600">
-						Manage service appointments for your department
+						Manage service appointments for your organization
 					</p>
 				</header>
 
@@ -301,10 +272,11 @@ const AppointmentManagement = () => {
 							<SelectContent>
 								<SelectGroup>
 									<SelectItem value="all">All Statuses</SelectItem>
+									<SelectItem value="drafted">Draft</SelectItem>
 									<SelectItem value="pending">Pending</SelectItem>
 									<SelectItem value="confirmed">Confirmed</SelectItem>
-									<SelectItem value="cancelled">Cancelled</SelectItem>
 									<SelectItem value="completed">Completed</SelectItem>
+									<SelectItem value="cancelled">Cancelled</SelectItem>
 								</SelectGroup>
 							</SelectContent>
 						</Select>
@@ -329,50 +301,83 @@ const AppointmentManagement = () => {
 							</div>
 						) : (
 							<div className="space-y-4">
-								{filteredAppointments.map((appointment) => (
-									<Card
-										key={appointment.appointment_id}
-										className="overflow-hidden">
-										<CardContent className="p-4">
-											<div className="flex flex-col md:flex-row justify-between">
-												<div className="mb-4 md:mb-0">
-													<div className="flex items-center mb-2">
-														<User className="h-4 w-4 mr-2" />
-														<h3 className="font-medium text-lg">
-															{appointment.user_name}
-														</h3>
+								{filteredAppointments.map((appointment) => {
+									const appointmentDate = new Date(
+										appointment.appointment_time
+									).toLocaleDateString("en-US", {
+										year: "numeric",
+										month: "short",
+										day: "numeric",
+									});
+									const appointmentTime = new Date(
+										appointment.appointment_time
+									).toLocaleTimeString("en-US", {
+										hour: "2-digit",
+										minute: "2-digit",
+										hour12: true,
+									});
+
+									return (
+										<Card
+											key={appointment.appointment_id}
+											className="overflow-hidden">
+											<CardContent className="p-4">
+												<div className="flex flex-col md:flex-row justify-between">
+													<div className="mb-4 md:mb-0">
+														<div className="flex items-center mb-2">
+															<User className="h-4 w-4 mr-2" />
+															<h3 className="font-medium text-lg">
+																{appointment.full_name}
+															</h3>
+														</div>
+														<div className="flex items-center text-sm text-gray-600 mb-2">
+															<Calendar className="h-4 w-4 mr-2" />
+															<span>{appointmentDate}</span>
+															<Clock className="h-4 w-4 ml-4 mr-2" />
+															<span>{appointmentTime}</span>
+														</div>
+														<div className="flex items-center text-sm text-gray-600 mb-1">
+															<MapPin className="h-4 w-4 mr-2" />
+															<span>
+																{appointment.service?.name ||
+																	"Service Name N/A"}
+															</span>
+														</div>
+														<div className="text-sm text-gray-500 mb-1">
+															<span>📧 {appointment.email}</span>
+														</div>
+														<div className="text-sm text-gray-500 mb-1">
+															<span>📱 {appointment.phone_number}</span>
+														</div>
+														<div className="text-sm text-gray-500">
+															<span>🆔 {appointment.nic}</span>
+														</div>
+														{appointment.notes && (
+															<p className="mt-2 text-sm text-gray-500">
+																Note: {appointment.notes}
+															</p>
+														)}
 													</div>
-													<div className="flex items-center text-sm text-gray-600 mb-2">
-														<Calendar className="h-4 w-4 mr-2" />
-														<span>{appointment.appointment_date}</span>
-														<Clock className="h-4 w-4 ml-4 mr-2" />
-														<span>{appointment.appointment_time}</span>
+													<div className="flex flex-col items-start md:items-end">
+														{getStatusBadge(appointment.appointment_status)}
+														<div className="mt-2 text-xs text-gray-500">
+															{appointment.service?.department?.name ||
+																"Department N/A"}
+														</div>
+														<div className="mt-2 flex space-x-2">
+															<Button size="sm" variant="outline">
+																Details
+															</Button>
+															<Button size="sm" variant="outline">
+																Update Status
+															</Button>
+														</div>
 													</div>
-													<div className="flex items-center text-sm text-gray-600">
-														<MapPin className="h-4 w-4 mr-2" />
-														<span>{appointment.service_name}</span>
-													</div>
-													{appointment.notes && (
-														<p className="mt-2 text-sm text-gray-500">
-															Note: {appointment.notes}
-														</p>
-													)}
 												</div>
-												<div className="flex flex-col items-start md:items-end">
-													{getStatusBadge(appointment.status)}
-													<div className="mt-2 flex space-x-2">
-														<Button size="sm" variant="outline">
-															Details
-														</Button>
-														<Button size="sm" variant="outline">
-															Update Status
-														</Button>
-													</div>
-												</div>
-											</div>
-										</CardContent>
-									</Card>
-								))}
+											</CardContent>
+										</Card>
+									);
+								})}
 							</div>
 						)}
 					</TabsContent>

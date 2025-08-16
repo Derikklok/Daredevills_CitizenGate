@@ -84,6 +84,51 @@ export async function fetchDepartmentAppointments(departmentId: number | string,
 }
 
 /**
+ * Fetch all appointments for the current organization (Admin only)
+ */
+export async function fetchOrganizationAppointments(
+    token: string,
+    filters?: {
+        status?: string;
+        date?: string;
+        service_id?: string;
+        department_id?: number;
+    }
+): Promise<any[]> {
+    if (!token) {
+        throw new Error('Authentication token is required');
+    }
+
+    const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+    };
+
+    const params = new URLSearchParams();
+
+    // Add filters to query parameters
+    if (filters?.status) params.append('status', filters.status);
+    if (filters?.date) params.append('date', filters.date);
+    if (filters?.service_id) params.append('service_id', filters.service_id);
+    if (filters?.department_id) params.append('department_id', filters.department_id.toString());
+
+    const queryString = params.toString();
+    const url = `${normalizedApiUrl}/api/appointments/organization${queryString ? `?${queryString}` : ''}`;
+
+    const response = await fetch(url, {
+        method: 'GET',
+        headers
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to fetch organization appointments: ${response.status} ${errorText}`);
+    }
+
+    return response.json();
+}
+
+/**
  * Update a government service
  */
 export async function updateGovernmentService(

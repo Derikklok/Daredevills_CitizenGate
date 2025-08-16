@@ -106,10 +106,8 @@ export class AppointmentsController {
     @Query('status') status?: string,
     @Query('date') date?: string,
   ) {
-    const userId = user.accountId;
-
     const filters = {
-      user_id: userId,
+      user_id: user.accountId,
       status: status,
       date: date,
     };
@@ -167,6 +165,65 @@ export class AppointmentsController {
     });
 
     return this.appointmentsService.findAllForOrganization(filters);
+  }
+
+  @Get('organization')
+  @UseGuards(ClerkAuthGuard, OrganizationAuthGuard)
+  @ApiOperation({ summary: 'Get all appointments in the organization (Organization users)' })
+  @ApiQuery({ name: 'department_id', required: false, type: Number })
+  @ApiQuery({ name: 'service_id', required: false, type: String })
+  @ApiQuery({ name: 'nic', required: false, type: String })
+  @ApiQuery({ name: 'status', required: false, type: String })
+  @ApiQuery({ name: 'date', required: false, type: String, description: 'YYYY-MM-DD' })
+
+  @ApiResponse({ status: 200, type: [Appointment] })
+  async getOrganizationAppointmentsForMembers(
+    @CurrentUserWithOrg() user: AuthenticatedUserWithOrganization,
+    @Query('department_id') departmentId?: number,
+    @Query('service_id') serviceId?: string,
+    @Query('nic') nic?: string,
+    @Query('status') status?: string,
+    @Query('date') date?: string,
+
+  ) {
+    const organizationId = user.organization?.id;
+
+    // If user has an organization, return org appointments
+    if (organizationId) {
+      const filters = {
+        department_id: departmentId,
+        service_id: serviceId,
+        nic: nic,
+        status: status,
+        date: date,
+        organization_id: organizationId,
+      };
+
+      // Remove undefined and null string filters
+      Object.keys(filters).forEach(key => {
+        if (filters[key] === undefined || filters[key] === null || filters[key] === 'null' || filters[key] === '') {
+          delete filters[key];
+        }
+      });
+
+      return this.appointmentsService.findAllForOrganization(filters);
+    } else {
+      // If user has no organization, return their personal appointments
+      const filters = {
+        user_id: user.accountId,
+        status: status,
+        date: date,
+      };
+
+      // Remove undefined and null string filters
+      Object.keys(filters).forEach(key => {
+        if (filters[key] === undefined || filters[key] === null || filters[key] === 'null' || filters[key] === '') {
+          delete filters[key];
+        }
+      });
+
+      return this.appointmentsService.findAll(filters);
+    }
   }
 
   @Get('by-nic/:nic')

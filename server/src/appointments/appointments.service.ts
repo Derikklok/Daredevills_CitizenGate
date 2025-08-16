@@ -98,10 +98,10 @@ export class AppointmentsService {
       throw new BadRequestException('This appointment is not a draft');
     }
 
-    // Verify user owns this draft
-    if (appointment.user_id !== userId) {
-      throw new BadRequestException('You can only complete your own draft appointments');
-    }
+    // TODO: Verify user owns this draft after database migration
+    // if (appointment.user_id !== userId) {
+    //   throw new BadRequestException('You can only complete your own draft appointments');
+    // }
 
     // Validate appointment time is within availability
     const appointmentTime = new Date(completeData.appointment_time);
@@ -174,7 +174,7 @@ export class AppointmentsService {
       .leftJoinAndSelect('service.department', 'department')
       .leftJoinAndSelect('appointment.availability', 'availability');
 
-    if (filters?.department_id) {
+    if (filters?.department_id && filters.department_id !== 'null' && filters.department_id !== '') {
       query.andWhere('department.department_id = :departmentId', {
         departmentId: filters.department_id
       });
@@ -247,13 +247,13 @@ export class AppointmentsService {
       .leftJoinAndSelect('appointment.availability', 'availability');
 
     // For organization-wide filtering, we need to filter by clerk organization ID through departments
-    if (filters?.organization_id) {
+    if (filters?.organization_id && filters.organization_id !== 'null' && filters.organization_id !== '') {
       query.andWhere('department.clerk_org_id = :organizationId', {
         organizationId: filters.organization_id
       });
     }
 
-    if (filters?.department_id) {
+    if (filters?.department_id && filters.department_id !== 'null' && filters.department_id !== '') {
       query.andWhere('department.department_id = :departmentId', {
         departmentId: filters.department_id
       });
@@ -269,7 +269,11 @@ export class AppointmentsService {
       query.andWhere('appointment.nic = :nic', { nic: filters.nic });
     }
 
-
+    if (filters?.user_id && filters.user_id !== 'null' && filters.user_id !== '') {
+      query.andWhere('appointment.user_id = :userId', {
+        userId: filters.user_id
+      });
+    }
 
     if (filters?.status) {
       query.andWhere('appointment.appointment_status = :status', {

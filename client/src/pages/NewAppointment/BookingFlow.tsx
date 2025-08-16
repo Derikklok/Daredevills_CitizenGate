@@ -1,5 +1,5 @@
 import {useState, useEffect} from "react";
-import {Link} from "react-router-dom";
+import {Link, useSearchParams} from "react-router-dom";
 import {Button} from "@/components/ui/button";
 import {
 	Building2,
@@ -14,6 +14,8 @@ import {getDepartments} from "@/lib/api";
 import type {Department, Service} from "@/lib/types";
 
 const BookingFlow = () => {
+	const [searchParams] = useSearchParams();
+	const appointmentId = searchParams.get("appointmentId");
 	const [departments, setDepartments] = useState<Department[]>([]);
 	const [selectedDepartment, setSelectedDepartment] =
 		useState<Department | null>(null);
@@ -333,7 +335,10 @@ const BookingFlow = () => {
 											Choose Different Service
 										</Button>
 
-										<Link to={`/calendar/${selectedService.service_id}`}>
+										<Link
+											to={`/calendar/${selectedService.service_id}${
+												appointmentId ? `?appointmentId=${appointmentId}` : ""
+											}`}>
 											<Button className="bg-primary-600 hover:bg-primary-600/90">
 												View Available Slots
 											</Button>
