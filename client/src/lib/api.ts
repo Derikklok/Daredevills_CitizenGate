@@ -1,13 +1,12 @@
-import type { 
-    CreateDraftAppointmentRequest, 
-    DraftAppointmentResponse, 
-    CompleteAppointmentRequest, 
-    UploadDocumentRequest, 
-    Department, 
-    Service, 
-    ServiceAvailability, 
+import type {
+    CreateDraftAppointmentRequest,
+    DraftAppointmentResponse,
+    CompleteAppointmentRequest,
+    UploadDocumentRequest,
+    Department,
+    Service,
+    ServiceAvailability,
     RequiredDocument,
-    GovernmentService
 } from "./types";
 import { getNormalizedApiUrl } from "./apiUtils";
 

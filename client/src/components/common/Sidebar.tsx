@@ -13,7 +13,12 @@ import {
 	Phone,
 	Settings,
 } from "lucide-react";
-import {SignOutButton, UserButton, useUser} from "@clerk/clerk-react";
+import {
+	SignOutButton,
+	UserButton,
+	useUser,
+	OrganizationSwitcher,
+} from "@clerk/clerk-react";
 import {Button} from "../ui/button";
 
 interface SidebarProps {
@@ -156,6 +161,21 @@ export function Sidebar({isOpen, onClose}: SidebarProps) {
 							<h2 className="text-lg font-semibold text-gray-900">
 								{user?.fullName || "User"}
 							</h2>
+
+							{/* Organization Switcher - only visible in mobile sidebar */}
+							<div className="w-full">
+								<OrganizationSwitcher
+									appearance={{
+										elements: {
+											organizationSwitcherTrigger:
+												"w-full border border-gray-200 rounded-lg px-3 py-2 hover:bg-gray-50 transition-colors",
+											organizationPreview: "gap-2 justify-center",
+											organizationSwitcherTriggerIcon: "text-gray-500",
+											organizationSwitcherPopoverCard: "w-72",
+										},
+									}}
+								/>
+							</div>
 						</div>
 					</div>
 

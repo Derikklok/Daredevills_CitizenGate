@@ -35,7 +35,7 @@ function App() {
 	const {isSignedIn, isLoaded} = useAuth();
 	const isAdmin = useIsAdmin();
 	const isServiceAdmin = useIsServiceAdmin();
-	
+
 	// Show loading state while Clerk is initializing
 	if (!isLoaded) {
 		return (
@@ -52,116 +52,156 @@ function App() {
 
 			{/* Admin Routes - only for system admins */}
 			{/* Admin Dashboard */}
-			<Route 
-				path="/admin" 
+			<Route
+				path="/admin"
 				element={
 					isSignedIn ? (
-						isAdmin ? <AdminDashboard /> : <Navigate to="/" replace />
+						isAdmin ? (
+							<AdminDashboard />
+						) : (
+							<Navigate to="/" replace />
+						)
 					) : (
 						<Navigate to="/sign-in" replace />
 					)
-				} 
+				}
 			/>
 			{/* User Management */}
-			<Route 
-				path="/admin/users" 
+			<Route
+				path="/admin/users"
 				element={
 					isSignedIn ? (
-						isAdmin ? <UserManagement /> : <Navigate to="/" replace />
+						isAdmin ? (
+							<UserManagement />
+						) : (
+							<Navigate to="/" replace />
+						)
 					) : (
 						<Navigate to="/sign-in" replace />
 					)
-				} 
+				}
 			/>
 			{/* Department Management */}
-			<Route 
-				path="/admin/departments" 
+			<Route
+				path="/admin/departments"
 				element={
 					isSignedIn ? (
-						isAdmin ? <DepartmentManagement /> : <Navigate to="/" replace />
+						isAdmin ? (
+							<DepartmentManagement />
+						) : (
+							<Navigate to="/" replace />
+						)
 					) : (
 						<Navigate to="/sign-in" replace />
 					)
-				} 
+				}
 			/>
 			{/* Reports Dashboard */}
-			<Route 
-				path="/admin/reports" 
+			<Route
+				path="/admin/reports"
 				element={
 					isSignedIn ? (
-						isAdmin ? <ReportsDashboard /> : <Navigate to="/" replace />
+						isAdmin ? (
+							<ReportsDashboard />
+						) : (
+							<Navigate to="/" replace />
+						)
 					) : (
 						<Navigate to="/sign-in" replace />
 					)
-				} 
+				}
 			/>
 			{/* System Settings */}
-			<Route 
-				path="/admin/settings" 
+			<Route
+				path="/admin/settings"
 				element={
 					isSignedIn ? (
-						isAdmin ? <SystemSettings /> : <Navigate to="/" replace />
+						isAdmin ? (
+							<SystemSettings />
+						) : (
+							<Navigate to="/" replace />
+						)
 					) : (
 						<Navigate to="/sign-in" replace />
 					)
-				} 
+				}
 			/>
 
 			{/* Service Admin Routes - only for service admins */}
 			{/* Service Admin Dashboard */}
-			<Route 
-				path="/service-admin" 
+			<Route
+				path="/service-admin"
 				element={
 					isSignedIn ? (
-						isServiceAdmin ? <ServiceAdminDashboard /> : <Navigate to="/" replace />
+						isServiceAdmin ? (
+							<ServiceAdminDashboard />
+						) : (
+							<Navigate to="/" replace />
+						)
 					) : (
 						<Navigate to="/sign-in" replace />
 					)
-				} 
+				}
 			/>
 			{/* Service Management */}
-			<Route 
-				path="/service-admin/services" 
+			<Route
+				path="/service-admin/services"
 				element={
 					isSignedIn ? (
-						isServiceAdmin ? <ServiceManagement /> : <Navigate to="/" replace />
+						isServiceAdmin ? (
+							<ServiceManagement />
+						) : (
+							<Navigate to="/" replace />
+						)
 					) : (
 						<Navigate to="/sign-in" replace />
 					)
-				} 
+				}
 			/>
 			{/* Document Management */}
-			<Route 
-				path="/service-admin/documents" 
+			<Route
+				path="/service-admin/documents"
 				element={
 					isSignedIn ? (
-						isServiceAdmin ? <DocumentManagement /> : <Navigate to="/" replace />
+						isServiceAdmin ? (
+							<DocumentManagement />
+						) : (
+							<Navigate to="/" replace />
+						)
 					) : (
 						<Navigate to="/sign-in" replace />
 					)
-				} 
+				}
 			/>
 			{/* Appointment Management */}
-			<Route 
-				path="/service-admin/appointments" 
+			<Route
+				path="/service-admin/appointments"
 				element={
 					isSignedIn ? (
-						isServiceAdmin ? <AppointmentManagement /> : <Navigate to="/" replace />
+						isServiceAdmin ? (
+							<AppointmentManagement />
+						) : (
+							<Navigate to="/" replace />
+						)
 					) : (
 						<Navigate to="/sign-in" replace />
 					)
-				} 
+				}
 			/>
 			{/* Service Settings */}
-			<Route 
-				path="/service-admin/settings" 
+			<Route
+				path="/service-admin/settings"
 				element={
 					isSignedIn ? (
-						isServiceAdmin ? <ServiceSettings /> : <Navigate to="/" replace />
+						isServiceAdmin ? (
+							<ServiceSettings />
+						) : (
+							<Navigate to="/" replace />
+						)
 					) : (
 						<Navigate to="/sign-in" replace />
 					)
-				} 
+				}
 			/>
 
 			{/* Protected routes - require authentication */}
