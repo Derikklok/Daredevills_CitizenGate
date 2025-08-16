@@ -8,6 +8,7 @@ import SignUpPage from "./pages/SignUp";
 import LandingPage from "./pages/LandingPage";
 import Home from "./pages/Home";
 import ServiceDetails from "./pages/ServiceDetails";
+import ServiceDetailsPage from "./pages/ServiceDetailsPage";
 import BookingFlow from "./pages/NewAppointment/BookingFlow";
 import CalendarView from "./pages/NewAppointment/CalendarView";
 import NewAppointmentDocumentUpload from "./pages/NewAppointment/NewAppointmentDocumentUpload";
@@ -210,6 +211,13 @@ function App() {
 				<Route
 					path="/service-details/:serviceName"
 					element={<ServiceDetails serviceName={"Transport"} />}
+				/>
+				{/* New service details page with real data */}
+				<Route path="/services/:serviceId" element={<ServiceDetailsPage />} />
+				{/* Category-based service listing */}
+				<Route
+					path="/services/category/:category"
+					element={<AllGovernmentServices />}
 				/>
 				<Route path="/book-appointment/new" element={<BookingFlow />} />
 				<Route path="/calendar/:serviceId" element={<CalendarView />} />
