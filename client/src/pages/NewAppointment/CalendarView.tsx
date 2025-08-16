@@ -442,32 +442,30 @@ const CalendarView = () => {
 						{/* Selected Appointment Summary */}
 						{selectedTimeSlot && (
 							<div className="mb-8 p-6 bg-primary-50 border border-primary-200 rounded-lg">
-								<div className="flex items-center justify-between">
-									<div>
-										<h4 className="text-lg font-bold text-primary-800 mb-2">
-											Appointment Summary
-										</h4>
-										<div className="space-y-1">
-											<p className="text-primary-700">
-												<span className="font-medium">Date:</span>{" "}
-												{selectedTimeSlot.date.toLocaleDateString("en-US", {
-													weekday: "long",
-													month: "long",
-													day: "numeric",
-													year: "numeric",
-												})}
-											</p>
-											<p className="text-primary-700">
-												<span className="font-medium">Time:</span>{" "}
-												{formatTime(`${selectedTimeSlot.time}:00`)}
-											</p>
-										</div>
+								<h4 className="text-lg font-bold text-primary-800 mb-4">
+									Appointment Summary
+								</h4>
+								<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+									<div className="space-y-2">
+										<p className="text-primary-700">
+											<span className="font-medium">Date:</span>{" "}
+											{selectedTimeSlot.date.toLocaleDateString("en-US", {
+												weekday: "long",
+												month: "long",
+												day: "numeric",
+												year: "numeric",
+											})}
+										</p>
+										<p className="text-primary-700">
+											<span className="font-medium">Time:</span>{" "}
+											{formatTime(`${selectedTimeSlot.time}:00`)}
+										</p>
 									</div>
 									<Button
 										onClick={handleBookAppointment}
 										disabled={isBooking}
-										className="bg-primary-600 hover:bg-primary-700 text-white px-8 py-3 text-lg font-medium">
-										{isBooking ? "Processing..." : "Book Appointment"}
+										className="bg-primary-600 hover:bg-primary-700 text-white font-medium px-8 py-3">
+										{isBooking ? "Booking..." : "Book Appointment"}
 									</Button>
 								</div>
 							</div>

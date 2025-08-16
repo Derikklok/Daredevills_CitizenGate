@@ -1,5 +1,4 @@
 import {useLocation, useNavigate} from "react-router-dom";
-import {useEffect} from "react";
 import {
 	ChevronLeft,
 	Home,
@@ -49,35 +48,6 @@ export function Sidebar({isOpen, onClose}: SidebarProps) {
 		navigate(path);
 		onClose();
 	};
-
-	// Google Translate functionality
-	const initGoogleTranslate = () => {
-		if (!(window as any).google?.translate?.TranslateElement) {
-			const script = document.createElement("script");
-			script.type = "text/javascript";
-			script.src =
-				"//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
-			document.head.appendChild(script);
-
-			(window as any).googleTranslateElementInit = () => {
-				new (window as any).google.translate.TranslateElement(
-					{
-						pageLanguage: "en",
-						includedLanguages: "en,si,ta",
-						layout: (window as any).google.translate.TranslateElement
-							.InlineLayout.SIMPLE,
-						autoDisplay: false,
-					},
-					"google_translate_element"
-				);
-			};
-		}
-	};
-
-	// Initialize Google Translate on component mount
-	useEffect(() => {
-		initGoogleTranslate();
-	}, []);
 
 	// Build menu items based on user roles
 	const menuItems: MenuSection[] = [];
@@ -286,9 +256,6 @@ export function Sidebar({isOpen, onClose}: SidebarProps) {
 					</div>
 				</div>
 			</div>
-
-			{/* Hidden Google Translate Element */}
-			<div id="google_translate_element" style={{display: "none"}}></div>
 		</>
 	);
 }
