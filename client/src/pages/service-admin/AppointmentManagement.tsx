@@ -328,7 +328,6 @@ const AppointmentManagement = () => {
 							<SelectContent>
 								<SelectGroup>
 									<SelectItem value="all">All Statuses</SelectItem>
-									<SelectItem value="draft">Draft</SelectItem>
 									<SelectItem value="pending">Pending</SelectItem>
 									<SelectItem value="confirmed">Confirmed</SelectItem>
 									<SelectItem value="completed">Completed</SelectItem>
