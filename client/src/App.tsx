@@ -33,11 +33,11 @@ import {useIsAdmin, useIsServiceAdmin} from "./hooks/useAuth";
 
 function App() {
 	const {isSignedIn, isLoaded} = useAuth();
-	const isAdmin = useIsAdmin();
-	const isServiceAdmin = useIsServiceAdmin();
+	const {isAdmin, isLoading: adminLoading} = useIsAdmin();
+	const {isServiceAdmin, isLoading: serviceAdminLoading} = useIsServiceAdmin();
 
-	// Show loading state while Clerk is initializing
-	if (!isLoaded) {
+	// Show loading state while Clerk is initializing or roles are being checked
+	if (!isLoaded || adminLoading || serviceAdminLoading) {
 		return (
 			<div className="min-h-screen flex items-center justify-center">
 				Loading...
