@@ -1,8 +1,7 @@
-import {useEffect, useState} from "react";
 import {useSearchParams, useNavigate} from "react-router-dom";
 import {Button} from "@/components/ui/button";
 import {Card, CardContent} from "@/components/ui/card";
-import {CheckCircle, Calendar, MapPin, Clock, FileText} from "lucide-react";
+import {CheckCircle, Calendar, Clock, FileText} from "lucide-react";
 
 export default function AppointmentConfirmation() {
 	const [searchParams] = useSearchParams();
