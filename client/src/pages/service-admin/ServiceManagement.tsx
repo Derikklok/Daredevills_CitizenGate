@@ -1030,242 +1030,162 @@ const ServiceManagement = () => {
 				</Tabs>
 
 				{isEditModalOpen && editedService && (
-					<div className="fixed inset-0 backdrop-blur bg-opacity-50 flex items-center justify-center z-50 rounded-lg overflow-y-auto py-6">
-						<div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md mt-4">
-							<h2 className="text-xl font-bold mb-4">Edit Service</h2>
-							<p className="text-gray-600 mb-4">
-								Update the service details below.
-							</p>
+  <div className="fixed inset-0 backdrop-blur bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 rounded-lg overflow-y-auto py-6">
+    <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md mt-4">
+      <h2 className="text-xl font-bold mb-4">Edit Service</h2>
+      <p className="text-gray-600 mb-4">Update the service details below.</p>
 
-							<div className="space-y-4">
-								{/* Service Name (read-only) */}
-								<div className="flex items-center justify-between px-2 py-2">
-									<label className="text-sm font-medium text-gray-700">
-										Service
-									</label>
-									<Input
-										value={editedService.name}
-										name="name"
-										onChange={handleInputChange}
-										className="mt-1 w-3/4"
-										readOnly
-									/>
-								</div>
+      <div className="space-y-4">
+        {/* Service Name (read-only) */}
+        <div className="flex items-center justify-between px-2 py-2">
+          <label className="text-sm font-medium text-gray-700">Service</label>
+          <Input
+            value={editedService.name}
+            name="name"
+            onChange={handleInputChange}
+            className="mt-1 w-3/4"
+          />
+        </div>
 
-								{/* Description */}
-								<div className="flex items-center justify-between px-2 py-2">
-									<label className="text-sm font-medium text-gray-700">
-										Description
-									</label>
-									<Input
-										value={editedService.description}
-										name="description"
-										onChange={handleInputChange}
-										className="mt-1 w-3/4"
-										placeholder="Enter description"
-									/>
-								</div>
+        {/* Description */}
+        <div className="flex items-center justify-between px-2 py-2">
+          <label className="text-sm font-medium text-gray-700">Description</label>
+          <Input
+            value={editedService.description}
+            name="description"
+            onChange={handleInputChange}
+            className="mt-1 w-3/4"
+            placeholder="Enter description"
+          />
+        </div>
 
-								{/* Category */}
-								<div className="flex items-center justify-between px-2 py-2">
-									<label className="text-sm font-medium text-gray-700">
-										Category
-									</label>
-									<Input
-										value={editedService.category}
-										name="category"
-										onChange={handleInputChange}
-										className="mt-1 w-3/4"
-										placeholder="Enter category"
-									/>
-								</div>
+        {/* Category */}
+        <div className="flex items-center justify-between px-2 py-2">
+          <label className="text-sm font-medium text-gray-700">Category</label>
+          <Input
+            value={editedService.category}
+            name="category"
+            onChange={handleInputChange}
+            className="mt-1 w-3/4"
+            placeholder="Enter category"
+          />
+        </div>
 
-								{/* Time Period */}
-								<div className="flex items-center justify-between px-2 py-2">
-									<label className="text-sm font-medium text-gray-700">
-										Time Period
-									</label>
-									<Input
-										value={editedService.estimated_total_completion_time}
-										name="estimated_total_completion_time"
-										onChange={handleInputChange}
-										className="mt-1 w-3/4"
-										placeholder="e.g., 6 months"
-									/>
-								</div>
+        {/* Time Period */}
+        <div className="flex items-center justify-between px-2 py-2">
+          <label className="text-sm font-medium text-gray-700">Time Period</label>
+          <Input
+            value={editedService.estimated_total_completion_time}
+            name="estimated_total_completion_time"
+            onChange={handleInputChange}
+            className="mt-1 w-3/4"
+            placeholder="e.g., 6 months"
+          />
+        </div>
 
-								{/* --- Service Availability Section --- */}
-								<div className="border-t pt-6 space-y-6">
-									<h3 className="text-lg font-semibold text-gray-800">
-										Availability
-									</h3>
+        {/* --- Service Availability Section --- */}
+        <div className="border-t pt-6 space-y-6">
+  <h3 className="text-lg font-semibold text-gray-800">Availability</h3>
 
-									{/* Days of Week */}
-									<div className="space-y-2">
-										<label className="text-sm font-medium text-gray-700">
-											Days of Week
-										</label>
-										<div className="flex overflow-x-auto space-x-2 pb-2 scrollbar-thin scrollbar-thumb-gray-300">
-											{[
-												"Monday",
-												"Tuesday",
-												"Wednesday",
-												"Thursday",
-												"Friday",
-												"Saturday",
-												"Sunday",
-											].map((day) => {
-												const isSelected =
-													editedService.availability?.days_of_week?.includes(
-														day
-													);
-												return (
-													<label
-														key={day}
-														className={`px-3 py-1 rounded-full border text-sm cursor-pointer whitespace-nowrap
-                ${
-									isSelected
-										? "bg-indigo-600 text-white border-indigo-600"
-										: "bg-gray-100 text-gray-700 border-gray-300"
-								}`}>
-														<input
-															type="checkbox"
-															checked={isSelected}
-															onChange={(e) => {
-																const days =
-																	editedService.availability?.days_of_week ||
-																	[];
-																const updatedDays = e.target.checked
-																	? [...days, day]
-																	: days.filter((d: string) => d !== day);
+  {/* Days of Week */}
+  <div className="space-y-2">
+    <label className="text-sm font-medium text-gray-700">Days of Week</label>
+    <div className="flex overflow-x-auto space-x-2 pb-2 scrollbar-thin scrollbar-thumb-gray-300">
+      {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].map(
+        (day) => {
+          const isSelected = editedService.availability?.days_of_week?.includes(day);
+          return (
+            <label
+              key={day}
+              className={`px-3 py-1 rounded-full border text-sm cursor-pointer whitespace-nowrap
+                ${isSelected ? "bg-indigo-600 text-white border-indigo-600" : "bg-gray-100 text-gray-700 border-gray-300"}`}
+            >
+              <input
+                type="checkbox"
+                checked={isSelected}
+                onChange={(e) => {
+                  const days = editedService.availability?.days_of_week || [];
+                  const updatedDays = e.target.checked
+                    ? [...days, day]
+                    : days.filter((d) => d !== day);
 
-																setEditedService(
-																	(prev: ExtendedGovernmentService | null) => {
-																		if (!prev) return prev;
-																		return {
-																			...prev,
-																			availability: {
-																				start_time: "",
-																				end_time: "",
-																				duration_minutes: 30,
-																				...prev.availability,
-																				days_of_week: updatedDays,
-																			},
-																		};
-																	}
-																);
-															}}
-															className="hidden"
-														/>
-														{day}
-													</label>
-												);
-											})}
-										</div>
-									</div>
+                  setEditedService((prev: any) => ({
+                    ...prev,
+                    availability: { ...prev.availability, days_of_week: updatedDays },
+                  }));
+                }}
+                className="hidden"
+              />
+              {day}
+            </label>
+          );
+        }
+      )}
+    </div>
+  </div>
 
-									{/* Start & End Time */}
-									<div className="grid grid-cols-2 gap-4">
-										<div className="space-y-1">
-											<label className="text-sm font-medium text-gray-700">
-												Start Time
-											</label>
-											<Input
-												type="time"
-												value={editedService.availability?.start_time || ""}
-												onChange={(e) =>
-													setEditedService(
-														(prev: ExtendedGovernmentService | null) => {
-															if (!prev) return prev;
-															return {
-																...prev,
-																availability: {
-																	days_of_week: [],
-																	end_time: "",
-																	duration_minutes: 30,
-																	...prev.availability,
-																	start_time: e.target.value,
-																},
-															};
-														}
-													)
-												}
-											/>
-										</div>
+  {/* Start & End Time */}
+  <div className="grid grid-cols-2 gap-4">
+    <div className="space-y-1">
+      <label className="text-sm font-medium text-gray-700">Start Time</label>
+      <Input
+        type="time"
+        value={editedService.availability?.start_time || ""}
+        onChange={(e) =>
+          setEditedService((prev: any) => ({
+            ...prev,
+            availability: { ...prev.availability, start_time: e.target.value },
+          }))
+        }
+      />
+    </div>
 
-										<div className="space-y-1">
-											<label className="text-sm font-medium text-gray-700">
-												End Time
-											</label>
-											<Input
-												type="time"
-												value={editedService.availability?.end_time || ""}
-												onChange={(e) =>
-													setEditedService(
-														(prev: ExtendedGovernmentService | null) => {
-															if (!prev) return prev;
-															return {
-																...prev,
-																availability: {
-																	days_of_week: [],
-																	start_time: "",
-																	duration_minutes: 30,
-																	...prev.availability,
-																	end_time: e.target.value,
-																},
-															};
-														}
-													)
-												}
-											/>
-										</div>
-									</div>
+    <div className="space-y-1">
+      <label className="text-sm font-medium text-gray-700">End Time</label>
+      <Input
+        type="time"
+        value={editedService.availability?.end_time || ""}
+        onChange={(e) =>
+          setEditedService((prev: any) => ({
+            ...prev,
+            availability: { ...prev.availability, end_time: e.target.value },
+          }))
+        }
+      />
+    </div>
+  </div>
 
-									{/* Duration */}
-									<div className="space-y-1">
-										<label className="text-sm font-medium text-gray-700">
-											Duration (minutes)
-										</label>
-										<Input
-											type="number"
-											value={editedService.availability?.duration_minutes || ""}
-											placeholder="e.g., 30"
-											onChange={(e) =>
-												setEditedService(
-													(prev: ExtendedGovernmentService | null) => {
-														if (!prev) return prev;
-														return {
-															...prev,
-															availability: {
-																days_of_week: [],
-																start_time: "",
-																end_time: "",
-																...prev.availability,
-																duration_minutes: Number(e.target.value),
-															},
-														};
-													}
-												)
-											}
-										/>
-									</div>
-								</div>
-							</div>
+  {/* Duration */}
+  <div className="space-y-1">
+    <label className="text-sm font-medium text-gray-700">Duration (minutes)</label>
+    <Input
+      type="number"
+      value={editedService.availability?.duration_minutes || ""}
+      placeholder="e.g., 30"
+      onChange={(e) =>
+        setEditedService((prev: any) => ({
+          ...prev,
+          availability: { ...prev.availability, duration_minutes: Number(e.target.value) },
+        }))
+      }
+    />
+  </div>
+</div>
 
-							{/* Actions */}
-							<div className="flex items-center justify-between px-2 py-4">
-								<Button
-									variant="outline"
-									onClick={() => setIsEditModalOpen(false)}>
-									Cancel
-								</Button>
-								<Button variant="destructive" onClick={handleSaveEdit}>
-									Save Changes
-								</Button>
-							</div>
-						</div>
-					</div>
-				)}
+      </div>
+
+      {/* Actions */}
+      <div className="flex items-center justify-between px-2 py-4">
+        <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>
+          Cancel
+        </Button>
+        <Button variant="destructive" onClick={handleSaveEdit}>
+          Save Changes
+        </Button>
+      </div>
+    </div>
+  </div>
+)}
 
 				{viewService && (
 					<div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
