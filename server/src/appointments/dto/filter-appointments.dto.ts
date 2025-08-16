@@ -19,10 +19,7 @@ export class FilterAppointmentsDto {
   @IsString()
   nic?: string;
 
-  @ApiPropertyOptional({ description: 'Filter by username' })
-  @IsOptional()
-  @IsString()
-  username?: string;
+
 
   @ApiPropertyOptional({ description: 'Filter by appointment status', example: 'pending' })
   @IsOptional()

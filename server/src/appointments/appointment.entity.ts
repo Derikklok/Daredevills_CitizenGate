@@ -53,9 +53,7 @@ export class Appointment {
   @Column({ type: 'text', nullable: true })
   email: string;
 
-  @ApiProperty({ description: 'Username', example: 'john_doe' })
-  @Column({ type: 'text', nullable: true })
-  username: string;
+
 
   @ApiProperty({ description: 'User ID (Clerk account ID)', example: 'user_2ABC123DEF456' })
   @Column({ type: 'text', nullable: true })

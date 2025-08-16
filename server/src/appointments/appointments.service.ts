@@ -180,23 +180,17 @@ export class AppointmentsService {
       });
     }
 
-    if (filters?.service_id) {
+    if (filters?.service_id && filters.service_id !== 'null' && filters.service_id !== '') {
       query.andWhere('service.service_id = :serviceId', {
         serviceId: filters.service_id
       });
     }
 
-    if (filters?.nic) {
+    if (filters?.nic && filters.nic !== 'null' && filters.nic !== '') {
       query.andWhere('appointment.nic = :nic', { nic: filters.nic });
     }
 
-    if (filters?.username) {
-      query.andWhere('appointment.username = :username', {
-        username: filters.username
-      });
-    }
-
-    if (filters?.user_id) {
+    if (filters?.user_id && filters.user_id !== 'null' && filters.user_id !== '') {
       query.andWhere('appointment.user_id = :userId', {
         userId: filters.user_id
       });
@@ -265,21 +259,17 @@ export class AppointmentsService {
       });
     }
 
-    if (filters?.service_id) {
+    if (filters?.service_id && filters.service_id !== 'null' && filters.service_id !== '') {
       query.andWhere('service.service_id = :serviceId', {
         serviceId: filters.service_id
       });
     }
 
-    if (filters?.nic) {
+    if (filters?.nic && filters.nic !== 'null' && filters.nic !== '') {
       query.andWhere('appointment.nic = :nic', { nic: filters.nic });
     }
 
-    if (filters?.username) {
-      query.andWhere('appointment.username = :username', {
-        username: filters.username
-      });
-    }
+
 
     if (filters?.status) {
       query.andWhere('appointment.appointment_status = :status', {
@@ -338,9 +328,9 @@ export class AppointmentsService {
     });
   }
 
-  async findByUsername(username: string) {
+  async findByUserId(userId: string) {
     return this.appointmentRepo.find({
-      where: { username },
+      where: { user_id: userId },
       relations: ['service', 'service.department', 'availability'],
       order: { appointment_time: 'DESC' }
     });

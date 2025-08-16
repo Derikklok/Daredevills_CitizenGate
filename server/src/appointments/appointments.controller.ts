@@ -114,8 +114,12 @@ export class AppointmentsController {
       date: date,
     };
 
-    // Remove undefined filters
-    Object.keys(filters).forEach(key => filters[key] === undefined && delete filters[key]);
+    // Remove undefined and null string filters
+    Object.keys(filters).forEach(key => {
+      if (filters[key] === undefined || filters[key] === null || filters[key] === 'null' || filters[key] === '') {
+        delete filters[key];
+      }
+    });
 
     return this.appointmentsService.findAll(filters);
   }
@@ -129,7 +133,7 @@ export class AppointmentsController {
   @ApiQuery({ name: 'nic', required: false, type: String })
   @ApiQuery({ name: 'status', required: false, type: String })
   @ApiQuery({ name: 'date', required: false, type: String, description: 'YYYY-MM-DD' })
-  @ApiQuery({ name: 'username', required: false, type: String })
+
   @ApiResponse({ status: 200, type: [Appointment] })
   async getOrganizationAppointments(
     @CurrentUserWithOrg() user: AuthenticatedUserWithOrganization,
@@ -138,7 +142,7 @@ export class AppointmentsController {
     @Query('nic') nic?: string,
     @Query('status') status?: string,
     @Query('date') date?: string,
-    @Query('username') username?: string,
+
   ) {
     const organizationId = user.organization?.id;
 
@@ -150,14 +154,17 @@ export class AppointmentsController {
       department_id: departmentId,
       service_id: serviceId,
       nic: nic,
-      username: username,
       status: status,
       date: date,
       organization_id: organizationId,
     };
 
-    // Remove undefined filters
-    Object.keys(filters).forEach(key => filters[key] === undefined && delete filters[key]);
+    // Remove undefined and null string filters
+    Object.keys(filters).forEach(key => {
+      if (filters[key] === undefined || filters[key] === null || filters[key] === 'null' || filters[key] === '') {
+        delete filters[key];
+      }
+    });
 
     return this.appointmentsService.findAllForOrganization(filters);
   }
@@ -171,11 +178,11 @@ export class AppointmentsController {
     return this.appointmentsService.findByNIC(nic);
   }
 
-  @Get('by-username/:username')
-  @ApiOperation({ summary: 'Find appointments by username' })
-  @ApiParam({ name: 'username', type: String, description: 'Username of the appointment creator' })
-  findByUsername(@Param('username') username: string) {
-    return this.appointmentsService.findByUsername(username);
+  @Get('by-user/:userId')
+  @ApiOperation({ summary: 'Find appointments by user ID' })
+  @ApiParam({ name: 'userId', type: String, description: 'User ID of the appointment creator' })
+  findByUserId(@Param('userId') userId: string) {
+    return this.appointmentsService.findByUserId(userId);
   }
 
   @Get(':id')

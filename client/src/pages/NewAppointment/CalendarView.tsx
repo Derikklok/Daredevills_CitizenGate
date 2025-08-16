@@ -20,12 +20,11 @@ const formatTime = (timeStr: string): string => {
 	return `${displayHours}:${minutes} ${period}`;
 };
 
-// Helper function to generate time slots between start and end time (excluding past slots for today)
+// Helper function to generate time slots between start and end time
 const generateTimeSlots = (
 	startTime: string,
 	endTime: string,
-	durationMinutes: number,
-	isToday: boolean = false
+	durationMinutes: number
 ): string[] => {
 	const slots: string[] = [];
 	const [startHour, startMinute] = startTime.split(":").map(Number);
@@ -34,26 +33,17 @@ const generateTimeSlots = (
 	const startTotalMinutes = startHour * 60 + startMinute;
 	const endTotalMinutes = endHour * 60 + endMinute;
 
-	// Get current time in minutes for filtering past slots
-	const now = new Date();
-	const currentTotalMinutes = now.getHours() * 60 + now.getMinutes();
-
 	for (
 		let minutes = startTotalMinutes;
 		minutes < endTotalMinutes;
 		minutes += durationMinutes
 	) {
-		// Skip past time slots if this is for today
-		if (isToday && minutes <= currentTotalMinutes) {
-			continue;
-		}
-
-		const hour = Math.floor(minutes / 60);
-		const minute = minutes % 60;
-		const timeString = `${hour.toString().padStart(2, "0")}:${minute
+		const hours = Math.floor(minutes / 60);
+		const mins = minutes % 60;
+		const timeSlot = `${hours.toString().padStart(2, "0")}:${mins
 			.toString()
 			.padStart(2, "0")}`;
-		slots.push(timeString);
+		slots.push(timeSlot);
 	}
 
 	return slots;
@@ -66,11 +56,12 @@ const CalendarView = () => {
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 
-	const [selectedDay, setSelectedDay] = useState<string | null>(null);
-	const [selectedTime, setSelectedTime] = useState<string | null>(null);
-	const [selectedAvailabilityId, setSelectedAvailabilityId] = useState<
-		string | null
-	>(null);
+	const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+	const [selectedTimeSlot, setSelectedTimeSlot] = useState<{
+		time: string;
+		availabilityId: string;
+		date: Date;
+	} | null>(null);
 	const {isSignedIn, getToken} = useAuth();
 	const [isBooking, setIsBooking] = useState(false);
 
@@ -89,7 +80,7 @@ const CalendarView = () => {
 				setError(
 					"Failed to load service availability. Please try again later."
 				);
-				setAvailability([]); // No sample data fallback
+				setAvailability([]);
 			} finally {
 				setIsLoading(false);
 			}
@@ -132,162 +123,83 @@ const CalendarView = () => {
 	// Process availability to split multi-day entries
 	const processedAvailability = processAvailabilityDays(availability);
 
-	// Order days of week for better display
-	const orderDays = (days: ServiceAvailability[]): ServiceAvailability[] => {
-		const daysOrder = [
-			"Monday",
-			"Tuesday",
-			"Wednesday",
-			"Thursday",
-			"Friday",
-			"Saturday",
-			"Sunday",
-		];
-		return [...days].sort(
-			(a, b) =>
-				daysOrder.indexOf(a.day_of_week) - daysOrder.indexOf(b.day_of_week)
-		);
-	};
-
-	const orderedAvailability = orderDays(processedAvailability);
-
-	// Build a calendar grid
-	const renderCalendarGrid = () => {
-		const daysOfWeek = [
-			"Monday",
-			"Tuesday",
-			"Wednesday",
-			"Thursday",
-			"Friday",
-			"Saturday",
-			"Sunday",
-		];
-		const timeSlots = [];
-
-		// Create time slots from 8 AM to 6 PM
-		for (let hour = 8; hour <= 18; hour++) {
-			timeSlots.push(`${hour}:00`);
-			if (hour < 18) timeSlots.push(`${hour}:30`);
-		}
-
-		return (
-			<div className="overflow-auto">
-				<table className="w-full border-collapse">
-					<thead>
-						<tr className="bg-primary-600 text-white">
-							<th className="border p-2">Time</th>
-							{daysOfWeek.map((day) => (
-								<th key={day} className="border p-2">
-									{day}
-								</th>
-							))}
-						</tr>
-					</thead>
-					<tbody>
-						{timeSlots.map((timeSlot) => (
-							<tr key={timeSlot}>
-								<td className="border p-2 font-medium bg-gray-100">
-									{formatTime(`${timeSlot}:00`)}
-								</td>
-								{daysOfWeek.map((day) => {
-									const available = orderedAvailability.find(
-										(a) =>
-											a.day_of_week === day &&
-											isTimeInRange(timeSlot, a.start_time, a.end_time, day)
-									);
-									// Check if this is a past time slot for today
-									const today = new Date();
-									const todayDayName = today.toLocaleDateString("en-US", {
-										weekday: "long",
-									});
-									const isToday = day === todayDayName;
-									const [hour, minute] = timeSlot.split(":");
-									const timeSlotMinutes =
-										parseInt(hour) * 60 + parseInt(minute);
-									const currentTotalMinutes =
-										today.getHours() * 60 + today.getMinutes();
-									const isPastSlot =
-										isToday && timeSlotMinutes <= currentTotalMinutes;
-
-									return (
-										<td
-											key={`${day}-${timeSlot}`}
-											className={`border p-2 ${
-												available
-													? "bg-green-100"
-													: isPastSlot
-													? "bg-red-50"
-													: "bg-gray-50"
-											}`}>
-											{available && (
-												<div className="h-full w-full flex items-center justify-center">
-													<span className="w-3 h-3 bg-green-500 rounded-full mr-1"></span>
-													Available
-												</div>
-											)}
-											{isPastSlot && !available && (
-												<div className="h-full w-full flex items-center justify-center text-red-400 text-xs">
-													Past
-												</div>
-											)}
-										</td>
-									);
-								})}
-							</tr>
-						))}
-					</tbody>
-				</table>
-			</div>
-		);
-	};
-
-	// Check if time is within range and not in the past (for today)
-	const isTimeInRange = (
-		timeSlot: string,
-		startTime: string,
-		endTime: string,
-		dayName: string
-	): boolean => {
-		const [hour, minute] = timeSlot.split(":");
-		const timeSlotMinutes = parseInt(hour) * 60 + parseInt(minute);
-
-		const [startHour, startMinute] = startTime.split(":");
-		const startTimeMinutes = parseInt(startHour) * 60 + parseInt(startMinute);
-
-		const [endHour, endMinute] = endTime.split(":");
-		const endTimeMinutes = parseInt(endHour) * 60 + parseInt(endMinute);
-
-		// Check if this day is today
+	// Generate next 14 days starting from today
+	const getNext14Days = () => {
+		const days = [];
 		const today = new Date();
-		const todayDayName = today.toLocaleDateString("en-US", {weekday: "long"});
-		const isToday = dayName === todayDayName;
 
-		// If it's today, check if the time slot is in the past
-		if (isToday) {
-			const currentTotalMinutes = today.getHours() * 60 + today.getMinutes();
-			if (timeSlotMinutes <= currentTotalMinutes) {
-				return false; // Hide past time slots
-			}
+		for (let i = 0; i < 14; i++) {
+			const date = new Date(today);
+			date.setDate(today.getDate() + i);
+			days.push(date);
 		}
-
-		return (
-			timeSlotMinutes >= startTimeMinutes && timeSlotMinutes < endTimeMinutes
-		);
+		return days;
 	};
 
-	const handleTimeSlotSelect = (time: string, availabilityId: string) => {
-		setSelectedTime(time);
-		setSelectedAvailabilityId(availabilityId);
+	// Get available time slots for a specific date
+	const getTimeSlotsForDate = (date: Date) => {
+		const dayName = date.toLocaleDateString("en-US", {weekday: "long"});
+		const isToday = date.toDateString() === new Date().toDateString();
+		const currentTime = new Date();
+
+		// Filter availability for this day
+		const dayAvailabilities = processedAvailability.filter(
+			(item) => item.day_of_week === dayName
+		);
+
+		const timeSlots: Array<{
+			time: string;
+			availabilityId: string;
+			isPast: boolean;
+		}> = [];
+
+		dayAvailabilities.forEach((availability) => {
+			const slots = generateTimeSlots(
+				availability.start_time,
+				availability.end_time,
+				availability.duration_minutes
+			);
+
+			slots.forEach((slot) => {
+				// Check if this slot is in the past for today
+				let isPast = false;
+				if (isToday) {
+					const [hours, minutes] = slot.split(":").map(Number);
+					const slotTime = new Date(date);
+					slotTime.setHours(hours, minutes, 0, 0);
+					isPast = slotTime <= currentTime;
+				}
+
+				timeSlots.push({
+					time: slot,
+					availabilityId: availability.availability_id,
+					isPast,
+				});
+			});
+		});
+
+		return timeSlots.filter((slot) => !slot.isPast); // Only return future slots
+	};
+
+	const handleTimeSlotSelect = (
+		time: string,
+		availabilityId: string,
+		date: Date
+	) => {
+		setSelectedTimeSlot({
+			time,
+			availabilityId,
+			date,
+		});
 	};
 
 	const handleBookAppointment = async () => {
 		if (!isSignedIn) {
-			// Redirect to sign in page if user is not signed in
-			window.location.href = `/sign-in?redirect=/calendar/${serviceId}&time=${selectedTime}&day=${selectedDay}`;
+			window.location.href = `/sign-in?redirect=/calendar/${serviceId}`;
 			return;
 		}
 
-		if (!selectedTime || !selectedAvailabilityId || !serviceId) {
+		if (!selectedTimeSlot || !serviceId) {
 			alert("Please select a time slot before booking.");
 			return;
 		}
@@ -295,7 +207,6 @@ const CalendarView = () => {
 		try {
 			setIsBooking(true);
 
-			// Get authentication token
 			const token = await getToken();
 			if (!token) {
 				throw new Error("Authentication required");
@@ -305,22 +216,14 @@ const CalendarView = () => {
 			const draft = await createDraftAppointment({}, token);
 
 			// Step 2: Update the draft with service, availability, and specific time
-			// Construct the full appointment datetime using today's date + selected time
-			const today = new Date();
-			const [hours, minutes] = selectedTime.split(":").map(Number);
-			const appointmentDateTime = new Date(
-				today.getFullYear(),
-				today.getMonth(),
-				today.getDate(),
-				hours,
-				minutes,
-				0
-			);
+			const [hours, minutes] = selectedTimeSlot.time.split(":").map(Number);
+			const appointmentDateTime = new Date(selectedTimeSlot.date);
+			appointmentDateTime.setHours(hours, minutes, 0, 0);
 
 			await updateDraftWithService(
 				draft.appointment_id,
 				serviceId,
-				selectedAvailabilityId,
+				selectedTimeSlot.availabilityId,
 				appointmentDateTime.toISOString(),
 				token
 			);
@@ -379,13 +282,13 @@ const CalendarView = () => {
 
 			{/* Calendar section */}
 			<div className="max-w-6xl mx-auto p-6">
-				<h2 className="text-2xl font-bold mb-4">
+				<h2 className="text-2xl font-bold mb-6">
 					Service Availability Calendar
 				</h2>
 
 				{isLoading ? (
 					<div className="flex justify-center p-10">
-						<div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-700"></div>
+						<div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
 					</div>
 				) : error ? (
 					<div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
@@ -397,174 +300,207 @@ const CalendarView = () => {
 					</div>
 				) : (
 					<>
-						<div className="mb-6">
-							<h3 className="text-xl font-bold mb-4">Select a Day</h3>
-							<div className="flex flex-wrap gap-3">
-								{/* Use array of unique days instead of mapping each availability item */}
-								{[
-									...new Set(
-										orderedAvailability.map((item) => item.day_of_week)
-									),
-								].map((day) => (
-									<Button
-										key={day}
-										variant={selectedDay === day ? "default" : "outline"}
-										className={selectedDay === day ? "bg-primary-600" : ""}
-										onClick={() => setSelectedDay(day)}>
-										{day}
-									</Button>
-								))}
+						{/* Date Selection - Next 14 Days */}
+						<div className="mb-8">
+							<h3 className="text-xl font-bold mb-4">Select a Date</h3>
+							<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3">
+								{getNext14Days().map((date) => {
+									const timeSlots = getTimeSlotsForDate(date);
+									const isToday =
+										date.toDateString() === new Date().toDateString();
+									const isSelected =
+										selectedDate?.toDateString() === date.toDateString();
+
+									return (
+										<div
+											key={date.toISOString()}
+											className={`border rounded-lg p-3 cursor-pointer transition-all hover:shadow-md ${
+												isSelected
+													? "border-primary-500 bg-primary-50"
+													: timeSlots.length > 0
+													? "border-gray-200 hover:border-primary-300"
+													: "border-gray-100 bg-gray-50 cursor-not-allowed opacity-50"
+											}`}
+											onClick={() =>
+												timeSlots.length > 0 ? setSelectedDate(date) : null
+											}>
+											<div className="text-center">
+												<div
+													className={`text-sm font-medium ${
+														isSelected ? "text-primary-700" : "text-gray-600"
+													}`}>
+													{isToday
+														? "Today"
+														: date.toLocaleDateString("en-US", {
+																weekday: "short",
+														  })}
+												</div>
+												<div
+													className={`text-lg font-bold ${
+														isSelected ? "text-primary-800" : "text-gray-900"
+													}`}>
+													{date.getDate()}
+												</div>
+												<div
+													className={`text-xs ${
+														isSelected ? "text-primary-600" : "text-gray-500"
+													}`}>
+													{date.toLocaleDateString("en-US", {month: "short"})}
+												</div>
+												<div
+													className={`text-xs mt-1 ${
+														timeSlots.length > 0
+															? isSelected
+																? "text-primary-600"
+																: "text-green-600"
+															: "text-gray-400"
+													}`}>
+													{timeSlots.length > 0
+														? `${timeSlots.length} slots`
+														: "No slots"}
+												</div>
+											</div>
+										</div>
+									);
+								})}
 							</div>
 						</div>
 
-						{/* Time slot selector */}
-						{selectedDay && (
-							<div className="mt-6">
-								<h3 className="text-xl font-bold mb-4">Select a Time Slot</h3>
-								{orderedAvailability
-									.filter((item) => item.day_of_week === selectedDay)
-									.map((item) => {
-										// Check if the selected day is today
-										const today = new Date();
-										const todayDayName = today.toLocaleDateString("en-US", {
-											weekday: "long",
-										});
-										const isToday = selectedDay === todayDayName;
-
-										// Generate time slots for this availability (filter past slots if today)
-										const timeSlots = generateTimeSlots(
-											item.start_time,
-											item.end_time,
-											item.duration_minutes,
-											isToday
-										);
-
-										return (
-											<div
-												key={item.availability_id}
-												className="mb-6 p-4 border rounded-lg">
-												<h4 className="font-semibold mb-3">
-													{formatTime(item.start_time)} -{" "}
-													{formatTime(item.end_time)}
-													<span className="text-sm text-gray-500 ml-2">
-														({item.duration_minutes} min slots)
-													</span>
-													{isToday && (
-														<span className="text-xs text-blue-600 ml-2">
-															(Today - past slots hidden)
-														</span>
-													)}
-												</h4>
-												{timeSlots.length === 0 ? (
-													<div className="text-center p-4 text-gray-500 bg-gray-50 rounded">
-														{isToday
-															? "No more time slots available today. Please select another day."
-															: "No time slots available for this time period."}
-													</div>
-												) : (
-													<div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
-														{timeSlots.map((timeSlot) => (
-															<Button
-																key={timeSlot}
-																variant={
-																	selectedTime === timeSlot
-																		? "default"
-																		: "outline"
-																}
-																className={`text-sm ${
-																	selectedTime === timeSlot
-																		? "bg-primary-600 text-white"
-																		: "hover:bg-primary-50"
-																}`}
-																onClick={() =>
-																	handleTimeSlotSelect(
-																		timeSlot,
-																		item.availability_id
-																	)
-																}>
-																{formatTime(`${timeSlot}:00`)}
-															</Button>
-														))}
-													</div>
-												)}
-											</div>
-										);
+						{/* Time Slot Selection */}
+						{selectedDate && (
+							<div className="mb-8">
+								<h3 className="text-xl font-bold mb-4">
+									Select a Time Slot for{" "}
+									{selectedDate.toLocaleDateString("en-US", {
+										weekday: "long",
+										month: "long",
+										day: "numeric",
 									})}
+								</h3>
 
-								{/* Book Appointment Button */}
-								{selectedTime && (
-									<div className="mt-6 p-4 bg-primary-50 rounded-lg">
-										<div className="flex items-center justify-between">
-											<div>
-												<h4 className="font-semibold text-primary-800">
-													Selected: {selectedDay} at{" "}
-													{formatTime(`${selectedTime}:00`)}
-												</h4>
-												<p className="text-sm text-primary-600">
-													Ready to proceed with your appointment booking
+								{(() => {
+									const timeSlots = getTimeSlotsForDate(selectedDate);
+
+									if (timeSlots.length === 0) {
+										return (
+											<div className="text-center p-8 bg-gray-50 rounded-lg">
+												<p className="text-gray-600">
+													No available time slots for this date.
+												</p>
+												<p className="text-sm text-gray-500 mt-1">
+													Please select a different date.
 												</p>
 											</div>
-											<Button
-												onClick={handleBookAppointment}
-												disabled={isBooking}
-												className="bg-primary-600 hover:bg-primary-700 text-white px-6">
-												{isBooking ? "Processing..." : "Book Appointment"}
-											</Button>
+										);
+									}
+
+									return (
+										<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+											{timeSlots.map((slot) => {
+												const isSelected =
+													selectedTimeSlot?.time === slot.time &&
+													selectedTimeSlot?.date.toDateString() ===
+														selectedDate.toDateString();
+
+												return (
+													<Button
+														key={`${slot.time}-${slot.availabilityId}`}
+														variant={isSelected ? "default" : "outline"}
+														className={`h-12 text-sm font-medium ${
+															isSelected
+																? "bg-primary-600 text-white border-primary-600"
+																: "hover:bg-primary-50 hover:border-primary-300"
+														}`}
+														onClick={() =>
+															handleTimeSlotSelect(
+																slot.time,
+																slot.availabilityId,
+																selectedDate
+															)
+														}>
+														{formatTime(`${slot.time}:00`)}
+													</Button>
+												);
+											})}
 										</div>
-									</div>
-								)}
+									);
+								})()}
 							</div>
 						)}
 
-						{/* Availability summary */}
-						{!selectedDay && (
-							<div className="mt-8">
-								<h3 className="text-xl font-bold mb-4">
-									Weekly Availability Summary
-								</h3>
-								<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-									{[
-										...new Set(
-											orderedAvailability.map((item) => item.day_of_week)
-										),
-									].map((day) => {
-										// Get all availabilities for this day
-										const dayAvailabilities = orderedAvailability.filter(
-											(item) => item.day_of_week === day
-										);
-										return (
-											<div
-												key={day}
-												className="bg-gray-50 p-4 rounded-lg border border-gray-200 hover:bg-gray-100 cursor-pointer"
-												onClick={() => setSelectedDay(day)}>
-												<h3 className="font-bold text-lg">{day}</h3>
-												{dayAvailabilities.map((item, index) => (
-													<p key={index} className="text-gray-700">
-														{formatTime(item.start_time)} -{" "}
-														{formatTime(item.end_time)}
-													</p>
-												))}
-												<p className="text-sm text-gray-500">
-													{dayAvailabilities[0].duration_minutes} minute
-													appointments
-												</p>
-												<Button
-													variant="outline"
-													className="mt-3 text-primary-600 border-primary-600 hover:bg-primary-700 hover:text-white">
-													Select Time Slot
-												</Button>
-											</div>
-										);
-									})}
+						{/* Selected Appointment Summary */}
+						{selectedTimeSlot && (
+							<div className="mb-8 p-6 bg-primary-50 border border-primary-200 rounded-lg">
+								<div className="flex items-center justify-between">
+									<div>
+										<h4 className="text-lg font-bold text-primary-800 mb-2">
+											Appointment Summary
+										</h4>
+										<div className="space-y-1">
+											<p className="text-primary-700">
+												<span className="font-medium">Date:</span>{" "}
+												{selectedTimeSlot.date.toLocaleDateString("en-US", {
+													weekday: "long",
+													month: "long",
+													day: "numeric",
+													year: "numeric",
+												})}
+											</p>
+											<p className="text-primary-700">
+												<span className="font-medium">Time:</span>{" "}
+												{formatTime(`${selectedTimeSlot.time}:00`)}
+											</p>
+										</div>
+									</div>
+									<Button
+										onClick={handleBookAppointment}
+										disabled={isBooking}
+										className="bg-primary-600 hover:bg-primary-700 text-white px-8 py-3 text-lg font-medium">
+										{isBooking ? "Processing..." : "Book Appointment"}
+									</Button>
 								</div>
 							</div>
 						)}
 
-						{/* Weekly Calendar View */}
-						{!selectedDay && (
+						{/* Weekly Availability Overview */}
+						{!selectedDate && (
 							<div className="mt-8">
-								<h3 className="text-xl font-bold mb-4">Weekly Calendar</h3>
-								{renderCalendarGrid()}
+								<h3 className="text-xl font-bold mb-4">
+									Weekly Availability Overview
+								</h3>
+								<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+									{[
+										...new Set(
+											processedAvailability.map((item) => item.day_of_week)
+										),
+									].map((day) => {
+										// Get all availabilities for this day
+										const dayAvailabilities = processedAvailability.filter(
+											(item) => item.day_of_week === day
+										);
+
+										return (
+											<div
+												key={day}
+												className="bg-white p-4 rounded-lg border border-gray-200 hover:border-primary-300 hover:shadow-sm transition-all">
+												<h4 className="font-bold text-lg text-gray-900 mb-2">
+													{day}
+												</h4>
+												{dayAvailabilities.map((item, index) => (
+													<div
+														key={index}
+														className="text-sm text-gray-600 mb-1">
+														{formatTime(item.start_time)} -{" "}
+														{formatTime(item.end_time)}
+														<span className="text-xs text-gray-500 ml-1">
+															({item.duration_minutes} min slots)
+														</span>
+													</div>
+												))}
+											</div>
+										);
+									})}
+								</div>
 							</div>
 						)}
 					</>
