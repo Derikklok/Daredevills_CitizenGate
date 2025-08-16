@@ -11,30 +11,15 @@ const AdminDashboard = () => {
 		<AdminLayout>
 			<div className="p-6 bg-gray-50 min-h-screen">
 				<div className="mb-6">
-					<h1 className="text-2xl font-bold text-primary">System Admin Dashboard</h1>
-					<p className="text-gray-600">Manage and monitor the CitizenGate platform</p>
+					<h1 className="text-2xl font-bold text-primary">
+						System Admin Dashboard
+					</h1>
+					<p className="text-gray-600">
+						Manage and monitor the CitizenGate platform
+					</p>
 				</div>
 
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-					{/* User Management Card */}
-					<Card className="p-6 hover:shadow-lg transition-shadow cursor-pointer">
-						<div className="flex items-start mb-4">
-							<div className="p-3 bg-blue-100 rounded-lg">
-								<Users className="h-6 w-6 text-blue-600" />
-							</div>
-						</div>
-						<h3 className="text-lg font-semibold mb-2">User Management</h3>
-						<p className="text-gray-500 mb-4">
-							Manage user accounts, permissions, and roles
-						</p>
-						<Button
-							variant="outline"
-							className="w-full"
-							onClick={() => navigate("/admin/users")}>
-							Manage Users
-						</Button>
-					</Card>
-
 					{/* Department Management Card */}
 					<Card className="p-6 hover:shadow-lg transition-shadow cursor-pointer">
 						<div className="flex items-start mb-4">
