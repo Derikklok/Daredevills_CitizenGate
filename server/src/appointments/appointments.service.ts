@@ -17,6 +17,7 @@ export class AppointmentsService {
 
   async createDraft(userId: string) {
     const draftData: Partial<Appointment> = {
+      user_id: userId,
       appointment_status: 'draft',
       notes: `Draft appointment for user: ${userId}`,
       full_name: 'DRAFT_PENDING',
@@ -39,8 +40,8 @@ export class AppointmentsService {
       throw new BadRequestException('This appointment is not a draft');
     }
 
-    // Verify user owns this draft (check notes field for user ID)
-    if (!appointment.notes?.includes(userId)) {
+    // Verify user owns this draft
+    if (appointment.user_id !== userId) {
       throw new BadRequestException('You can only update your own draft appointments');
     }
 
@@ -97,8 +98,8 @@ export class AppointmentsService {
       throw new BadRequestException('This appointment is not a draft');
     }
 
-    // Verify user owns this draft (check notes field for user ID)
-    if (!appointment.notes?.includes(userId)) {
+    // Verify user owns this draft
+    if (appointment.user_id !== userId) {
       throw new BadRequestException('You can only complete your own draft appointments');
     }
 
@@ -188,10 +189,16 @@ export class AppointmentsService {
     if (filters?.nic) {
       query.andWhere('appointment.nic = :nic', { nic: filters.nic });
     }
-    
+
     if (filters?.username) {
-      query.andWhere('appointment.username = :username', { 
-        username: filters.username 
+      query.andWhere('appointment.username = :username', {
+        username: filters.username
+      });
+    }
+
+    if (filters?.user_id) {
+      query.andWhere('appointment.user_id = :userId', {
+        userId: filters.user_id
       });
     }
 
@@ -239,6 +246,66 @@ export class AppointmentsService {
     return query.getMany();
   }
 
+  async findAllForOrganization(filters?: any) {
+    const query = this.appointmentRepo.createQueryBuilder('appointment')
+      .leftJoinAndSelect('appointment.service', 'service')
+      .leftJoinAndSelect('service.department', 'department')
+      .leftJoinAndSelect('appointment.availability', 'availability');
+
+    // For organization-wide filtering, we need to filter by clerk organization ID through departments
+    if (filters?.organization_id) {
+      query.andWhere('department.clerk_org_id = :organizationId', {
+        organizationId: filters.organization_id
+      });
+    }
+
+    if (filters?.department_id) {
+      query.andWhere('department.department_id = :departmentId', {
+        departmentId: filters.department_id
+      });
+    }
+
+    if (filters?.service_id) {
+      query.andWhere('service.service_id = :serviceId', {
+        serviceId: filters.service_id
+      });
+    }
+
+    if (filters?.nic) {
+      query.andWhere('appointment.nic = :nic', { nic: filters.nic });
+    }
+
+    if (filters?.username) {
+      query.andWhere('appointment.username = :username', {
+        username: filters.username
+      });
+    }
+
+    if (filters?.status) {
+      query.andWhere('appointment.appointment_status = :status', {
+        status: filters.status
+      });
+    }
+
+    if (filters?.date) {
+      const startDate = new Date(filters.date);
+      startDate.setHours(0, 0, 0, 0);
+
+      const endDate = new Date(filters.date);
+      endDate.setHours(23, 59, 59, 999);
+
+      query.andWhere('appointment.appointment_time BETWEEN :startDate AND :endDate', {
+        startDate,
+        endDate
+      });
+    }
+
+    // Order by most recent appointments first
+    query.orderBy('appointment.appointment_time', 'DESC');
+
+    return query.getMany();
+  }
+
   async findOne(id: string) {
     const appointment = await this.appointmentRepo.findOne({
       where: { appointment_id: id },
@@ -270,7 +337,7 @@ export class AppointmentsService {
       order: { appointment_time: 'DESC' }
     });
   }
-  
+
   async findByUsername(username: string) {
     return this.appointmentRepo.find({
       where: { username },

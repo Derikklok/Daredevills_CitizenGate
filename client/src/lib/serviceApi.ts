@@ -55,28 +55,32 @@ export async function fetchDepartmentServices(departmentId: number | string, tok
 }
 
 /**
- * Fetch appointments by department ID
- * Note: This function needs to be implemented on the backend
+ * Fetch appointments for a specific department (Admin only)
  */
 export async function fetchDepartmentAppointments(departmentId: number | string, token?: string): Promise<any[]> {
+    if (!token) {
+        throw new Error('Authentication token is required');
+    }
+
     const headers: HeadersInit = {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
     };
 
-    if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
+    const params = new URLSearchParams();
+    params.append('department_id', departmentId.toString());
+
+    const response = await fetch(`${normalizedApiUrl}/api/appointments/admin?${params.toString()}`, {
+        method: 'GET',
+        headers
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to fetch department appointments: ${response.status} ${errorText}`);
     }
-    
-    // This is a placeholder - the actual endpoint would be implemented on the backend
-    // For now, we'll return an empty array
-    // When implemented, it should be something like:
-    // const response = await fetch(`${normalizedApiUrl}/api/appointments?department_id=${departmentId}`, {
-    //    method: 'GET',
-    //    headers
-    // });
-    
-    console.log("Fetching appointments for department", departmentId);
-    return []; // Return empty array for now
+
+    return response.json();
 }
 
 /**

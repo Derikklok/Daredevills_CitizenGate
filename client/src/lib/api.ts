@@ -207,6 +207,93 @@ export async function getAppointmentDocuments(
 }
 
 /**
+ * Get user's own appointments
+ */
+export async function getUserAppointments(
+    token: string,
+    filters?: { status?: string; date?: string }
+): Promise<any[]> {
+    if (!token) {
+        throw new Error('Authentication token is required');
+    }
+
+    let url = `${normalizedApiUrl}/api/appointments/my`;
+
+    // Add query parameters if filters are provided
+    const params = new URLSearchParams();
+    if (filters?.status) params.append('status', filters.status);
+    if (filters?.date) params.append('date', filters.date);
+
+    if (params.toString()) {
+        url += `?${params.toString()}`;
+    }
+
+    const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+        },
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to fetch user appointments: ${response.status} ${errorText}`);
+    }
+
+    return response.json();
+}
+
+/**
+ * Get organization appointments (Admin only)
+ */
+export async function getOrganizationAppointments(
+    token: string,
+    filters?: {
+        department_id?: number;
+        service_id?: string;
+        nic?: string;
+        status?: string;
+        date?: string;
+        username?: string;
+    }
+): Promise<any[]> {
+    if (!token) {
+        throw new Error('Authentication token is required');
+    }
+
+    let url = `${normalizedApiUrl}/api/appointments/admin`;
+
+    // Add query parameters if filters are provided
+    const params = new URLSearchParams();
+    if (filters?.department_id) params.append('department_id', filters.department_id.toString());
+    if (filters?.service_id) params.append('service_id', filters.service_id);
+    if (filters?.nic) params.append('nic', filters.nic);
+    if (filters?.status) params.append('status', filters.status);
+    if (filters?.date) params.append('date', filters.date);
+    if (filters?.username) params.append('username', filters.username);
+
+    if (params.toString()) {
+        url += `?${params.toString()}`;
+    }
+
+    const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+        },
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to fetch organization appointments: ${response.status} ${errorText}`);
+    }
+
+    return response.json();
+}
+
+/**
  * Get all departments with their services
  */
 export async function getDepartments(): Promise<Department[]> {

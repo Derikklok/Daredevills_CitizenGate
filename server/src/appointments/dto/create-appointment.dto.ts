@@ -58,6 +58,11 @@ export class CreateAppointmentDto {
   @IsOptional()
   notes?: string;
 
+  @ApiPropertyOptional({ description: 'User ID (automatically set from authenticated user)', example: 'user_2ABC123DEF456' })
+  @IsString()
+  @IsOptional()
+  user_id?: string;
+
   @ApiPropertyOptional({
     description: 'Documents submitted with the appointment',
     type: [UploadedServiceDocuments],

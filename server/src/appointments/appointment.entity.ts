@@ -57,6 +57,10 @@ export class Appointment {
   @Column({ type: 'text', nullable: true })
   username: string;
 
+  @ApiProperty({ description: 'User ID (Clerk account ID)', example: 'user_2ABC123DEF456' })
+  @Column({ type: 'text', nullable: true })
+  user_id: string;
+
   @ApiProperty({ description: 'Appointment time (ISO 8601)', example: '2025-08-15T10:30:00Z' })
   @Column({ type: 'timestamptz' })
   appointment_time: Date;
