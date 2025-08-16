@@ -567,7 +567,6 @@ const ServiceManagement = () => {
             name="name"
             onChange={handleInputChange}
             className="mt-1 w-3/4"
-            
           />
         </div>
 
