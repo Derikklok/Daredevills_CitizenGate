@@ -45,6 +45,14 @@ export class DepartmentsController {
     return this.departmentService.findOrganization(id);
   }
 
+  @Get("/clerk-organization/:clerkOrgId")
+  @ApiOperation({ summary: 'Get departments by Clerk organization ID' })
+  @ApiParam({ name: 'clerkOrgId', type: String, description: 'Clerk organization ID' })
+  @ApiResponse({ status: 200, type: [Department], description: 'Departments with their associated services' })
+  findByClerkOrgId(@Param('clerkOrgId') clerkOrgId: string) {
+    return this.departmentService.findByClerkOrgId(clerkOrgId);
+  }
+
   @Put(':id')
   @ApiOperation({ summary: 'Update a department' })
   @ApiParam({ name: 'id', type: Number })

@@ -95,6 +95,19 @@ export class DepartmentsService {
     return organization;
   }
 
+  async findByClerkOrgId(clerkOrgId: string) {
+    const departments = await this.deptRepo.find({
+      where: { clerk_org_id: clerkOrgId },
+      relations: ['services']  // Include the services relation
+    });
+    
+    if (!departments || departments.length === 0) {
+      throw new NotFoundException(`No departments found for organization ID: ${clerkOrgId}`);
+    }
+    
+    return departments;
+  }
+
   async update(id: number, data: Partial<Department>) {
     const dept = await this.findOne(id);
     Object.assign(dept, data);
