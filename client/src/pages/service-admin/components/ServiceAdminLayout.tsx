@@ -6,8 +6,8 @@ import {useOrganization} from "@clerk/clerk-react";
 const ServiceAdminLayout = ({children}: {children: React.ReactNode}) => {
 	const navigate = useNavigate();
 	const location = useLocation();
-	const { organization } = useOrganization();
-	
+	const {organization} = useOrganization();
+
 	// Helper to determine if the current path matches
 	const isActive = (path: string) => {
 		return location.pathname === path;
@@ -75,7 +75,7 @@ const ServiceAdminLayout = ({children}: {children: React.ReactNode}) => {
 					</div>
 					<div className="flex items-center space-x-2">
 						<Button
-							variant="outline"
+							variant="default"
 							size="sm"
 							className="text-white border-white hover:bg-white hover:text-emerald-600"
 							onClick={() => navigate("/")}>
@@ -98,4 +98,4 @@ const ServiceAdminLayout = ({children}: {children: React.ReactNode}) => {
 	);
 };
 
-export default ServiceAdminLayout; 
+export default ServiceAdminLayout;
