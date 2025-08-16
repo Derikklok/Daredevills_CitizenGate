@@ -1,99 +1,385 @@
+# CitizenGate Server API
+
 <p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
+  <img src="https://nestjs.com/img/logo-small.svg" width="120" alt="NestJS Logo" />
 </p>
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## 🏛️ Overview
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+CitizenGate Server is a robust **NestJS-based backend API** for managing government services, appointments, and citizen interactions. Built with TypeScript, PostgreSQL, and modern web standards, it provides a comprehensive suite of APIs for digital government service delivery.
 
-## Description
+### Key Features
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- 🔐 **Clerk Authentication** - Secure JWT-based authentication with role-based access control
+- 🏢 **Multi-Department Management** - Support for multiple government departments
+- 📅 **Appointment Scheduling** - Complete appointment lifecycle management
+- 📄 **Document Management** - Secure document upload and verification via Supabase
+- ⭐ **Feedback System** - User ratings and reviews for services
+- 📊 **Analytics Dashboard** - Comprehensive reporting and analytics
+- 📧 **Email Notifications** - Automated reminders and confirmations
+- 🌐 **RESTful API** - Well-documented APIs with Swagger integration
 
-## Project setup
+## 🚀 Quick Start
 
-```bash
-$ pnpm install
-```
+### Prerequisites
 
-## Compile and run the project
+- **Node.js** (v20 or higher)
+- **pnpm** package manager
+- **PostgreSQL** database
+- **Supabase** account (for file storage)
+- **Clerk** account (for authentication)
+
+### Installation
 
 ```bash
-# development
-$ pnpm run start
+# Install dependencies
+pnpm install
 
-# watch mode
-$ pnpm run start:dev
+# Copy environment template
+cp ../example.env .env
 
-# production mode
-$ pnpm run start:prod
+# Configure your environment variables
+# See Environment Variables section below
 ```
 
-## Run tests
+### Development
 
 ```bash
-# unit tests
-$ pnpm run test
+# Start in development mode with hot reload
+pnpm run start:dev
 
-# e2e tests
-$ pnpm run test:e2e
+# Start in production mode
+pnpm run start:prod
 
-# test coverage
-$ pnpm run test:cov
+# Run tests
+pnpm run test
+
+# Run e2e tests
+pnpm run test:e2e
+
+# Generate test coverage
+pnpm run test:cov
 ```
 
-## Deployment
+### API Documentation
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+Once the server is running, visit:
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+- **Swagger UI**: `http://localhost:3000/api-docs`
+- **Health Check**: `http://localhost:3000/api`
+
+## 🔧 Environment Variables
+
+Create a `.env` file in the server directory with the following variables:
+
+```env
+# Database Configuration
+DATABASE_URL=postgresql://username:password@localhost:5432/citizengate
+
+# Clerk Authentication
+CLERK_PUBLISHABLE_KEY=pk_test_xxxxxxxx
+CLERK_SECRET_KEY=sk_test_xxxxxxxx
+
+# Supabase Configuration (for file storage)
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+# Email Configuration (Optional - choose one)
+SENDGRID_API_KEY=SG.xxxxxxxx  # For SendGrid
+PLUNK_API_KEY=plunk_xxxxxxxx  # For Plunk
+
+# Application Settings
+NODE_ENV=development
+PORT=3000
+```
+
+## 📚 API Modules
+
+### 🏢 Departments (`/api/departments`)
+
+Manage government departments and organizational structure.
+
+- `POST /departments` - Create new department
+- `GET /departments` - List all departments
+- `GET /departments/:id` - Get department details
+- `PUT /departments/:id` - Update department
+- `DELETE /departments/:id` - Delete department
+
+### 🛠️ Government Services (`/api/government-services`)
+
+Manage available government services offered by departments.
+
+- `POST /government-services` - Create new service
+- `GET /government-services` - List all services
+- `GET /government-services/:id` - Get service details
+- `PUT /government-services/:id` - Update service
+- `DELETE /government-services/:id` - Delete service
+
+### ⏰ Service Availability (`/api/service-availability`)
+
+Configure when services are available for appointments.
+
+- `POST /service-availability` - Set availability for single/multiple days
+- `GET /service-availability` - List all availability schedules
+- `GET /service-availability/service/:serviceId` - Get service-specific availability
+- `PUT /service-availability/:id` - Update availability
+- `DELETE /service-availability/:id` - Remove availability
+
+### 📋 Required Documents (`/api/required-documents`)
+
+Define mandatory documents for each service.
+
+- `POST /required-documents` - Add document requirement
+- `GET /required-documents` - List all document requirements
+- `GET /required-documents/service/:serviceId` - Get service document requirements
+- `PUT /required-documents/:id` - Update document requirement
+- `DELETE /required-documents/:id` - Remove document requirement
+
+### 📅 Appointments (`/api/appointments`)
+
+Complete appointment lifecycle management.
+
+**Booking Flow:**
+
+- `POST /appointments/draft` - Create draft appointment
+- `PUT /appointments/:id/update-service` - Add service and time slot
+- `PUT /appointments/:id/complete` - Finalize with personal details
+
+**Management:**
+
+- `GET /appointments/my` - User's own appointments
+- `GET /appointments/admin` - Admin view (filtered by organization)
+- `PUT /appointments/:id/status` - Update appointment status
+- `DELETE /appointments/:id` - Cancel appointment
+
+**Documents:**
+
+- `POST /appointments/:id/documents` - Upload documents
+- `DELETE /appointments/:id/documents/:documentId` - Remove document
+
+### 📄 Document Storage (`/api/uploaded-service-documents`)
+
+Secure document upload and management via Supabase.
+
+- `POST /uploaded-service-documents/upload` - Upload single document
+- `POST /uploaded-service-documents/upload-multiple` - Upload multiple documents
+- `GET /uploaded-service-documents/appointment/:appointmentId` - Get appointment documents
+- `GET /uploaded-service-documents/:id/download` - Download document
+- `DELETE /uploaded-service-documents/:id` - Delete document
+
+### ⭐ Feedback (`/api/feedback`)
+
+User ratings and reviews for government services.
+
+- `POST /feedback` - Submit feedback (1-5 stars + comments)
+- `GET /feedback` - Get all feedback
+- `GET /feedback/service/:serviceId` - Get service-specific feedback
+
+### 📊 Analytics (`/api/analytics`)
+
+Comprehensive reporting and analytics for administrators.
+
+- `GET /analytics/overview` - Key metrics overview
+- `GET /analytics/peak-hours` - Usage patterns by time
+- `GET /analytics/departmental-workload` - Department-wise statistics
+- `GET /analytics/no-show-analysis` - No-show patterns and demographics
+- `GET /analytics/processing-times` - Service processing time analysis
+- `GET /analytics/appointment-trends` - Appointment volume trends
+
+## 🔐 Authentication & Authorization
+
+### Authentication Methods
+
+- **JWT Tokens** via Clerk authentication
+- **Role-based Access Control** (Admin, Service Admin, User)
+- **Organization-based Isolation** for multi-tenant support
+
+### Protected Routes
+
+Most endpoints require authentication. Include the JWT token in the Authorization header:
 
 ```bash
-$ pnpm install -g mau
-$ mau deploy
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### User Roles
 
-## Resources
+- **Admin**: Full system access, can manage all departments
+- **Service Admin**: Department-specific access, can manage own department's services
+- **User**: Can book appointments and manage own appointments
 
-Check out a few resources that may come in handy when working with NestJS:
+## 🗄️ Database Schema
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+The application uses **PostgreSQL** with **TypeORM** for database management.
 
-## Support
+### Core Entities
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+- `Department` - Government departments
+- `GovernmentService` - Available services
+- `ServiceAvailability` - Service scheduling
+- `RequiredDocument` - Document requirements
+- `Appointment` - Appointment bookings
+- `UploadedServiceDocument` - File storage references
+- `Feedback` - User feedback and ratings
 
-## Stay in touch
+### Database Features
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+- **Auto-generated UUIDs** for primary keys
+- **Soft deletes** for data preservation
+- **Audit trails** with created/updated timestamps
+- **Foreign key constraints** for data integrity
+- **Database migrations** for version control
 
-## License
+## 📧 Email Integration
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Support for automated email notifications:
+
+### Supported Providers
+
+- **SendGrid** - Production-ready email service
+- **Plunk** - Developer-friendly email API
+
+### Email Templates
+
+- **Appointment Confirmations** - Sent when appointments are confirmed
+- **Appointment Reminders** - Sent before appointment time
+- **Status Updates** - Sent when appointment status changes
+
+### Email Configuration
+
+Configure in your `.env` file:
+
+```env
+# SendGrid
+SENDGRID_API_KEY=SG.xxxxxxxx
+
+# OR Plunk
+PLUNK_API_KEY=plunk_xxxxxxxx
+```
+
+## 🗂️ File Storage
+
+**Supabase Storage** integration for secure document management:
+
+### Features
+
+- **Secure uploads** with authentication
+- **File type validation** (PDF, images)
+- **Storage quotas** and size limits
+- **Direct download URLs** with expiration
+- **Automatic cleanup** of orphaned files
+
+### Supported File Types
+
+- PDF documents
+- Images (JPEG, PNG, WebP)
+- Maximum file size: 10MB per file
+
+## 🧪 Testing
+
+### Test Types
+
+```bash
+# Unit tests
+pnpm run test
+
+# End-to-end tests
+pnpm run test:e2e
+
+# Test coverage report
+pnpm run test:cov
+
+# Watch mode for development
+pnpm run test:watch
+```
+
+### Test Structure
+
+- **Unit Tests**: Individual service and controller testing
+- **Integration Tests**: Database and API endpoint testing
+- **E2E Tests**: Complete workflow testing
+- **Mocking**: External services (Clerk, Supabase, Email)
+
+## 🚀 Deployment
+
+### Docker Deployment
+
+```bash
+# Build and run with Docker Compose
+docker compose up --build
+
+# Production deployment
+docker compose -f docker-compose.prod.yml up -d
+```
+
+### Environment Setup
+
+1. **Database Migration**: Ensure PostgreSQL is accessible
+2. **Environment Variables**: Configure all required variables
+3. **External Services**: Set up Clerk, Supabase, and email providers
+4. **Health Checks**: Verify all services are operational
+
+### Production Considerations
+
+- **Database Backups**: Regular automated backups
+- **Log Management**: Centralized logging and monitoring
+- **SSL/TLS**: Secure connections in production
+- **Rate Limiting**: API rate limiting for protection
+- **Caching**: Redis for session and data caching
+
+## 📁 Project Structure
+
+```
+server/
+├── src/
+│   ├── analytics/          # Analytics and reporting
+│   ├── appointments/        # Appointment management
+│   │   ├── dto/            # Data transfer objects
+│   │   ├── messaging/      # Email notifications
+│   │   └── README.md       # Appointment API docs
+│   ├── auth/               # Authentication & authorization
+│   ├── config/             # Configuration management
+│   ├── departments/        # Department management
+│   ├── feedback/           # User feedback system
+│   ├── government-services/ # Service management
+│   ├── required-documents/ # Document requirements
+│   ├── service-availability/ # Service scheduling
+│   ├── uploaded-service-documents/ # File storage
+│   ├── app.module.ts       # Main application module
+│   └── main.ts            # Application entry point
+├── test/                   # Test files
+├── Dockerfile             # Container configuration
+└── package.json           # Dependencies and scripts
+```
+
+## 🤝 Contributing
+
+1. **Fork the repository**
+2. **Create a feature branch**: `git checkout -b feature/amazing-feature`
+3. **Commit changes**: `git commit -m 'Add amazing feature'`
+4. **Push to branch**: `git push origin feature/amazing-feature`
+5. **Open a Pull Request**
+
+### Code Standards
+
+- **TypeScript** for type safety
+- **ESLint + Prettier** for code formatting
+- **Jest** for testing
+- **Conventional Commits** for commit messages
+
+## 📞 Support
+
+For questions and support:
+
+- **API Documentation**: `/api-docs` endpoint
+- **Issues**: GitHub Issues
+- **Email**: Contact the development team
+
+## 📄 License
+
+This project is licensed under the **MIT License** - see the LICENSE file for details.
+
+---
+
+Built with ❤️ using [NestJS](https://nestjs.com/) • [TypeORM](https://typeorm.io/) • [PostgreSQL](https://postgresql.org/)
