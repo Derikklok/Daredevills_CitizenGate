@@ -47,7 +47,7 @@ const ServiceManagement = () => {
   const [departmentName, setDepartmentName] = useState<string>("Your Department");
   const [activeTab, setActiveTab] = useState<string>("department");
   const [viewService, setViewService] = useState<GovernmentService | null>(null);
-  const [confirmDelete, setConfirmDelete] = useState<{ id: string; status: string } | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null); // Store only the service ID for deletion
 
   useEffect(() => {
     const fetchServicesData = async () => {
@@ -69,7 +69,7 @@ const ServiceManagement = () => {
         const allServicesData = await fetchGovernmentServices();
         const allServicesWithStatus = allServicesData.map((s) => ({
           ...s,
-          status: s.status || "active",
+          status: "active", // Always set to active
         }));
         setAllServices(allServicesWithStatus);
 
@@ -77,7 +77,7 @@ const ServiceManagement = () => {
           const departmentServicesData = await fetchDepartmentServices(deptId);
           const departmentServicesWithStatus = departmentServicesData.map((s) => ({
             ...s,
-            status: s.status || "active",
+            status: "active", // Always set to active
           }));
           setDepartmentServices(departmentServicesWithStatus);
         }
@@ -132,42 +132,19 @@ const ServiceManagement = () => {
     }
   };
 
-  const handleDeleteService = async (id: string, currentStatus: string) => {
-    if (confirmDelete) {
-      try {
-        const response = await fetch(`${API_BASE_URL}/government-services/${id}`, {
-          method: "DELETE",
-        });
+  const handleDeleteService = async (id: string) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/government-services/${id}`, {
+        method: "DELETE",
+      });
 
-        if (!response.ok) throw new Error("Failed to delete service");
+      if (!response.ok) throw new Error("Failed to delete service");
 
-        setDepartmentServices(departmentServices.filter((s) => s.service_id !== id));
-        setAllServices(allServices.filter((s) => s.service_id !== id));
-        setConfirmDelete(null);
-      } catch (error) {
-        console.error("Error deleting service:", error);
-      }
-    }
-  };
-
-  const handleToggleServiceStatus = (
-    serviceId: string,
-    currentStatus: "active" | "inactive" | undefined
-  ) => {
-    if (currentStatus === "active") {
-      setConfirmDelete({ id: serviceId, status: currentStatus });
-    } else {
-      const newStatus = currentStatus === "inactive" ? "active" : "inactive";
-      setDepartmentServices(
-        departmentServices.map((s) =>
-          s.service_id === serviceId ? { ...s, status: newStatus } : s
-        )
-      );
-      setAllServices(
-        allServices.map((s) =>
-          s.service_id === serviceId ? { ...s, status: newStatus } : s
-        )
-      );
+      setDepartmentServices(departmentServices.filter((s) => s.service_id !== id));
+      setAllServices(allServices.filter((s) => s.service_id !== id));
+      setConfirmDelete(null); // Clear confirmation after successful deletion
+    } catch (error) {
+      console.error("Error deleting service:", error);
     }
   };
 
@@ -186,6 +163,7 @@ const ServiceManagement = () => {
           category: editedService.category,
           estimated_total_completion_time: editedService.estimated_total_completion_time,
           department_id: editedService.department_id,
+          status: "active", // Always set to active on save
         }),
       });
 
@@ -265,42 +243,54 @@ const ServiceManagement = () => {
                       <Card key={service.service_id} className="overflow-hidden">
                         <CardHeader className="bg-gray-50 flex justify-between items-center">
                           <CardTitle className="text-lg">{service.name}</CardTitle>
-                          <span
-                            className={`px-2 py-1 text-xs rounded-full ${
-                              service.status === "active"
-                                ? "bg-green-100 text-green-800"
-                                : "bg-gray-100 text-gray-800"
-                            }`}
-                          >
-                            {service.status}
+                          <span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">
+                            active
                           </span>
                         </CardHeader>
-                        <CardContent className="pt-4">
-                          <p className="text-gray-700">{service.description}</p>
-                          <div className="flex flex-col text-sm text-gray-500 space-y-1 mt-2">
-                            <div className="flex justify-between">
-                              <span>Category: {service.category}</span>
-                              <span>Completion: {service.estimated_total_completion_time}</span>
-                            </div>
-                            <div>Department: {service.department?.name || "Unknown"}</div>
-                          </div>
-                          <div className="flex justify-between pt-4">
-                            <Button
-                              variant="outline"
-                              onClick={() => handleEditService(service.service_id)}
-                            >
-                              Edit
-                            </Button>
-                            <Button
-                              variant={service.status === "active" ? "destructive" : "secondary"}
-                              onClick={() =>
-                                handleToggleServiceStatus(service.service_id, service.status)
-                              }
-                            >
-                              {service.status === "active" ? "Deactivate" : "Activate"}
-                            </Button>
-                          </div>
-                        </CardContent>
+ <CardContent className="p-4 space-y-3">
+  {/* Description */}
+  <p className="text-sm text-gray-800 leading-snug">
+    {service.description}
+  </p>
+
+  {/* Meta Info */}
+  <div className="bg-gray-50 rounded-lg p-2 text-xs text-gray-600 space-y-1.5">
+    <div className="flex justify-between">
+      <span className="font-medium">Category</span>
+      <span>{service.category}</span>
+    </div>
+    <div className="flex justify-between">
+      <span className="font-medium">Completion</span>
+      <span>{service.estimated_total_completion_time}</span>
+    </div>
+    <div className="flex justify-between">
+      <span className="font-medium">Department</span>
+      <span>{service.department?.name || "Unknown"}</span>
+    </div>
+  </div>
+
+  {/* Actions */}
+  <div className="flex items-center justify-between pt-2">
+    <Button
+      variant="outline"
+      size="sm"
+      className="rounded-lg"
+      onClick={() => handleEditService(service.service_id)}
+    >
+      Edit
+    </Button>
+    <Button
+      variant="destructive"
+      size="sm"
+      className="rounded-lg"
+      onClick={() => setConfirmDelete(service.service_id)}
+    >
+      Delete
+    </Button>
+  </div>
+</CardContent>
+
+
                       </Card>
                     ))}
                   </div>
@@ -318,45 +308,56 @@ const ServiceManagement = () => {
                       <Card key={service.service_id} className="overflow-hidden">
                         <CardHeader className="bg-gray-50 flex justify-between items-center">
                           <CardTitle className="text-lg">{service.name}</CardTitle>
-                          <span
-                            className={`px-2 py-1 text-xs rounded-full ${
-                              service.status === "active"
-                                ? "bg-green-100 text-green-800"
-                                : "bg-gray-100 text-gray-800"
-                            }`}
-                          >
-                            {service.status}
+                          <span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">
+                            active
                           </span>
                         </CardHeader>
-                        <CardContent className="pt-4">
-                          <p className="text-gray-700">{service.description}</p>
-                          <div className="flex flex-col text-sm text-gray-500 space-y-1 mt-2">
-                            <div className="flex justify-between">
-                              <span>Category: {service.category}</span>
-                              <span>Completion: {service.estimated_total_completion_time}</span>
-                            </div>
-                            <div>Department: {service.department?.name || "Unknown"}</div>
-                          </div>
-                          <div className="flex justify-between pt-4">
-                            <Button
-                              variant="outline"
-                              onClick={() => handleViewDetails(service.service_id)}
-                            >
-                              View Details
-                            </Button>
-                            {service.department?.department_id ===
-                              Number(user?.publicMetadata?.departmentId) && (
-                              <Button
-                                variant={service.status === "active" ? "destructive" : "secondary"}
-                                onClick={() =>
-                                  handleToggleServiceStatus(service.service_id, service.status)
-                                }
-                              >
-                                {service.status === "active" ? "Deactivate" : "Activate"}
-                              </Button>
-                            )}
-                          </div>
-                        </CardContent>
+                        <CardContent className="p-4 space-y-3">
+  {/* Description */}
+  <p className="text-sm text-gray-800 leading-snug">
+    {service.description}
+  </p>
+
+  {/* Meta Info */}
+  <div className="bg-gray-50 rounded-lg p-2 text-xs text-gray-600 space-y-1.5 mt-2">
+    <div className="flex justify-between">
+      <span className="font-medium">Category</span>
+      <span>{service.category}</span>
+    </div>
+    <div className="flex justify-between">
+      <span className="font-medium">Completion</span>
+      <span>{service.estimated_total_completion_time}</span>
+    </div>
+    <div className="flex justify-between">
+      <span className="font-medium">Department</span>
+      <span>{service.department?.name || "Unknown"}</span>
+    </div>
+  </div>
+
+  {/* Actions */}
+  <div className="flex items-center justify-between pt-2">
+    <Button
+      variant="outline"
+      size="sm"
+      className="rounded-lg"
+      onClick={() => handleViewDetails(service.service_id)}
+    >
+      View Details
+    </Button>
+    {service.department?.department_id ===
+      Number(user?.publicMetadata?.departmentId) && (
+      <Button
+        variant="destructive"
+        size="sm"
+        className="rounded-lg"
+        onClick={() => setConfirmDelete(service.service_id)}
+      >
+        Delete
+      </Button>
+    )}
+  </div>
+</CardContent>
+
                       </Card>
                     ))}
                   </div>
@@ -449,7 +450,7 @@ const ServiceManagement = () => {
                 </div>
                 <div>
                   <p className="font-medium">Status:</p>
-                  <p>{viewService.status}</p>
+                  <p>active</p>
                 </div>
               </div>
               <div className="flex justify-end mt-4">
@@ -469,7 +470,7 @@ const ServiceManagement = () => {
                 <Button variant="outline" onClick={() => setConfirmDelete(null)}>Cancel</Button>
                 <Button
                   variant="destructive"
-                  onClick={() => handleDeleteService(confirmDelete.id, confirmDelete.status)}
+                  onClick={() => handleDeleteService(confirmDelete)}
                 >
                   Confirm Delete
                 </Button>
