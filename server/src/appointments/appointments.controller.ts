@@ -1,6 +1,13 @@
 import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { AppointmentsService } from './appointments.service';
 import { Appointment } from './appointment.entity';
+<<<<<<< HEAD
+import { CreateAppointmentDto } from './dto/create-appointment.dto';
+import { FilterAppointmentsDto } from './dto/filter-appointments.dto';
+import { ApiTags, ApiOperation, ApiParam, ApiBody, ApiQuery } from '@nestjs/swagger';
+
+@ApiTags('Appointments')
+=======
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { CreateDraftAppointmentDto } from './dto/create-draft-appointment.dto';
@@ -15,6 +22,7 @@ import { AuthenticatedUser } from '../auth/interfaces/authenticated-user.interfa
 @ApiTags('Appointments')
 @ApiBearerAuth()
 @UseGuards(ClerkAuthGuard)
+>>>>>>> master
 @Controller('appointments')
 export class AppointmentsController {
   constructor(private readonly appointmentsService: AppointmentsService) { }
@@ -75,6 +83,17 @@ export class AppointmentsController {
   }
 
   @Post()
+<<<<<<< HEAD
+  @ApiOperation({ summary: 'Create a new appointment' })
+  @ApiBody({ type: CreateAppointmentDto })
+  create(@Body() body: CreateAppointmentDto) {
+    return this.appointmentsService.create(body);
+  }
+
+  @Get()
+  @ApiOperation({ summary: 'Find all appointments with optional filters' })
+  findAll(@Query() filter: FilterAppointmentsDto) {
+=======
   @ApiOperation({ summary: 'Create a complete appointment (single step)' })
   @ApiResponse({ status: 201, type: Appointment })
   create(@Body() body: CreateAppointmentDto) {
@@ -101,12 +120,14 @@ export class AppointmentsController {
     @Query('status') status?: string,
     @Query('date') date?: string,
   ) {
+>>>>>>> master
     const filters = {
-      department_id: departmentId,
-      service_id: serviceId,
-      nic,
-      status,
-      date
+      department_id: filter.department_id,
+      service_id: filter.service_id,
+      nic: filter.nic,
+      username: filter.username,
+      status: filter.status,
+      date: filter.date
     };
 
     // Remove undefined filters
@@ -117,10 +138,21 @@ export class AppointmentsController {
 
   @Get('by-nic/:nic')
   @ApiOperation({ summary: 'Find appointments by NIC' })
+<<<<<<< HEAD
+  @ApiParam({ name: 'nic', type: String, description: 'National ID Card number' })
+=======
   @ApiParam({ name: 'nic', type: String })
   @ApiResponse({ status: 200, type: [Appointment] })
+>>>>>>> master
   findByNIC(@Param('nic') nic: string) {
     return this.appointmentsService.findByNIC(nic);
+  }
+  
+  @Get('by-username/:username')
+  @ApiOperation({ summary: 'Find appointments by username' })
+  @ApiParam({ name: 'username', type: String, description: 'Username of the appointment creator' })
+  findByUsername(@Param('username') username: string) {
+    return this.appointmentsService.findByUsername(username);
   }
 
   @Get(':id')

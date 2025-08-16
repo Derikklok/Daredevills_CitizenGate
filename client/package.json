@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@clerk/clerk-react": "^5.41.0",
+    "@heroicons/react": "^2.2.0",
+    "@radix-ui/react-dialog": "^1.1.15",
     "@clerk/themes": "^2.4.7",
     "@radix-ui/react-collapsible": "^1.1.12",
     "@radix-ui/react-label": "^2.1.7",

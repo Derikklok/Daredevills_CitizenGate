@@ -53,7 +53,13 @@ export class Appointment {
   @Column({ type: 'text', nullable: true })
   email: string;
 
+<<<<<<< HEAD
+  @Column({ type: 'text', nullable: true })
+  username: string; // Field to store the current user's username
+
+=======
   @ApiProperty({ description: 'Appointment time (ISO 8601)', example: '2025-08-15T10:30:00Z' })
+>>>>>>> master
   @Column({ type: 'timestamptz' })
   appointment_time: Date;
 

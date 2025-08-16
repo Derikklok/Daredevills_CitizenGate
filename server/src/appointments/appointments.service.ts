@@ -125,7 +125,7 @@ export class AppointmentsService {
     return this.appointmentRepo.update(appointmentId, updateData);
   }
 
-  async create(data: Partial<Appointment>) {
+  async create(data: any) {
     // Verify that the service and availability exist
     const service = await this.governmentServicesService.findOne(data.service_id);
     const availability = await this.serviceAvailabilityService.findOne(data.availability_id);
@@ -187,6 +187,12 @@ export class AppointmentsService {
 
     if (filters?.nic) {
       query.andWhere('appointment.nic = :nic', { nic: filters.nic });
+    }
+    
+    if (filters?.username) {
+      query.andWhere('appointment.username = :username', { 
+        username: filters.username 
+      });
     }
 
     if (filters?.status) {
@@ -260,6 +266,14 @@ export class AppointmentsService {
   async findByNIC(nic: string) {
     return this.appointmentRepo.find({
       where: { nic },
+      relations: ['service', 'service.department', 'availability'],
+      order: { appointment_time: 'DESC' }
+    });
+  }
+  
+  async findByUsername(username: string) {
+    return this.appointmentRepo.find({
+      where: { username },
       relations: ['service', 'service.department', 'availability'],
       order: { appointment_time: 'DESC' }
     });

@@ -2,7 +2,6 @@ import {Route, Routes, Navigate} from "react-router-dom";
 import Layout from "@/components/common/Layout";
 import "./App.css";
 import {useAuth} from "@clerk/clerk-react";
-import BookingAppointments from "./pages/BookingAppointments";
 import MyAppointments from "./pages/MyAppointments";
 import SignInPage from "./pages/SignIn";
 import SignUpPage from "./pages/SignUp";
@@ -207,7 +206,6 @@ function App() {
 			{/* Protected routes - require authentication */}
 			<Route path="/" element={<Layout />}>
 				<Route index element={<Home />} />
-				<Route path="/booking-appointments" element={<BookingAppointments />} />
 				<Route path="/my-appointments" element={<MyAppointments />} />
 				<Route
 					path="/service-details/:serviceName"
