@@ -5,7 +5,6 @@ import type {
     UploadDocumentRequest,
     Department,
     Service,
-    ServiceAvailability,
     RequiredDocument,
 } from "./types";
 import { getNormalizedApiUrl } from "./apiUtils";
@@ -294,6 +293,189 @@ export async function getOrganizationAppointments(
 }
 
 /**
+ * Cancel an appointment
+ */
+export async function cancelAppointment(
+    appointmentId: string,
+    token: string
+): Promise<any> {
+    if (!token) {
+        throw new Error('Authentication token is required');
+    }
+
+    const response = await fetch(`${normalizedApiUrl}/api/appointments/${appointmentId}/status`, {
+        method: 'PUT',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: 'cancelled' }),
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to cancel appointment: ${response.status} ${errorText}`);
+    }
+
+    return response.json();
+}
+
+/**
+ * Update appointment status
+ */
+export async function updateAppointmentStatus(
+    appointmentId: string,
+    status: string,
+    token: string
+): Promise<any> {
+    if (!token) {
+        throw new Error('Authentication token is required');
+    }
+
+    const response = await fetch(`${normalizedApiUrl}/api/appointments/${appointmentId}/status`, {
+        method: 'PUT',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status }),
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to update appointment status: ${response.status} ${errorText}`);
+    }
+
+    return response.json();
+}
+
+/**
+ * Get service availability for a specific service
+ */
+export async function getServiceAvailability(
+    serviceId: string,
+    token: string
+): Promise<any[]> {
+    if (!token) {
+        throw new Error('Authentication token is required');
+    }
+
+    const response = await fetch(
+        `${normalizedApiUrl}/api/service-availability/service/${serviceId}`,
+        {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        }
+    );
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to fetch service availability: ${response.status} ${errorText}`);
+    }
+
+    return response.json();
+}
+
+/**
+ * Get available time slots for rescheduling (calculated client-side)
+ */
+export async function getAvailableTimeSlots(
+    serviceId: string,
+    date: string,
+    token: string
+): Promise<any[]> {
+    try {
+        const availabilities = await getServiceAvailability(serviceId, token);
+        const selectedDate = new Date(date);
+        const dayOfWeek = selectedDate.toLocaleDateString('en-US', { weekday: 'long' });
+
+        // Filter availabilities for the selected day
+        const dayAvailabilities = availabilities.filter(
+            (availability) => availability.day_of_week === dayOfWeek
+        );
+
+        // Generate time slots for each availability
+        const timeSlots: any[] = [];
+
+        dayAvailabilities.forEach((availability) => {
+            const startTime = availability.start_time;
+            const endTime = availability.end_time;
+            const duration = availability.duration_minutes;
+
+            // Convert time strings to minutes
+            const startMinutes = timeToMinutes(startTime);
+            const endMinutes = timeToMinutes(endTime);
+
+            // Generate slots
+            for (let minutes = startMinutes; minutes < endMinutes; minutes += duration) {
+                const slotStartTime = minutesToTime(minutes);
+                const slotEndTime = minutesToTime(minutes + duration);
+
+                timeSlots.push({
+                    id: `${availability.availability_id}_${slotStartTime}`,
+                    availability_id: availability.availability_id,
+                    start_time: slotStartTime,
+                    end_time: slotEndTime,
+                    available: true, // In a real app, this would check against existing bookings
+                });
+            }
+        });
+
+        return timeSlots;
+    } catch (error) {
+        console.error('Error generating time slots:', error);
+        throw error;
+    }
+}
+
+// Helper functions
+function timeToMinutes(time: string): number {
+    const [hours, minutes] = time.split(':').map(Number);
+    return hours * 60 + minutes;
+}
+
+function minutesToTime(minutes: number): string {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+}
+
+/**
+ * Reschedule an appointment
+ */
+export async function rescheduleAppointment(
+    appointmentId: string,
+    newDateTime: string,
+    availabilityId: string,
+    token: string
+): Promise<any> {
+    if (!token) {
+        throw new Error('Authentication token is required');
+    }
+
+    const response = await fetch(`${normalizedApiUrl}/api/appointments/${appointmentId}`, {
+        method: 'PUT',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            appointment_time: newDateTime,
+            availability_id: availabilityId
+        }),
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to reschedule appointment: ${response.status} ${errorText}`);
+    }
+
+    return response.json();
+}
+
+/**
  * Get all departments with their services
  */
 export async function getDepartments(): Promise<Department[]> {
@@ -350,24 +532,7 @@ export async function getServices(): Promise<Service[]> {
     }
 }
 
-/**
- * Get service availability for a specific service
- */
-export async function getServiceAvailability(serviceId: string): Promise<ServiceAvailability[]> {
-    try {
-        const response = await fetch(`${normalizedApiUrl}/api/service-availability/service/${serviceId}`);
 
-        if (!response.ok) {
-            throw new Error(`Failed to fetch service availability: ${response.status}`);
-        }
-
-        const availability: ServiceAvailability[] = await response.json();
-        return availability;
-    } catch (error) {
-        console.error('Error fetching service availability:', error);
-        throw error;
-    }
-}
 
 /**
  * Get required documents for a specific service

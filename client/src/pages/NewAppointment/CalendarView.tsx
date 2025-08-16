@@ -78,7 +78,11 @@ const CalendarView = () => {
 		const fetchServiceAvailability = async () => {
 			try {
 				setIsLoading(true);
-				const data = await getServiceAvailability(serviceId!);
+				const token = await getToken();
+				if (!token) {
+					throw new Error("Authentication required");
+				}
+				const data = await getServiceAvailability(serviceId!, token);
 				setAvailability(data);
 				setError(null);
 			} catch (err) {
@@ -94,7 +98,7 @@ const CalendarView = () => {
 		if (serviceId) {
 			fetchServiceAvailability();
 		}
-	}, [serviceId]);
+	}, [serviceId, getToken]);
 
 	// Process and normalize day_of_week field, splitting multiple days
 	const processAvailabilityDays = (
@@ -352,29 +356,11 @@ const CalendarView = () => {
 						<h1 className="text-2xl font-bold">Error loading service</h1>
 					) : availability.length > 0 ? (
 						<>
-							<h1 className="text-3xl font-bold mb-2">
-								{availability[0].service?.name}
-							</h1>
+							<h1 className="text-3xl font-bold mb-2">Service Booking</h1>
 							<p className="text-lg mb-1">
-								{availability[0].service?.description}
+								Select an available time slot for your appointment.
 							</p>
 							<div className="flex flex-wrap gap-4 mt-4">
-								<div className="bg-white/10 px-4 py-2 rounded-lg">
-									<span className="text-amber-300 font-medium">
-										Department:
-									</span>{" "}
-									{availability[0].service.department.name}
-								</div>
-								<div className="bg-white/10 px-4 py-2 rounded-lg">
-									<span className="text-amber-300 font-medium">Category:</span>{" "}
-									{availability[0].service.category}
-								</div>
-								<div className="bg-white/10 px-4 py-2 rounded-lg">
-									<span className="text-amber-300 font-medium">
-										Estimated Time:
-									</span>{" "}
-									{availability[0].service.estimated_total_completion_time}
-								</div>
 								<div className="bg-white/10 px-4 py-2 rounded-lg">
 									<span className="text-amber-300 font-medium">
 										Appointment Duration:
