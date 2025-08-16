@@ -1,6 +1,5 @@
 import React, {useEffect, useState} from "react";
 import {useNavigate, Link} from "react-router-dom";
-import citizenGateLogo from "../components/images/CitizenGate.png";
 import CategoryCard from "../components/CategoryCard";
 import {
 	AcademicCapIcon,
@@ -10,7 +9,6 @@ import {
 	CurrencyDollarIcon,
 	MagnifyingGlassIcon,
 	XMarkIcon,
-	Bars3Icon,
 } from "@heroicons/react/24/outline";
 
 import {
@@ -19,7 +17,7 @@ import {
 } from "@heroicons/react/24/solid";
 
 // Clerk auth
-import {useClerk, useUser} from "@clerk/clerk-react";
+import {useUser} from "@clerk/clerk-react";
 import SideMenu from "./client-pages/SideMenu";
 import {Button} from "@/components/ui/button";
 import {useIsAdmin, useIsServiceAdmin, useIsAnyAdmin} from "@/hooks/useAuth";
@@ -39,7 +37,6 @@ export default function Home() {
 	const [menuOpen, setMenuOpen] = useState(false);
 
 	const navigate = useNavigate();
-	const {openSignIn} = useClerk();
 	const {isSignedIn, user} = useUser();
 	const {isAdmin, isLoading: adminLoading} = useIsAdmin();
 	const {isServiceAdmin, isLoading: serviceAdminLoading} = useIsServiceAdmin();
