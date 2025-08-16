@@ -63,7 +63,8 @@ const AnalyticsDashboard: React.FC = () => {
 		try {
 			const token = await getToken();
 			if (!token) {
-				throw new Error("No authentication token available");
+				console.error("No authentication token available");
+				return;
 			}
 
 			const [
@@ -99,7 +100,8 @@ const AnalyticsDashboard: React.FC = () => {
 		try {
 			const token = await getToken();
 			if (!token) {
-				throw new Error("No authentication token available");
+				console.error("No authentication token available");
+				return;
 			}
 			const data = await analyticsApi.getAppointmentTrends(token, trendDays);
 			setAppointmentTrends(data);
@@ -149,26 +151,7 @@ const AnalyticsDashboard: React.FC = () => {
 	if (loading) {
 		return (
 			<div className="flex items-center justify-center h-64">
-				<div className="text-lg text-gray-600">Loading analytics data...</div>
-			</div>
-		);
-	}
-
-	// Show a message if no data is available
-	if (!overview && !loading) {
-		return (
-			<div className="flex flex-col items-center justify-center h-64 text-center">
-				<TrendingUp className="h-12 w-12 text-gray-400 mb-4" />
-				<div className="text-lg text-gray-600 mb-2">
-					No Analytics Data Available
-				</div>
-				<div className="text-sm text-gray-500 mb-4">
-					Analytics will appear here once there are appointments in the system.
-				</div>
-				<Button onClick={loadAllData} variant="outline">
-					<TrendingUp className="h-4 w-4 mr-2" />
-					Refresh Data
-				</Button>
+				<div className="text-lg">Loading analytics...</div>
 			</div>
 		);
 	}
@@ -177,7 +160,7 @@ const AnalyticsDashboard: React.FC = () => {
 		<div className="space-y-6">
 			{/* Overview Cards */}
 			{overview && (
-				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
 					<Card className="p-4">
 						<div className="flex items-center justify-between">
 							<div>
@@ -230,7 +213,7 @@ const AnalyticsDashboard: React.FC = () => {
 
 			{/* Charts Tabs */}
 			<Tabs defaultValue="trends" className="w-full">
-				<TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-1">
+				<TabsList className="grid w-full grid-cols-2 md:grid-cols-5 gap-1">
 					<TabsTrigger value="trends">Trends</TabsTrigger>
 					<TabsTrigger value="peak-hours">Peak Hours</TabsTrigger>
 					<TabsTrigger value="departments">Departments</TabsTrigger>
@@ -277,7 +260,7 @@ const AnalyticsDashboard: React.FC = () => {
 				</TabsContent>
 
 				<TabsContent value="departments">
-					<div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+					<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 						<Card className="p-6">
 							<h3 className="text-lg font-semibold mb-4">
 								Department Workload
@@ -321,7 +304,7 @@ const AnalyticsDashboard: React.FC = () => {
 				</TabsContent>
 
 				<TabsContent value="overview">
-					<div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+					<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 						<Card className="p-6">
 							<h3 className="text-lg font-semibold mb-4">
 								Appointment Status Distribution
@@ -364,7 +347,7 @@ const AnalyticsDashboard: React.FC = () => {
 								No-Show Analysis by Demographics
 							</h3>
 							<div className="overflow-x-auto">
-								<table className="w-full text-xs sm:text-sm">
+								<table className="w-full text-sm">
 									<thead>
 										<tr className="border-b">
 											<th className="text-left p-2">Age Group</th>

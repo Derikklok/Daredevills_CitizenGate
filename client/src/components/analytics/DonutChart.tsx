@@ -16,34 +16,33 @@ const DonutChart: React.FC<DonutChartProps> = ({
 }) => {
 	const svgRef = useRef<SVGSVGElement>(null);
 	const containerRef = useRef<HTMLDivElement>(null);
-	const [dimensions, setDimensions] = useState({
-		width: width || 280,
-		height: height || 280,
-	});
+	const [dimensions, setDimensions] = useState({width: 0, height: 0});
 
-	// Responsive resize logic
+	// Responsive dimensions
 	useEffect(() => {
-		const handleResize = () => {
+		const updateDimensions = () => {
 			if (containerRef.current) {
 				const containerWidth = containerRef.current.offsetWidth;
-				const size = width || Math.min(containerWidth - 32, 400); // Square aspect ratio
+				const size = width || Math.min(containerWidth, 400);
 				setDimensions({width: size, height: height || size});
 			}
 		};
 
-		handleResize();
-		window.addEventListener("resize", handleResize);
-		return () => window.removeEventListener("resize", handleResize);
+		updateDimensions();
+		window.addEventListener("resize", updateDimensions);
+		return () => window.removeEventListener("resize", updateDimensions);
 	}, [width, height]);
 
 	useEffect(() => {
-		if (!data || data.length === 0) return;
+		if (!data || data.length === 0 || dimensions.width === 0) return;
 
 		const svg = d3.select(svgRef.current);
 		svg.selectAll("*").remove();
 
-		const radius = Math.min(dimensions.width, dimensions.height) / 2 - 40;
-		const innerRadius = radius * 0.5;
+		const isMobile = dimensions.width < 400;
+		const radius =
+			Math.min(dimensions.width, dimensions.height) / 2 - (isMobile ? 30 : 40);
+		const innerRadius = radius * (isMobile ? 0.4 : 0.5);
 
 		const g = svg
 			.append("g")
@@ -72,11 +71,6 @@ const DonutChart: React.FC<DonutChartProps> = ({
 			.innerRadius(innerRadius)
 			.outerRadius(radius);
 
-		const labelArc = d3
-			.arc<d3.PieArcDatum<{label: string; value: number}>>()
-			.innerRadius(radius + 10)
-			.outerRadius(radius + 10);
-
 		// Create arcs
 		const arcs = g
 			.selectAll(".arc")
@@ -85,54 +79,49 @@ const DonutChart: React.FC<DonutChartProps> = ({
 			.append("g")
 			.attr("class", "arc");
 
-		// Add paths
+		// Add the paths
 		arcs
 			.append("path")
 			.attr("d", arc)
 			.attr("fill", (d) => colorScale(d.data.label) as string)
-			.style("opacity", 0.8)
-			.on("mouseover", function () {
-				d3.select(this).style("opacity", 1);
-			})
-			.on("mouseout", function () {
-				d3.select(this).style("opacity", 0.8);
-			});
+			.attr("stroke", "white")
+			.attr("stroke-width", 2)
+			.style("opacity", 0)
+			.transition()
+			.duration(750)
+			.style("opacity", 1);
 
-		// Add labels
-		arcs
-			.append("text")
-			.attr("transform", (d) => `translate(${labelArc.centroid(d)})`)
-			.attr("text-anchor", "middle")
-			.style("font-size", "12px")
-			.style("font-weight", "bold")
-			.style("fill", "#374151")
-			.text((d) => (d.data.value > 0 ? d.data.label : ""));
-
-		// Add percentage labels
-		arcs
-			.append("text")
-			.attr("transform", (d) => `translate(${arc.centroid(d)})`)
-			.attr("text-anchor", "middle")
-			.style("font-size", "12px")
-			.style("fill", "white")
-			.style("font-weight", "bold")
-			.text((d) => {
-				const total = data.reduce((sum, item) => sum + item.value, 0);
-				const percentage =
-					total > 0 ? ((d.data.value / total) * 100).toFixed(1) : 0;
-				return d.data.value > 0 ? `${percentage}%` : "";
-			});
+		// Add percentage labels on larger screens
+		if (!isMobile) {
+			const total = d3.sum(data, (d) => d.value);
+			arcs
+				.append("text")
+				.attr("transform", (d) => `translate(${arc.centroid(d)})`)
+				.attr("text-anchor", "middle")
+				.style("font-size", "12px")
+				.style("font-weight", "bold")
+				.style("fill", "white")
+				.style("opacity", 0)
+				.text((d) => {
+					const percentage = ((d.data.value / total) * 100).toFixed(1);
+					return parseFloat(percentage) > 5 ? `${percentage}%` : "";
+				})
+				.transition()
+				.delay(750)
+				.duration(300)
+				.style("opacity", 1);
+		}
 
 		// Title
 		if (title) {
 			svg
 				.append("text")
 				.attr("x", dimensions.width / 2)
-				.attr("y", 20)
+				.attr("y", 25)
 				.attr("text-anchor", "middle")
-				.style("font-size", "16px")
+				.style("font-size", isMobile ? "16px" : "18px")
 				.style("font-weight", "bold")
-				.style("fill", "#1f2937")
+				.style("fill", "#374151")
 				.text(title);
 		}
 
@@ -140,7 +129,12 @@ const DonutChart: React.FC<DonutChartProps> = ({
 		const legend = svg
 			.append("g")
 			.attr("class", "legend")
-			.attr("transform", `translate(20, ${dimensions.height - 100})`);
+			.attr(
+				"transform",
+				isMobile
+					? `translate(10, ${dimensions.height - 20 * data.length - 10})`
+					: `translate(${dimensions.width - 120}, 40)`
+			);
 
 		const legendItems = legend
 			.selectAll(".legend-item")
@@ -148,22 +142,58 @@ const DonutChart: React.FC<DonutChartProps> = ({
 			.enter()
 			.append("g")
 			.attr("class", "legend-item")
-			.attr("transform", (_, i) => `translate(0, ${i * 20})`);
+			.attr("transform", (_, i) => `translate(0, ${i * (isMobile ? 18 : 20)})`);
 
 		legendItems
 			.append("rect")
-			.attr("width", 15)
-			.attr("height", 15)
-			.attr("fill", (d) => colorScale(d.label) as string);
+			.attr("width", isMobile ? 12 : 15)
+			.attr("height", isMobile ? 12 : 15)
+			.attr("fill", (d) => colorScale(d.label) as string)
+			.attr("rx", 2);
 
 		legendItems
 			.append("text")
-			.attr("x", 20)
-			.attr("y", 12)
-			.style("font-size", "12px")
+			.attr("x", isMobile ? 18 : 20)
+			.attr("y", isMobile ? 10 : 12)
+			.style("font-size", isMobile ? "12px" : "14px")
 			.style("fill", "#374151")
-			.text((d) => `${d.label}: ${d.value}`);
-	}, [data, dimensions, title]);
+			.text((d) => {
+				const maxLength = isMobile ? 15 : 20;
+				return d.label.length > maxLength
+					? d.label.substring(0, maxLength) + "..."
+					: d.label;
+			});
+
+		// Add value text on mobile in legend
+		if (isMobile) {
+			legendItems
+				.append("text")
+				.attr("x", 0)
+				.attr("y", -2)
+				.style("font-size", "10px")
+				.style("fill", "#6b7280")
+				.text((d) => `(${d.value})`);
+		}
+
+		// Add hover effects on desktop
+		if (!isMobile) {
+			arcs
+				.on("mouseover", function () {
+					d3.select(this)
+						.select("path")
+						.transition()
+						.duration(200)
+						.attr("transform", "scale(1.05)");
+				})
+				.on("mouseout", function () {
+					d3.select(this)
+						.select("path")
+						.transition()
+						.duration(200)
+						.attr("transform", "scale(1)");
+				});
+		}
+	}, [data, dimensions]);
 
 	return (
 		<div ref={containerRef} className="w-full flex justify-center">
@@ -171,8 +201,7 @@ const DonutChart: React.FC<DonutChartProps> = ({
 				ref={svgRef}
 				width={dimensions.width}
 				height={dimensions.height}
-				className="border rounded"
-				style={{maxWidth: "100%"}}
+				className="overflow-visible"
 			/>
 		</div>
 	);

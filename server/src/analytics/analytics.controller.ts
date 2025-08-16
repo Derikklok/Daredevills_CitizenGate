@@ -2,14 +2,15 @@ import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { AnalyticsService } from './analytics.service';
 import { ClerkAuthGuard } from '../auth/guards/clerk-auth.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
-import { Roles } from '../auth/decorators/roles.decorator';
-import { RolesEnum } from '../auth/enums/roles.enum';
+// import { RolesGuard } from '../auth/guards/roles.guard';
+// import { Roles } from '../auth/decorators/roles.decorator';
+// import { RolesEnum } from '../auth/enums/roles.enum';
 
 @ApiTags('Analytics')
 @Controller('analytics')
-@UseGuards(ClerkAuthGuard, RolesGuard)
-@Roles(RolesEnum.USER, RolesEnum.MEMBER, RolesEnum.ADMIN, RolesEnum.SYSTEM_ADMIN)
+@UseGuards(ClerkAuthGuard)
+// TODO: Re-enable admin-only access once roles are properly configured
+// @Roles(RolesEnum.ADMIN)
 export class AnalyticsController {
   constructor(private readonly analyticsService: AnalyticsService) { }
 

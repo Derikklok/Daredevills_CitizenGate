@@ -11,39 +11,40 @@ interface BarChartProps {
 const BarChart: React.FC<BarChartProps> = ({data, width, height, title}) => {
 	const svgRef = useRef<SVGSVGElement>(null);
 	const containerRef = useRef<HTMLDivElement>(null);
-	const [dimensions, setDimensions] = useState({
-		width: width || 320,
-		height: height || 240,
-	});
+	const [dimensions, setDimensions] = useState({width: 0, height: 0});
 
-	// Responsive resize logic
+	// Responsive dimensions
 	useEffect(() => {
-		const handleResize = () => {
+		const updateDimensions = () => {
 			if (containerRef.current) {
 				const containerWidth = containerRef.current.offsetWidth;
-				const newWidth = width || Math.max(320, containerWidth - 32); // 32px for padding
-				const newHeight = height || Math.max(240, newWidth * 0.6); // Maintain aspect ratio
+				const aspectRatio = 0.6; // height/width ratio
+				const newWidth = width || containerWidth;
+				const newHeight = height || Math.max(250, newWidth * aspectRatio);
 				setDimensions({width: newWidth, height: newHeight});
 			}
 		};
 
-		// Initial size
-		handleResize();
-
-		// Add resize listener
-		window.addEventListener("resize", handleResize);
-
-		// Cleanup
-		return () => window.removeEventListener("resize", handleResize);
+		updateDimensions();
+		window.addEventListener("resize", updateDimensions);
+		return () => window.removeEventListener("resize", updateDimensions);
 	}, [width, height]);
 
 	useEffect(() => {
-		if (!data || data.length === 0) return;
+		if (!data || data.length === 0 || dimensions.width === 0) return;
 
 		const svg = d3.select(svgRef.current);
 		svg.selectAll("*").remove();
 
-		const margin = {top: 40, right: 20, bottom: 60, left: 50}; // Smaller margins for mobile
+		// Responsive margins
+		const isMobile = dimensions.width < 480;
+		const margin = {
+			top: 40,
+			right: isMobile ? 20 : 30,
+			bottom: isMobile ? 80 : 60,
+			left: isMobile ? 40 : 60,
+		};
+
 		const chartWidth = dimensions.width - margin.left - margin.right;
 		const chartHeight = dimensions.height - margin.top - margin.bottom;
 
@@ -76,8 +77,8 @@ const BarChart: React.FC<BarChartProps> = ({data, width, height, title}) => {
 			.append("rect")
 			.attr("class", "bar")
 			.attr("x", (d) => xScale(d.label) || 0)
-			.attr("y", chartHeight)
 			.attr("width", xScale.bandwidth())
+			.attr("y", chartHeight)
 			.attr("height", 0)
 			.attr("fill", (d) => colorScale(d.label) as string)
 			.transition()
@@ -85,45 +86,62 @@ const BarChart: React.FC<BarChartProps> = ({data, width, height, title}) => {
 			.attr("y", (d) => yScale(d.value))
 			.attr("height", (d) => chartHeight - yScale(d.value));
 
-		// Add value labels on top of bars
-		g.selectAll(".label")
-			.data(data)
-			.enter()
-			.append("text")
-			.attr("class", "label")
-			.attr("x", (d) => (xScale(d.label) || 0) + xScale.bandwidth() / 2)
-			.attr("y", (d) => yScale(d.value) - 5)
-			.attr("text-anchor", "middle")
-			.style("font-size", "12px")
-			.style("fill", "#374151")
-			.text((d) => d.value);
-
 		// X Axis
-		g.append("g")
+		const xAxis = g
+			.append("g")
 			.attr("transform", `translate(0, ${chartHeight})`)
-			.call(d3.axisBottom(xScale))
-			.selectAll("text")
-			.style("text-anchor", "end")
-			.attr("dx", "-.8em")
-			.attr("dy", ".15em")
-			.attr("transform", "rotate(-45)");
+			.call(d3.axisBottom(xScale));
+
+		// Rotate labels on mobile for better readability
+		if (isMobile) {
+			xAxis
+				.selectAll("text")
+				.style("text-anchor", "end")
+				.attr("dx", "-.8em")
+				.attr("dy", ".15em")
+				.attr("transform", "rotate(-45)")
+				.style("font-size", "12px");
+		} else {
+			xAxis.selectAll("text").style("font-size", "14px");
+		}
 
 		// Y Axis
-		g.append("g").call(d3.axisLeft(yScale));
+		g.append("g")
+			.call(d3.axisLeft(yScale))
+			.selectAll("text")
+			.style("font-size", isMobile ? "12px" : "14px");
 
 		// Title
 		if (title) {
 			svg
 				.append("text")
 				.attr("x", dimensions.width / 2)
-				.attr("y", 20)
+				.attr("y", 25)
 				.attr("text-anchor", "middle")
-				.style("font-size", "16px")
+				.style("font-size", isMobile ? "16px" : "18px")
 				.style("font-weight", "bold")
-				.style("fill", "#1f2937")
+				.style("fill", "#374151")
 				.text(title);
 		}
-	}, [data, dimensions, title]);
+
+		// Value labels on bars
+		g.selectAll(".bar-label")
+			.data(data)
+			.enter()
+			.append("text")
+			.attr("class", "bar-label")
+			.attr("x", (d) => (xScale(d.label) || 0) + xScale.bandwidth() / 2)
+			.attr("y", (d) => yScale(d.value) - 5)
+			.attr("text-anchor", "middle")
+			.style("font-size", isMobile ? "11px" : "12px")
+			.style("fill", "#374151")
+			.style("opacity", 0)
+			.text((d) => d.value)
+			.transition()
+			.delay(750)
+			.duration(300)
+			.style("opacity", 1);
+	}, [data, dimensions]);
 
 	return (
 		<div ref={containerRef} className="w-full">
@@ -131,8 +149,7 @@ const BarChart: React.FC<BarChartProps> = ({data, width, height, title}) => {
 				ref={svgRef}
 				width={dimensions.width}
 				height={dimensions.height}
-				className="w-full h-auto border rounded"
-				style={{maxWidth: "100%"}}
+				className="overflow-visible"
 			/>
 		</div>
 	);

@@ -5,7 +5,7 @@ const normalizedApiUrl = getNormalizedApiUrl(API_URL);
 
 async function apiRequest<T>(
   endpoint: string,
-  token: string,
+  token?: string,
   options: RequestInit = {}
 ): Promise<T> {
   if (!token) {
