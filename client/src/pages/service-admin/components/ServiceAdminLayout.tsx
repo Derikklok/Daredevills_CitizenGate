@@ -16,7 +16,7 @@ const ServiceAdminLayout = ({children}: {children: React.ReactNode}) => {
 	return (
 		<div className="min-h-screen flex flex-col">
 			{/* Service Admin Header */}
-			<header className="bg-emerald-600 text-white py-4 px-6 shadow-md">
+			<header className="bg-[#460219] text-white py-4 px-6 shadow-md">
 				<div className="flex items-center justify-between">
 					<div className="flex items-center space-x-4">
 						<div className="flex flex-col">
@@ -98,4 +98,4 @@ const ServiceAdminLayout = ({children}: {children: React.ReactNode}) => {
 	);
 };
 
-export default ServiceAdminLayout;
+export default ServiceAdminLayout; 
