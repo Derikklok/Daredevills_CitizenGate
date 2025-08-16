@@ -152,7 +152,7 @@ export default function Home() {
 	}
 
 	return (
-		<div className="p-4 sm:p-6 lg:p-12 max-w-7xl mx-auto space-y-6">
+		<div className="p-4 sm:p-6 lg:p-12 max-w-7xl mx-auto space-y-8">
 			{/* Welcome Message */}
 			{isSignedIn && (
 				<div className="mb-6">
@@ -226,14 +226,17 @@ export default function Home() {
 			{/* Quick Actions */}
 			{isSignedIn && (
 				<div className="mb-8">
-					<h2 className="text-xl sm:text-2xl font-bold text-[#600D29] mb-4">
+					<h2 className="text-xl sm:text-2xl font-bold text-primary-700 mb-4">
 						Quick Actions
 					</h2>
-					<div className="flex flex-col sm:flex-row gap-4">
+					<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+						<Button asChild className="bg-primary-700 hover:bg-primary-700/90">
+							<Link to="/book-appointment/new">Book New Appointment</Link>
+						</Button>
 						<Button
 							asChild
 							variant="outline"
-							className="border-[#600D29] text-[#600D29] hover:bg-[#600D29] hover:text-white">
+							className="border-primary-700 text-primary-600 hover:bg-primary-700 hover:text-white">
 							<Link to="/my-appointments">View My Appointments</Link>
 						</Button>
 						<Button asChild variant="secondary">
@@ -244,72 +247,78 @@ export default function Home() {
 			)}
 
 			{/* Search */}
-			<div className="relative w-full">
-				<input
-					type="text"
-					placeholder="Discover services"
-					className="w-full pl-10 pr-10 p-2 sm:p-3 border rounded"
-					value={search}
-					onChange={(e) => setSearch(e.target.value)}
-				/>
-				<MagnifyingGlassIcon className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
-				{search && (
-					<XMarkIcon
-						className="w-5 h-5 text-gray-400 absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer"
-						onClick={handleClear}
+			<div className="mb-8">
+				<div className="relative w-full max-w-2xl mx-auto">
+					<input
+						type="text"
+						placeholder="Discover services"
+						className="w-full pl-12 pr-12 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-[#600D29]/20 focus:border-[#600D29] transition-colors"
+						value={search}
+						onChange={(e) => setSearch(e.target.value)}
 					/>
-				)}
+					<MagnifyingGlassIcon className="w-5 h-5 text-gray-400 absolute left-4 top-1/2 transform -translate-y-1/2" />
+					{search && (
+						<XMarkIcon
+							className="w-5 h-5 text-gray-400 absolute right-4 top-1/2 transform -translate-y-1/2 cursor-pointer hover:text-gray-600 transition-colors"
+							onClick={handleClear}
+						/>
+					)}
+				</div>
 			</div>
 
 			{/* Categories */}
-			<div className="flex justify-between items-center">
-				<h2 className="text-xl sm:text-2xl font-bold mt-4 text-[#600D29] font-sans">
-					Categories
-				</h2>
-				<button
-					onClick={() => setShowAll((prev) => !prev)}
-					className="text-sm sm:text-base text-[#600D29]">
-					{showAll ? "Show Less" : "See All"}
-				</button>
-			</div>
+			<div className="mb-6">
+				<div className="flex justify-between items-center mb-4">
+					<h2 className="text-xl sm:text-2xl font-bold text-[#600D29] font-sans">
+						Categories
+					</h2>
+					{categories.length > 4 && (
+						<button
+							onClick={() => setShowAll((prev) => !prev)}
+							className="text-sm sm:text-base text-[#600D29] hover:text-[#600D29]/80 transition-colors">
+							{showAll ? "Show Less" : "See All"}
+						</button>
+					)}
+				</div>
 
-			{displayedCategories.length > 0 ? (
-				<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mt-4">
-					{displayedCategories.map((category) => (
-						<CategoryCard
-							key={category}
-							name={category}
-							icon={
-								categoryIcons[category] || (
-									<WrenchScrewdriverIcon className="h-6 w-6 text-pink-600" />
-								)
-							}
-							onClick={() =>
-								navigate(`/services/category/${encodeURIComponent(category)}`)
-							}
-						/>
-					))}
-				</div>
-			) : search ? (
-				<div className="text-center py-8 text-gray-500">
-					<p>No categories found matching "{search}"</p>
-				</div>
-			) : (
-				<div className="text-center py-8 text-gray-500">
-					<p>No categories available at the moment.</p>
-				</div>
-			)}
+				{displayedCategories.length > 0 ? (
+					<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+						{displayedCategories.map((category) => (
+							<CategoryCard
+								key={category}
+								name={category}
+								icon={
+									categoryIcons[category] || (
+										<WrenchScrewdriverIcon className="h-6 w-6 text-pink-600" />
+									)
+								}
+								onClick={() =>
+									navigate(`/services/category/${encodeURIComponent(category)}`)
+								}
+							/>
+						))}
+					</div>
+				) : search ? (
+					<div className="text-center py-8 text-gray-500">
+						<p>No categories found matching "{search}"</p>
+					</div>
+				) : (
+					<div className="text-center py-8 text-gray-500">
+						<p>No categories available at the moment.</p>
+					</div>
+				)}
+			</div>
 
 			{/* Featured Services */}
 			{displayedFeaturedServices.length > 0 && (
-				<>
-					<h2 className="text-xl sm:text-2xl font-bold mt-4 text-[#600D29] font-sans">
+				<div className="mb-8">
+					<h2 className="text-xl text-left sm:text-2xl font-bold text-primary-700 font-sans mb-6">
 						{search
 							? `Search Results (${displayedFeaturedServices.length})`
 							: "Featured Services"}
 					</h2>
 
-					<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">
+					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 						{displayedFeaturedServices.map((service) => {
 							// Get an icon based on service category or name
 							const getServiceIcon = (service: Service) => {
@@ -381,7 +390,7 @@ export default function Home() {
 							);
 						})}
 					</div>
-				</>
+				</div>
 			)}
 
 			{/* No search results message */}

@@ -1,16 +1,14 @@
 import {useLocation, useNavigate} from "react-router-dom";
+import {useEffect} from "react";
 import {
 	ChevronLeft,
 	Home,
 	Search,
 	Calendar,
 	FileText,
-	Heart,
-	GraduationCap,
-	Car,
-	UserCheck,
-	HelpCircle,
-	Phone,
+	Building2,
+	Shield,
+	Users,
 	Settings,
 } from "lucide-react";
 import {
@@ -20,104 +18,166 @@ import {
 	OrganizationSwitcher,
 } from "@clerk/clerk-react";
 import {Button} from "../ui/button";
+import {useIsAdmin, useIsServiceAdmin} from "@/hooks/useAuth";
 
 interface SidebarProps {
 	isOpen: boolean;
 	onClose: () => void;
 }
 
+interface MenuItem {
+	name: string;
+	icon: any;
+	path?: string;
+	action?: () => void;
+	active: boolean;
+}
+
+interface MenuSection {
+	title: string;
+	items: MenuItem[];
+}
+
 export function Sidebar({isOpen, onClose}: SidebarProps) {
 	const location = useLocation();
 	const navigate = useNavigate();
 	const {user} = useUser();
+	const {isAdmin} = useIsAdmin();
+	const {isServiceAdmin} = useIsServiceAdmin();
+
 	const handleNavigation = (path: string) => {
 		navigate(path);
 		onClose();
 	};
 
-	const menuItems = [
-		{
-			title: "Main Menu",
+	// Google Translate functionality
+	const initGoogleTranslate = () => {
+		if (!(window as any).google?.translate?.TranslateElement) {
+			const script = document.createElement("script");
+			script.type = "text/javascript";
+			script.src =
+				"//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
+			document.head.appendChild(script);
+
+			(window as any).googleTranslateElementInit = () => {
+				new (window as any).google.translate.TranslateElement(
+					{
+						pageLanguage: "en",
+						includedLanguages: "en,si,ta",
+						layout: (window as any).google.translate.TranslateElement
+							.InlineLayout.SIMPLE,
+						autoDisplay: false,
+					},
+					"google_translate_element"
+				);
+			};
+		}
+	};
+
+	// Initialize Google Translate on component mount
+	useEffect(() => {
+		initGoogleTranslate();
+	}, []);
+
+	// Build menu items based on user roles
+	const menuItems: MenuSection[] = [];
+
+	// Main Menu - Available to all authenticated users
+	menuItems.push({
+		title: "Main Menu",
+		items: [
+			{
+				name: "Home",
+				icon: Home,
+				path: "/",
+				active: location.pathname === "/",
+			},
+			{
+				name: "All Services",
+				icon: Search,
+				path: "/services/all",
+				active: location.pathname === "/services/all",
+			},
+			{
+				name: "My Appointments",
+				icon: Calendar,
+				path: "/my-appointments",
+				active: location.pathname === "/my-appointments",
+			},
+		],
+	});
+
+	// Admin Menu - Only for system admins
+	if (isAdmin) {
+		menuItems.push({
+			title: "Administration",
 			items: [
 				{
-					name: "Home",
-					icon: Home,
-					path: "/",
-					active: location.pathname === "/",
+					name: "Admin Dashboard",
+					icon: Shield,
+					path: "/admin",
+					active: location.pathname === "/admin",
 				},
 				{
-					name: "Search Services",
-					icon: Search,
-					path: "/search",
-					active: location.pathname === "/search",
+					name: "User Management",
+					icon: Users,
+					path: "/admin/users",
+					active: location.pathname === "/admin/users",
 				},
 				{
-					name: "My Appointments",
-					icon: Calendar,
-					path: "/my-appointments",
-					active: location.pathname === "/my-appointments",
+					name: "Department Management",
+					icon: Building2,
+					path: "/admin/departments",
+					active: location.pathname === "/admin/departments",
 				},
 				{
-					name: "My Documents",
+					name: "Reports",
 					icon: FileText,
-					path: "/documents",
-					active: location.pathname === "/documents",
-				},
-			],
-		},
-		{
-			title: "Services",
-			items: [
-				{
-					name: "Health",
-					icon: Heart,
-					path: "/services/health",
-					active: location.pathname === "/services/health",
+					path: "/admin/reports",
+					active: location.pathname === "/admin/reports",
 				},
 				{
-					name: "Education",
-					icon: GraduationCap,
-					path: "/services/education",
-					active: location.pathname === "/services/education",
-				},
-				{
-					name: "Transport",
-					icon: Car,
-					path: "/services/transport",
-					active: location.pathname === "/services/transport",
-				},
-				{
-					name: "Registration",
-					icon: UserCheck,
-					path: "/services/registration",
-					active: location.pathname === "/services/registration",
-				},
-			],
-		},
-		{
-			title: "Support",
-			items: [
-				{
-					name: "FAQ",
-					icon: HelpCircle,
-					path: "/faq",
-					active: location.pathname === "/faq",
-				},
-				{
-					name: "Contact",
-					icon: Phone,
-					path: "/contact",
-					active: location.pathname === "/contact",
-				},
-				{
-					name: "Settings",
+					name: "System Settings",
 					icon: Settings,
-					path: "/settings",
-					active: location.pathname === "/settings",
+					path: "/admin/settings",
+					active: location.pathname === "/admin/settings",
 				},
 			],
-		},
-	];
+		});
+	}
+
+	// Service Admin Menu - Only for service admins
+	if (isServiceAdmin) {
+		menuItems.push({
+			title: "Service Administration",
+			items: [
+				{
+					name: "Service Dashboard",
+					icon: Building2,
+					path: "/service-admin",
+					active: location.pathname === "/service-admin",
+				},
+				{
+					name: "Manage Services",
+					icon: Settings,
+					path: "/service-admin/services",
+					active: location.pathname === "/service-admin/services",
+				},
+				{
+					name: "Appointments",
+					icon: Calendar,
+					path: "/service-admin/appointments",
+					active: location.pathname === "/service-admin/appointments",
+				},
+				{
+					name: "Documents",
+					icon: FileText,
+					path: "/service-admin/documents",
+					active: location.pathname === "/service-admin/documents",
+				},
+			],
+		});
+	}
 
 	return (
 		<>
@@ -190,7 +250,13 @@ export function Sidebar({isOpen, onClose}: SidebarProps) {
 									{section.items.map((item) => (
 										<button
 											key={item.name}
-											onClick={() => handleNavigation(item.path)}
+											onClick={() => {
+												if (item.path) {
+													handleNavigation(item.path);
+												} else if (item.action) {
+													item.action();
+												}
+											}}
 											className={`w-full flex items-center space-x-3 px-6 py-3 text-left transition-all duration-200 ${
 												item.active
 													? "bg-primary-50 text-primary-500 border-r-2 border-primary-500"
@@ -220,6 +286,9 @@ export function Sidebar({isOpen, onClose}: SidebarProps) {
 					</div>
 				</div>
 			</div>
+
+			{/* Hidden Google Translate Element */}
+			<div id="google_translate_element" style={{display: "none"}}></div>
 		</>
 	);
 }

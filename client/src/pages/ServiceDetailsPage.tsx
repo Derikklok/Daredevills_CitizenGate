@@ -154,6 +154,14 @@ export default function ServiceDetailsPage() {
 			<div className="max-w-4xl mx-auto px-4 py-8">
 				{/* Header */}
 				<div className="mb-6">
+					<Button
+						variant="ghost"
+						onClick={() => navigate(-1)}
+						className="mb-4 text-[#600D29] hover:text-[#600D29]/80">
+						<ArrowLeftIcon className="h-4 w-4 mr-2" />
+						Back
+					</Button>
+
 					<div className="bg-white rounded-lg shadow-sm border p-6">
 						<div className="space-y-6">
 							<div>
@@ -197,12 +205,12 @@ export default function ServiceDetailsPage() {
 									className="bg-[#600D29] hover:bg-[#600D29]/90 text-white flex-1 sm:flex-none">
 									{bookingLoading ? (
 										<>
-											<div className="animate-spin rounded-full  border-b-2 border-white mr-2"></div>
+											<div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
 											Booking...
 										</>
 									) : (
 										<>
-											<CalendarDaysIcon className=" mr-2" />
+											<CalendarDaysIcon className="h-4 w-4 mr-2" />
 											Book Appointment
 										</>
 									)}
