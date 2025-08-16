@@ -1355,6 +1355,14 @@ packages:
     resolution: {integrity: sha512-zg/chbXyeBtMQ1LbD/WSoW2DpC3I0mpmPdW+ynRTj/x2DAWYrIY7qeZIHidozwV24m4iavr15lNwIwLxRmOxhA==}
     engines: {node: '>=12'}
 
+  define-data-property@1.1.4:
+    resolution: {integrity: sha512-rBMvIzlpA8v6E+SJZoo++HAYqsLrkg7MSfIinMPFhmkorw7X+dOXVJQs+QT69zGkzMyfDnIMN2Wid1+NbL3T+A==}
+    engines: {node: '>= 0.4'}
+
+  dequal@2.0.3:
+    resolution: {integrity: sha512-0je+qPKHEMohvfRTCEo3CrPG6cAzAYgmzKyxRiYSSDkS6eGJdyVJm7WaYA5ECaAD9wLB2T4EEeymA5aFVcYXCA==}
+    engines: {node: '>=6'}
+
   d3-ease@3.0.1:
     resolution: {integrity: sha512-wR/XK3D3XcLIZwpbvQwQ5fK+8Ykds1ip7A2Txe0yxncXSdq1L9skcG7blcedkOX+ZcgxGAmLX1FrRGbADwzi0w==}
     engines: {node: '>=12'}
@@ -1462,7 +1470,6 @@ packages:
 
   es-toolkit@1.39.9:
     resolution: {integrity: sha512-9OtbkZmTA2Qc9groyA1PUNeb6knVTkvB2RSdr/LcJXDL8IdEakaxwXLHXa7VX/Wj0GmdMJPR3WhnPGhiP3E+qg==}
-
   esbuild@0.25.8:
     resolution: {integrity: sha512-vVC0USHGtMi8+R4Kz8rt6JhEWLxsv9Rnu/lGYbPR8u47B+DCBksq9JarW0zOO7bs37hyOK1l2/oqtbciutL5+Q==}
     engines: {node: '>=18'}
@@ -1691,7 +1698,6 @@ packages:
   internmap@2.0.3:
     resolution: {integrity: sha512-5Hh7Y1wQbvY5ooGgPbDaL5iYLAPzMTUrjMulskHLH6wnv/A+1q5rgEaiuqEjB+oxGXIVZs1FF+R/KPN3ZSQYYg==}
     engines: {node: '>=12'}
-
   is-arguments@1.2.0:
     resolution: {integrity: sha512-7bVbi0huj/wrIAOzb8U1aszg9kdi3KN/CyU19CTI7tAoZYEZoL9yCDXpbXN+uPsuWnP02cyug1gleqq+TU+YCA==}
     engines: {node: '>= 0.4'}
@@ -1707,7 +1713,7 @@ packages:
   is-fullwidth-code-point@3.0.0:
     resolution: {integrity: sha512-zymm5+u+sCsSWyD9qNaejV3DFvhCKclKdizYaJUuHA83RLjb7nSuGnddCHGv0hk+KY7BMAlsWeK4Ueg6EV6XQg==}
     engines: {node: '>=8'}
-
+    
   is-generator-function@1.1.0:
     resolution: {integrity: sha512-nPUB5km40q9e8UfN/Zc24eLlzdSf9OfKByBw9CIdw4H1giPMeA0OIJvbchsCu4npfI2QcMVBsGEBHKZ7wLTWmQ==}
     engines: {node: '>= 0.4'}
@@ -1965,11 +1971,9 @@ packages:
   picomatch@4.0.3:
     resolution: {integrity: sha512-5gTmgEY/sqK6gFXLIsQNH19lWb4ebPDLA4SdLP7dsWkIXHWlG66oPuVvXSGFPppYZz8ZDZq0dYYrbHfBCVUb1Q==}
     engines: {node: '>=12'}
-
   pngjs@5.0.0:
     resolution: {integrity: sha512-40QW5YalBNfQo5yRYmiw7Yz6TKKVr3h6970B2YE+3fQpsWcrbj1PzJgxeJ19DRQjhMbKPIuMY8rFaXc8moolVw==}
     engines: {node: '>=10.13.0'}
-
   possible-typed-array-names@1.1.0:
     resolution: {integrity: sha512-/+5VFTchJDoVj3bhoqi6UeymcD00DAwb1nJwamzPvHEszJ4FpF6SNNbUbOS8yI56qHzdV8eK0qEfOSiodkTdxg==}
     engines: {node: '>= 0.4'}
@@ -1999,7 +2003,7 @@ packages:
     resolution: {integrity: sha512-1ca71Zgiu6ORjHqFBDpnSMTR2ReToX4l1Au1VFLyVeBTFavzQnv5JxMFr3ukHVKpSrSA2MCk0lNJSykjUfz7Zg==}
     engines: {node: '>=10.13.0'}
     hasBin: true
-
+    
   querystring@0.2.0:
     resolution: {integrity: sha512-X/xY82scca2tau62i9mDyU9K+I+djTMUsvwf7xnUX5GLvVzgJybOJf4Y6o9Zx3oJK/LSXg5tTZBjwzqVPaPO2g==}
     engines: {node: '>=0.4.x'}
@@ -2306,7 +2310,7 @@ packages:
 
   victory-vendor@37.3.6:
     resolution: {integrity: sha512-SbPDPdDBYp+5MJHhBCAyI7wKM3d5ivekigc2Dk2s7pgbZ9wIgIBYGVw4zGHBml/qTFbexrofXW6Gu4noGxrOwQ==}
-
+    
   vite@7.1.1:
     resolution: {integrity: sha512-yJ+Mp7OyV+4S+afWo+QyoL9jFWD11QFH0i5i7JypnfTcA1rmgxCbiA8WwAICDEtZ1Z1hzrVhN8R8rGTqkTY8ZQ==}
     engines: {node: ^20.19.0 || >=22.12.0}
@@ -3422,7 +3426,7 @@ snapshots:
       color-convert: 2.0.1
 
   argparse@2.0.1: {}
-
+  
   aria-hidden@1.2.6:
     dependencies:
       tslib: 2.8.1
@@ -3601,7 +3605,6 @@ snapshots:
   detect-node-es@1.1.0: {}
 
   dijkstrajs@1.0.3: {}
-
   dunder-proto@1.0.1:
     dependencies:
       call-bind-apply-helpers: 1.0.2
@@ -3626,7 +3629,6 @@ snapshots:
       es-errors: 1.3.0
 
   es-toolkit@1.39.9: {}
-
   esbuild@0.25.8:
     optionalDependencies:
       '@esbuild/aix-ppc64': 0.25.8
@@ -3738,7 +3740,6 @@ snapshots:
   esutils@2.0.3: {}
 
   eventemitter3@5.0.1: {}
-
   events@1.1.1: {}
 
   fast-deep-equal@3.1.3: {}
@@ -3798,7 +3799,6 @@ snapshots:
   function-bind@1.1.2: {}
 
   gensync@1.0.0-beta.2: {}
-
   get-caller-file@2.0.5: {}
 
   get-intrinsic@1.3.0:
@@ -3815,7 +3815,6 @@ snapshots:
       math-intrinsics: 1.1.0
 
   get-nonce@1.0.1: {}
-
   get-proto@1.0.1:
     dependencies:
       dunder-proto: 1.0.1
@@ -3873,9 +3872,7 @@ snapshots:
   imurmurhash@0.1.4: {}
 
   inherits@2.0.4: {}
-
   internmap@2.0.3: {}
-
   is-arguments@1.2.0:
     dependencies:
       call-bound: 1.0.4
@@ -3884,9 +3881,7 @@ snapshots:
   is-callable@1.2.7: {}
 
   is-extglob@2.1.1: {}
-
   is-fullwidth-code-point@3.0.0: {}
-
   is-generator-function@1.1.0:
     dependencies:
       call-bound: 1.0.4
@@ -4092,9 +4087,7 @@ snapshots:
   picomatch@2.3.1: {}
 
   picomatch@4.0.3: {}
-
   pngjs@5.0.0: {}
-
   possible-typed-array-names@1.1.0: {}
 
   postcss@8.5.6:
@@ -4104,17 +4097,14 @@ snapshots:
       source-map-js: 1.2.1
 
   prelude-ls@1.2.1: {}
-
   prop-types@15.8.1:
     dependencies:
       loose-envify: 1.4.0
       object-assign: 4.1.1
       react-is: 16.13.1
-
   punycode@1.3.2: {}
 
   punycode@2.3.1: {}
-
   qr.js@0.0.0: {}
 
   qrcode@1.5.4:
@@ -4122,7 +4112,6 @@ snapshots:
       dijkstrajs: 1.0.3
       pngjs: 5.0.0
       yargs: 15.4.1
-
   querystring@0.2.0: {}
 
   queue-microtask@1.2.3: {}
@@ -4410,7 +4399,6 @@ snapshots:
       tslib: 2.8.1
     optionalDependencies:
       '@types/react': 19.1.9
-
   use-sync-external-store@1.5.0(react@19.1.1):
     dependencies:
       react: 19.1.1
@@ -4479,16 +4467,13 @@ snapshots:
       ansi-styles: 4.3.0
       string-width: 4.2.3
       strip-ansi: 6.0.1
-
   xml2js@0.6.2:
     dependencies:
       sax: 1.2.1
       xmlbuilder: 11.0.1
 
   xmlbuilder@11.0.1: {}
-
   y18n@4.0.3: {}
-
   yallist@3.1.1: {}
 
   yallist@5.0.0: {}
