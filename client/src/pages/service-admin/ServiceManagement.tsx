@@ -512,8 +512,8 @@ const ServiceManagement = () => {
 	const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
 	const [editedService, setEditedService] =
 		useState<ExtendedGovernmentService | null>(null);
-	const [, setIsAddModalOpen] = useState<boolean>(false);
-	const [, setNewService] = useState<{
+	const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
+	const [newService, setNewService] = useState<{
 		name: string;
 		description: string;
 		category: string;
@@ -773,64 +773,73 @@ const ServiceManagement = () => {
 		}
 	};
 
-	// const handleAddService = async () => {
-	// 	// Validation
-	// 	if (
-	// 		!newService.name.trim() ||
-	// 		!newService.description.trim() ||
-	// 		!newService.category.trim() ||
-	// 		!newService.estimated_total_completion_time.trim() ||
-	// 		newService.department_id === 0
-	// 	) {
-	// 		console.error("All fields are required");
-	// 		return;
-	// 	}
+	const handleNewServiceInputChange = (
+		e: React.ChangeEvent<HTMLInputElement>
+	): void => {
+		setNewService((prev) => ({
+			...prev,
+			[e.target.name]: e.target.value,
+		}));
+	};
 
-	// 	try {
-	// 		const response = await fetch(`${API_BASE_URL}/government-services`, {
-	// 			method: "POST",
-	// 			headers: {
-	// 				"Content-Type": "application/json",
-	// 			},
-	// 			body: JSON.stringify({
-	// 				name: newService.name,
-	// 				description: newService.description,
-	// 				category: newService.category,
-	// 				estimated_total_completion_time:
-	// 					newService.estimated_total_completion_time,
-	// 				department_id: newService.department_id,
-	// 			}),
-	// 		});
+	const handleAddService = async (): Promise<void> => {
+		// Validation
+		if (
+			!newService.name.trim() ||
+			!newService.description.trim() ||
+			!newService.category.trim() ||
+			!newService.estimated_total_completion_time.trim() ||
+			newService.department_id === 0
+		) {
+			console.error("All fields are required");
+			return;
+		}
 
-	// 		if (!response.ok) {
-	// 			const errorText = await response.text();
-	// 			throw new Error(`Failed to create service: ${errorText}`);
-	// 		}
+		try {
+			const response = await fetch(`${API_BASE_URL}/government-services`, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					name: newService.name,
+					description: newService.description,
+					category: newService.category,
+					estimated_total_completion_time:
+						newService.estimated_total_completion_time,
+					department_id: newService.department_id,
+				}),
+			});
 
-	// 		const createdService = await response.json();
-	// 		const serviceWithStatus = {...createdService, status: "active"};
+			if (!response.ok) {
+				const errorText = await response.text();
+				throw new Error(`Failed to create service: ${errorText}`);
+			}
 
-	// 		// Add to department services if it belongs to current department
-	// 		if (createdService.department_id === newService.department_id) {
-	// 			setDepartmentServices((prev) => [...prev, serviceWithStatus]);
-	// 		}
+			const createdService = await response.json();
+			const serviceWithStatus = {...createdService, status: "active"};
 
-	// 		// Add to all services
-	// 		setAllServices((prev) => [...prev, serviceWithStatus]);
+			// Add to department services if it belongs to current department
+			if (createdService.department_id === newService.department_id) {
+				setDepartmentServices((prev) => [...prev, serviceWithStatus]);
+			}
 
-	// 		// Reset form and close modal
-	// 		setNewService({
-	// 			name: "",
-	// 			description: "",
-	// 			category: "",
-	// 			estimated_total_completion_time: "",
-	// 			department_id: newService.department_id, // Keep department_id
-	// 		});
-	// 		setIsAddModalOpen(false);
-	// 	} catch (error) {
-	// 		console.error("Error creating service:", error);
-	// 	}
-	// };
+			// Add to all services
+			setAllServices((prev) => [...prev, serviceWithStatus]);
+
+			// Reset form and close modal
+			setNewService({
+				name: "",
+				description: "",
+				category: "",
+				estimated_total_completion_time: "",
+				department_id: newService.department_id, // Keep department_id
+			});
+			setIsAddModalOpen(false);
+		} catch (error) {
+			console.error("Error creating service:", error);
+		}
+	};
 
 	return (
 		<ServiceAdminLayout>
@@ -1030,162 +1039,301 @@ const ServiceManagement = () => {
 				</Tabs>
 
 				{isEditModalOpen && editedService && (
-  <div className="fixed inset-0 backdrop-blur bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 rounded-lg overflow-y-auto py-6">
-    <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md mt-4">
-      <h2 className="text-xl font-bold mb-4">Edit Service</h2>
-      <p className="text-gray-600 mb-4">Update the service details below.</p>
+					<div className="fixed inset-0 bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 rounded-lg overflow-y-auto py-6">
+						<div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md mt-4">
+							<h2 className="text-xl font-bold mb-4">Edit Service</h2>
+							<p className="text-gray-600 mb-4">
+								Update the service details below.
+							</p>
 
-      <div className="space-y-4">
-        {/* Service Name (read-only) */}
-        <div className="flex items-center justify-between px-2 py-2">
-          <label className="text-sm font-medium text-gray-700">Service</label>
-          <Input
-            value={editedService.name}
-            name="name"
-            onChange={handleInputChange}
-            className="mt-1 w-3/4"
-          />
-        </div>
+							<div className="space-y-4">
+								{/* Service Name (read-only) */}
+								<div className="flex items-center justify-between px-2 py-2">
+									<label className="text-sm font-medium text-gray-700">
+										Service
+									</label>
+									<Input
+										value={editedService.name}
+										name="name"
+										onChange={handleInputChange}
+										className="mt-1 w-3/4"
+									/>
+								</div>
 
-        {/* Description */}
-        <div className="flex items-center justify-between px-2 py-2">
-          <label className="text-sm font-medium text-gray-700">Description</label>
-          <Input
-            value={editedService.description}
-            name="description"
-            onChange={handleInputChange}
-            className="mt-1 w-3/4"
-            placeholder="Enter description"
-          />
-        </div>
+								{/* Description */}
+								<div className="flex items-center justify-between px-2 py-2">
+									<label className="text-sm font-medium text-gray-700">
+										Description
+									</label>
+									<Input
+										value={editedService.description}
+										name="description"
+										onChange={handleInputChange}
+										className="mt-1 w-3/4"
+										placeholder="Enter description"
+									/>
+								</div>
 
-        {/* Category */}
-        <div className="flex items-center justify-between px-2 py-2">
-          <label className="text-sm font-medium text-gray-700">Category</label>
-          <Input
-            value={editedService.category}
-            name="category"
-            onChange={handleInputChange}
-            className="mt-1 w-3/4"
-            placeholder="Enter category"
-          />
-        </div>
+								{/* Category */}
+								<div className="flex items-center justify-between px-2 py-2">
+									<label className="text-sm font-medium text-gray-700">
+										Category
+									</label>
+									<Input
+										value={editedService.category}
+										name="category"
+										onChange={handleInputChange}
+										className="mt-1 w-3/4"
+										placeholder="Enter category"
+									/>
+								</div>
 
-        {/* Time Period */}
-        <div className="flex items-center justify-between px-2 py-2">
-          <label className="text-sm font-medium text-gray-700">Time Period</label>
-          <Input
-            value={editedService.estimated_total_completion_time}
-            name="estimated_total_completion_time"
-            onChange={handleInputChange}
-            className="mt-1 w-3/4"
-            placeholder="e.g., 6 months"
-          />
-        </div>
+								{/* Time Period */}
+								<div className="flex items-center justify-between px-2 py-2">
+									<label className="text-sm font-medium text-gray-700">
+										Time Period
+									</label>
+									<Input
+										value={editedService.estimated_total_completion_time}
+										name="estimated_total_completion_time"
+										onChange={handleInputChange}
+										className="mt-1 w-3/4"
+										placeholder="e.g., 6 months"
+									/>
+								</div>
 
-        {/* --- Service Availability Section --- */}
-        <div className="border-t pt-6 space-y-6">
-  <h3 className="text-lg font-semibold text-gray-800">Availability</h3>
+								{/* --- Service Availability Section --- */}
+								<div className="border-t pt-6 space-y-6">
+									<h3 className="text-lg font-semibold text-gray-800">
+										Availability
+									</h3>
 
-  {/* Days of Week */}
-  <div className="space-y-2">
-    <label className="text-sm font-medium text-gray-700">Days of Week</label>
-    <div className="flex overflow-x-auto space-x-2 pb-2 scrollbar-thin scrollbar-thumb-gray-300">
-      {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].map(
-        (day) => {
-          const isSelected = editedService.availability?.days_of_week?.includes(day);
-          return (
-            <label
-              key={day}
-              className={`px-3 py-1 rounded-full border text-sm cursor-pointer whitespace-nowrap
-                ${isSelected ? "bg-indigo-600 text-white border-indigo-600" : "bg-gray-100 text-gray-700 border-gray-300"}`}
-            >
-              <input
-                type="checkbox"
-                checked={isSelected}
-                onChange={(e) => {
-                  const days = editedService.availability?.days_of_week || [];
-                  const updatedDays = e.target.checked
-                    ? [...days, day]
-                    : days.filter((d) => d !== day);
+									{/* Days of Week */}
+									<div className="space-y-2">
+										<label className="text-sm font-medium text-gray-700">
+											Days of Week
+										</label>
+										<div className="flex overflow-x-auto space-x-2 pb-2 scrollbar-thin scrollbar-thumb-gray-300">
+											{[
+												"Monday",
+												"Tuesday",
+												"Wednesday",
+												"Thursday",
+												"Friday",
+												"Saturday",
+												"Sunday",
+											].map((day) => {
+												const isSelected =
+													editedService.availability?.days_of_week?.includes(
+														day
+													);
+												return (
+													<label
+														key={day}
+														className={`px-3 py-1 rounded-full border text-sm cursor-pointer whitespace-nowrap
+                ${
+									isSelected
+										? "bg-indigo-600 text-white border-indigo-600"
+										: "bg-gray-100 text-gray-700 border-gray-300"
+								}`}>
+														<input
+															type="checkbox"
+															checked={isSelected}
+															onChange={(e) => {
+																const days =
+																	editedService.availability?.days_of_week ||
+																	[];
+																const updatedDays = e.target.checked
+																	? [...days, day]
+																	: days.filter((d) => d !== day);
 
-                  setEditedService((prev: any) => ({
-                    ...prev,
-                    availability: { ...prev.availability, days_of_week: updatedDays },
-                  }));
-                }}
-                className="hidden"
-              />
-              {day}
-            </label>
-          );
-        }
-      )}
-    </div>
-  </div>
+																setEditedService((prev: any) => ({
+																	...prev,
+																	availability: {
+																		...prev.availability,
+																		days_of_week: updatedDays,
+																	},
+																}));
+															}}
+															className="hidden"
+														/>
+														{day}
+													</label>
+												);
+											})}
+										</div>
+									</div>
 
-  {/* Start & End Time */}
-  <div className="grid grid-cols-2 gap-4">
-    <div className="space-y-1">
-      <label className="text-sm font-medium text-gray-700">Start Time</label>
-      <Input
-        type="time"
-        value={editedService.availability?.start_time || ""}
-        onChange={(e) =>
-          setEditedService((prev: any) => ({
-            ...prev,
-            availability: { ...prev.availability, start_time: e.target.value },
-          }))
-        }
-      />
-    </div>
+									{/* Start & End Time */}
+									<div className="grid grid-cols-2 gap-4">
+										<div className="space-y-1">
+											<label className="text-sm font-medium text-gray-700">
+												Start Time
+											</label>
+											<Input
+												type="time"
+												value={editedService.availability?.start_time || ""}
+												onChange={(e) =>
+													setEditedService((prev: any) => ({
+														...prev,
+														availability: {
+															...prev.availability,
+															start_time: e.target.value,
+														},
+													}))
+												}
+											/>
+										</div>
 
-    <div className="space-y-1">
-      <label className="text-sm font-medium text-gray-700">End Time</label>
-      <Input
-        type="time"
-        value={editedService.availability?.end_time || ""}
-        onChange={(e) =>
-          setEditedService((prev: any) => ({
-            ...prev,
-            availability: { ...prev.availability, end_time: e.target.value },
-          }))
-        }
-      />
-    </div>
-  </div>
+										<div className="space-y-1">
+											<label className="text-sm font-medium text-gray-700">
+												End Time
+											</label>
+											<Input
+												type="time"
+												value={editedService.availability?.end_time || ""}
+												onChange={(e) =>
+													setEditedService((prev: any) => ({
+														...prev,
+														availability: {
+															...prev.availability,
+															end_time: e.target.value,
+														},
+													}))
+												}
+											/>
+										</div>
+									</div>
 
-  {/* Duration */}
-  <div className="space-y-1">
-    <label className="text-sm font-medium text-gray-700">Duration (minutes)</label>
-    <Input
-      type="number"
-      value={editedService.availability?.duration_minutes || ""}
-      placeholder="e.g., 30"
-      onChange={(e) =>
-        setEditedService((prev: any) => ({
-          ...prev,
-          availability: { ...prev.availability, duration_minutes: Number(e.target.value) },
-        }))
-      }
-    />
-  </div>
-</div>
+									{/* Duration */}
+									<div className="space-y-1">
+										<label className="text-sm font-medium text-gray-700">
+											Duration (minutes)
+										</label>
+										<Input
+											type="number"
+											value={editedService.availability?.duration_minutes || ""}
+											placeholder="e.g., 30"
+											onChange={(e) =>
+												setEditedService((prev: any) => ({
+													...prev,
+													availability: {
+														...prev.availability,
+														duration_minutes: Number(e.target.value),
+													},
+												}))
+											}
+										/>
+									</div>
+								</div>
+							</div>
 
-      </div>
+							{/* Actions */}
+							<div className="flex items-center justify-between px-2 py-4">
+								<Button
+									variant="outline"
+									onClick={() => setIsEditModalOpen(false)}>
+									Cancel
+								</Button>
+								<Button variant="destructive" onClick={handleSaveEdit}>
+									Save Changes
+								</Button>
+							</div>
+						</div>
+					</div>
+				)}
 
-      {/* Actions */}
-      <div className="flex items-center justify-between px-2 py-4">
-        <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>
-          Cancel
-        </Button>
-        <Button variant="destructive" onClick={handleSaveEdit}>
-          Save Changes
-        </Button>
-      </div>
-    </div>
-  </div>
-)}
+				{/* Add New Service Modal */}
+				{isAddModalOpen && (
+					<div className="fixed inset-0 bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 rounded-lg overflow-y-auto py-6">
+						<div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md mt-4">
+							<h2 className="text-xl font-bold mb-4">Add New Service</h2>
+							<p className="text-gray-600 mb-4">
+								Create a new government service below.
+							</p>
+
+							<div className="space-y-4">
+								{/* Service Name */}
+								<div className="space-y-2">
+									<label className="text-sm font-medium text-gray-700">
+										Service Name
+									</label>
+									<Input
+										value={newService.name}
+										name="name"
+										onChange={handleNewServiceInputChange}
+										placeholder="Enter service name"
+										className="w-full"
+									/>
+								</div>
+
+								{/* Description */}
+								<div className="space-y-2">
+									<label className="text-sm font-medium text-gray-700">
+										Description
+									</label>
+									<Input
+										value={newService.description}
+										name="description"
+										onChange={handleNewServiceInputChange}
+										placeholder="Enter service description"
+										className="w-full"
+									/>
+								</div>
+
+								{/* Category */}
+								<div className="space-y-2">
+									<label className="text-sm font-medium text-gray-700">
+										Category
+									</label>
+									<Input
+										value={newService.category}
+										name="category"
+										onChange={handleNewServiceInputChange}
+										placeholder="Enter service category"
+										className="w-full"
+									/>
+								</div>
+
+								{/* Time Period */}
+								<div className="space-y-2">
+									<label className="text-sm font-medium text-gray-700">
+										Estimated Completion Time
+									</label>
+									<Input
+										value={newService.estimated_total_completion_time}
+										name="estimated_total_completion_time"
+										onChange={handleNewServiceInputChange}
+										placeholder="e.g., 6 months"
+										className="w-full"
+									/>
+								</div>
+
+								{/* Department ID (read-only, set automatically) */}
+								<div className="space-y-2">
+									<label className="text-sm font-medium text-gray-700">
+										Department
+									</label>
+									<Input
+										value={departmentName}
+										readOnly
+										className="w-full bg-gray-100"
+									/>
+								</div>
+							</div>
+
+							{/* Actions */}
+							<div className="flex items-center justify-between px-2 py-4">
+								<Button
+									variant="outline"
+									onClick={() => setIsAddModalOpen(false)}>
+									Cancel
+								</Button>
+								<Button onClick={handleAddService}>Create Service</Button>
+							</div>
+						</div>
+					</div>
+				)}
 
 				{viewService && (
 					<div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">

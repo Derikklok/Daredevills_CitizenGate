@@ -38,7 +38,6 @@ A comprehensive government services booking platform built with React/Vite front
 **Get API Keys:**
 
 - **Project URL**: `https://[YOUR-REF].supabase.co`
-- **Anon Key**: Found in Settings → API → Project API keys
 - **Service Role Key**: Found in Settings → API → Project API keys (keep this secret!)
 
 ### 2. Clerk Setup (Authentication)

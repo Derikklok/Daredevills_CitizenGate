@@ -60,7 +60,7 @@ export class ClerkService {
       if (payload.public_metadata && payload.public_metadata.role) {
         metadataRole = payload.public_metadata.role;
       }
-      
+
       const user = {
         accountId: payload.sub,
         organizationId: payload.org_id || payload.organizationId,

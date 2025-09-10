@@ -178,8 +178,9 @@ const CalendarView = () => {
 				});
 			});
 		});
+		console.log(timeSlots);
 
-		return timeSlots.filter((slot) => !slot.isPast); // Only return future slots
+		return timeSlots.filter((slot) => !slot.isPast && slot.time !== "00:00"); // Only return future slots
 	};
 
 	const handleTimeSlotSelect = (
